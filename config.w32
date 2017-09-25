@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("linger_framework", "for linger_framework support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("linger_framework", "enable linger_framework support", "no");
+
+if (PHP_LINGER_FRAMEWORK != "no") {
+	EXTENSION("linger_framework", "linger_framework.c");
+}
+
