@@ -25,3 +25,9 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
+
+
+LINGER_MINIT_FUNCTION(config)
+{
+     
+}
