@@ -78,7 +78,19 @@ PHP_METHOD(linger_framework_application, app)
 {
     //static method to get app instance.
     zval *app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1);      
-    RETVAL_ZVAL(app, 0, 0);
+    RETURN_ZVAL(app, 1, 0);
+}
+
+PHP_METHOD(linger_framework_application, getConfig)
+{
+    zval *config = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1, NULL);
+    RETURN_ZVAL(config, 1, 0);
+}
+
+PHP_METHOD(linger_framework_application, getDispatcher)
+{
+    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
+    RETURN_ZVAL(dispatcher, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, __destruct)
