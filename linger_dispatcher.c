@@ -25,44 +25,8 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
-zend_class_entry *config_ce;
 
-void linger_config_instance(zval **oconfig, zval *config) {
-
-}
-
-PHP_METHOD(linger_framework_config, __construct)
-{
-     
-}
-
-PHP_METHOD(linger_framework_config, get)
-{
+void linger_dispatcher_instance(zval **odispatcher, zval *request) {
 
 }
 
-PHP_METHOD(linger_framework_config, set)
-{
-
-}
-
-PHP_METHOD(linger_framework_config, __destruct)
-{
-
-}
-
-zend_function_entry config_methods[] = {
-    PHP_ME(linger_framework_config, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_config, get, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, set, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-    PHP_FE_END
-};
-
-LINGER_MINIT_FUNCTION(config)
-{
-    zend_class_entry ce;
-    INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Config", config_methods);
-    config_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    return SUCCESS;
-}
