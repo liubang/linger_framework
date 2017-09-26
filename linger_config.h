@@ -19,6 +19,6 @@
 #ifndef LINGER_CONFIG_H_
 #define LINGER_CONFIG_H_
 
-void linger_config_instance(zval **oconfig, zval *config);
+zval *linger_config_instance(zval *config TSRMLS_DC);
 
 #endif /* LINGER_CONFIG_H_ */

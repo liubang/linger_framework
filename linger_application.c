@@ -46,7 +46,7 @@ PHP_METHOD(linger_framework_application, __construct)
     zval *odispatcher;
     zval *app;
     
-    app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1);
+    app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);
     
     if (!ZVAL_IS_NULL(app)) {
         zend_throw_exception(NULL, "Can not reinstance application", 0 TSRMLS_CC);        
@@ -57,16 +57,16 @@ PHP_METHOD(linger_framework_application, __construct)
         return;
     }
     zval *self = getThis();
-    linger_config_instance(&oconfig, aconfig);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), &oconfig);
+    oconfig = linger_config_instance(aconfig TSRMLS_CC);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
    
-    linger_request_instance(&orequest);
-    linger_dispatcher_instance(&odispatcher, orequest);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), &odispatcher);
-    zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self);
-    zval_ptr_dtor(oconfig);
-    zval_ptr_dtor(orequest);
-    zval_ptr_dtor(odispatcher);
+    orequest = linger_request_instance(TSRMLS_CC);
+    odispatcher = linger_dispatcher_instance(orequest TSRMLS_CC);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
+    zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self TSRMLS_CC);
+    zval_ptr_dtor(&oconfig);
+    zval_ptr_dtor(&orequest);
+    zval_ptr_dtor(&odispatcher);
 }
 
 PHP_METHOD(linger_framework_application, run)
@@ -77,19 +77,19 @@ PHP_METHOD(linger_framework_application, run)
 PHP_METHOD(linger_framework_application, app)
 {
     //static method to get app instance.
-    zval *app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1);      
+    zval *app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);      
     RETURN_ZVAL(app, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, getConfig)
 {
-    zval *config = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1 TSRMLS_CC);
     RETURN_ZVAL(config, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, getDispatcher)
 {
-    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
+    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1 TSRMLS_CC);
     RETURN_ZVAL(dispatcher, 1, 0);
 }
 
@@ -111,5 +111,6 @@ LINGER_MINIT_FUNCTION(application)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Application", application_methods);
     application_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
     return SUCCESS;
 }

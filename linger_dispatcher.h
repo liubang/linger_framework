@@ -19,6 +19,6 @@
 #ifndef LINGER_DISPATCHER_H_
 #define LINGER_DISPATCHER_H_
 
-void linger_dispatcher_instance(zval **odispatcher, zval *orequest);
+zval *linger_dispatcher_instance(zval *orequest TSRMLS_DC);
 
 #endif /* LINGER_DISPATCHER_H_ */

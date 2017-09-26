@@ -48,6 +48,7 @@ if test "$PHP_LINGER_FRAMEWORK" != "no"; then
     linger_application.c    \
     linger_config.c         \
     linger_router.c         \
+    linger_dispatcher.c     \
     linger_request.c        \
     linger_response.c       \
     linger_exception.c, 

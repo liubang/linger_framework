@@ -25,3 +25,96 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
+zend_class_entry *request_ce;
+
+#define REQUEST_PROPERTIES_INSTANCE  "_instance"
+
+zval *linger_request_instance(TSRMLS_DC) {
+    zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
+    if (Z_TYPE_P(instance) != IS_OBJECT ||
+            !instanceof_function(Z_OBJECT_P(instance), request_ce)) {
+        instance = NULL;
+        MAKE_STD_ZVAL(instance);
+        object_init_ex(instance, request_ce);
+        zend_update_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), instance TSRMLS_CC);
+    }
+    return instance;
+}
+
+PHP_METHOD(linger_framework_request, __construct)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getMethod)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getQuery)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getParam)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getPost)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getHeader)
+{
+    
+}
+
+PHP_METHOD(linger_framework_request, getCookie)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, rawcontent)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, isGet)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, isPost)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, isAjax)
+{
+
+}
+
+zend_function_entry request_methods[] = {
+    PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_request, getQuery, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, getParam, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, getPost, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, getHeader, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, getCookie, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, rawcontent, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isGet, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isPost, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isAjax, NULL, ZEND_ACC_PUBLIC)
+    PHP_FE_END
+};
+
+LINGER_MINIT_FUNCTION(request)
+{
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Request", request_methods);
+    request_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
+    return SUCCESS;
+}
