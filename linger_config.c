@@ -27,8 +27,18 @@
 
 zend_class_entry *config_ce;
 
-void linger_config_instance(zval **oconfig, zval *config) {
+#define CONFIG_PROPERTIES_INSTANCE  "_instance"
+#define CONFIG_PROPERTIES_CONFIG    "_config"
 
+zval *linger_config_instance(zval *oconfig, zval *config) {
+    zval *instance = zend_read_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), 1); 
+    if (Z_TYPE_P(instance) != IS_OBJECT ||
+            !instanceof_function(Z_OBJECT_P(instance), config_ce)) {
+        object_init_ex(oconfig, config_ce);
+        zend_update_property(config_ce, oconfig, ZEND_STRL(CONFIG_PROPERTIES_CONFIG), config);
+        zend_update_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), *oconfig);
+    }
+    return instance;
 }
 
 PHP_METHOD(linger_framework_config, __construct)
