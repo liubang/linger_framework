@@ -102,6 +102,8 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR) 
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getDispatcher, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
     PHP_FE_END
 };
@@ -112,5 +114,7 @@ LINGER_MINIT_FUNCTION(application)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Application", application_methods);
     application_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }
