@@ -19,6 +19,6 @@
 #ifndef LINGER_REQUEST_H_
 #define LINGER_REQUEST_H_
 
-zval *linger_request_instance(TSRMLS_DC);
+zval *linger_request_instance(zval *this TSRMLS_DC);
 
 #endif /* LINGER_REQUEST_H_ */

@@ -60,7 +60,7 @@ PHP_METHOD(linger_framework_application, __construct)
     oconfig = linger_config_instance(NULL, aconfig TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
    
-    orequest = linger_request_instance(TSRMLS_CC);
+    orequest = linger_request_instance(NULL TSRMLS_CC);
     odispatcher = linger_dispatcher_instance(orequest TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self TSRMLS_CC);
