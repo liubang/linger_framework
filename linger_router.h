@@ -19,6 +19,6 @@
 #ifndef LINGER_ROUTER_H_
 #define LINGER_ROUTER_H_
 
-
+zval *linger_router_instance(zval *this TSRMLS_DC);
 
 #endif /* LINGER_ROUTER_H_ */

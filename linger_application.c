@@ -63,9 +63,12 @@ PHP_METHOD(linger_framework_application, __construct)
    
     orequest = linger_request_instance(NULL, NULL TSRMLS_CC);
     odispatcher = linger_dispatcher_instance(NULL, orequest TSRMLS_CC);
+    orouter = linger_router_instance(NULL TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), orequest TSRMLS_CC);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), orouter TSRMLS_CC);
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self TSRMLS_CC);
+
     zval_ptr_dtor(&oconfig);
     zval_ptr_dtor(&orequest);
     zval_ptr_dtor(&odispatcher);
@@ -89,6 +92,12 @@ PHP_METHOD(linger_framework_application, getConfig)
 {
     zval *config = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1 TSRMLS_CC);
     RETURN_ZVAL(config, 1, 0);
+}
+
+PHP_METHOD(linger_framework_application, getRouter)
+{
+    zval *router = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), 1 TSRMLS_CC);
+    RETURN_ZVAL(router, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, getDispatcher)
@@ -128,6 +137,7 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, setConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getDispatcher, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getRequest, NULL, ZEND_ACC_PUBLIC)
