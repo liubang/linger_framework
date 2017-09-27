@@ -22,6 +22,7 @@
 #define PHP_LINGER_FRAMEWORK_H
 
 extern zend_module_entry linger_framework_module_entry;
+extern zend_class_entry *config_ce;
 #define phpext_linger_framework_ptr &linger_framework_module_entry
 
 #define PHP_LINGER_FRAMEWORK_VERSION "0.1" 

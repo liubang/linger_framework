@@ -9,7 +9,6 @@ var_dump($config->get('appname'));
 $request = $app->getRequest();
 var_dump($request);
 var_dump($request->getMethod());
-var_dump($request->getHeader());
 echo "COOKIE\n";
 var_dump($request->getCookie());
 echo "COOKIE\n";
