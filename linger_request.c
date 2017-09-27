@@ -107,6 +107,17 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC) {
     return instance;
 }
 
+char *linger_request_get_request_uri(zval *this TSRMLS_DC)
+{
+    if (this != NULL) {
+        zval *uri = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_URI), 1 TSRMLS_CC);
+        if (Z_TYPE_P(uri) == IS_STRING) {
+            return Z_STRVAL_P(uri);
+        }
+    }
+    return NULL;
+}
+
 PHP_METHOD(linger_framework_request, __construct)
 {
 }

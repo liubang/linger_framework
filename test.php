@@ -16,3 +16,6 @@ echo "COOKIE\n";
 $config = new linger\framework\Config(['bbb' => 'sadfsaf']);
 var_dump($config);
 var_dump($config->get('bbb'));
+
+$app->getRequest()->setUri('/dsfsa/ttt/dfs');
+$app->run();

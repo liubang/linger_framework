@@ -62,7 +62,7 @@ PHP_METHOD(linger_framework_application, __construct)
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
    
     orequest = linger_request_instance(NULL, NULL TSRMLS_CC);
-    odispatcher = linger_dispatcher_instance(orequest TSRMLS_CC);
+    odispatcher = linger_dispatcher_instance(NULL, orequest TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), orequest TSRMLS_CC);
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self TSRMLS_CC);
@@ -74,6 +74,8 @@ PHP_METHOD(linger_framework_application, __construct)
 PHP_METHOD(linger_framework_application, run)
 {
     //dispatcher dispatche. 
+    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1 TSRMLS_CC);
+    linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_application, app)
