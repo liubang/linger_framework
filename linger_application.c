@@ -63,6 +63,7 @@ PHP_METHOD(linger_framework_application, __construct)
     orequest = linger_request_instance(NULL TSRMLS_CC);
     odispatcher = linger_dispatcher_instance(orequest TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), orequest TSRMLS_CC);
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self TSRMLS_CC);
     zval_ptr_dtor(&oconfig);
     zval_ptr_dtor(&orequest);
@@ -93,6 +94,12 @@ PHP_METHOD(linger_framework_application, getDispatcher)
     RETURN_ZVAL(dispatcher, 1, 0);
 }
 
+PHP_METHOD(linger_framework_application, getRequest)
+{
+    zval *request = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), 1 TSRMLS_CC);
+    RETURN_ZVAL(request, 1, 0);
+}
+
 PHP_METHOD(linger_framework_application, __destruct)
 {
     zend_update_static_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP));
@@ -104,6 +111,7 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getDispatcher, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getRequest, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
     PHP_FE_END
 };
@@ -115,6 +123,7 @@ LINGER_MINIT_FUNCTION(application)
     application_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }

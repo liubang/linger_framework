@@ -27,7 +27,14 @@
 
 zend_class_entry *request_ce;
 
-#define REQUEST_PROPERTIES_INSTANCE  "_instance"
+#define REQUEST_PROPERTIES_INSTANCE     "_instance"
+#define REQUEST_PROPERTIES_METHOD       "_method"
+#define REQUEST_PROPERTIES_HEADERS      "_headers"
+#define REQUEST_PROPERTIES_COOKIES      "_cookies"
+#define REQUEST_PROPERTIES_QUERY        "_query"
+#define REQUEST_PROPERTIES_GET          "_get"
+#define REQUEST_PROPERTIES_POST         "_post"
+#define REQUEST_PROPERTIES_RAWCONTENT   "_rawcontent"
 
 zval *linger_request_instance(zval *this TSRMLS_DC) {
     zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
@@ -48,7 +55,7 @@ zval *linger_request_instance(zval *this TSRMLS_DC) {
 
 PHP_METHOD(linger_framework_request, __construct)
 {
-
+    (void)linger_request_instance(getThis() TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_request, getMethod)
@@ -121,5 +128,12 @@ LINGER_MINIT_FUNCTION(request)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Request", request_methods);
     request_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_METHOD), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_HEADERS), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_COOKIES), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_QUERY), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_GET), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_POST), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_RAWCONTENT), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }
