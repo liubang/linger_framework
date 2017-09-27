@@ -61,6 +61,14 @@ zval *linger_request_instance(zval *this TSRMLS_DC) {
     }
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_METHOD), method TSRMLS_CC);
     zval_ptr_dtor(&method);
+#if (PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4)
+    zend_bool jit_initialization = (PG(auto_globals_jit) && !PG(register_globals) && !PG(register_long_arrays));
+#else
+    zend_bool jit_initialization = PG(auto_globals_jit);
+#endif
+    if (jit_initialization) {
+        zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC);
+    }
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_POST), PG(http_globals)[TRACK_VARS_POST] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_QUERY), PG(http_globals)[TRACK_VARS_GET] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_FILES), PG(http_globals)[TRACK_VARS_FILES] TSRMLS_CC);
@@ -168,7 +176,23 @@ PHP_METHOD(linger_framework_request, getHeader)
 
 PHP_METHOD(linger_framework_request, getCookie)
 {
-
+    char *key;
+    uint key_len = 0;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
+        return;
+    }
+    zval *cookie = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_COOKIE), 1 TSRMLS_CC);
+    if (!key_len) {
+        RETURN_ZVAL(cookie, 1, 0);
+    } else {
+        HashTable *ht = Z_ARRVAL_P(cookie);
+        zval **ret;
+        if (zend_hash_find(ht, key, key_len + 1, (void **)&ret) == FAILURE) {
+            RETURN_NULL();
+        } else {
+            RETURN_ZVAL(*ret, 1, 0);
+        }
+    }
 }
 
 PHP_METHOD(linger_framework_request, rawcontent)
