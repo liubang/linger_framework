@@ -112,7 +112,7 @@ PHP_METHOD(linger_framework_application, setConfig)
         zend_update_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), config TSRMLS_CC);
         RETURN_ZVAL(getThis(), 1, 0);
     } else {
-        zend_throw_exception(NULL, "config must be a instance of linger_framework_Config");
+        zend_throw_exception(NULL, "config must be a instance of linger_framework_Config", 0 TSRMLS_CC);
     }
 }
 
