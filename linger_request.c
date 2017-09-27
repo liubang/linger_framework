@@ -31,7 +31,6 @@ zend_class_entry *request_ce;
 #define REQUEST_PROPERTIES_HEADER       "_header"
 #define REQUEST_PROPERTIES_COOKIE       "_cookie"
 #define REQUEST_PROPERTIES_QUERY        "_query"
-#define REQUEST_PROPERTIES_GET          "_get"
 #define REQUEST_PROPERTIES_POST         "_post"
 #define REQUEST_PROPERTIES_FILES        "_files"
 #define REQUEST_PROPERTIES_RAWCONTENT   "_rawcontent"
@@ -62,7 +61,7 @@ zval *linger_request_instance(zval *this TSRMLS_DC) {
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_METHOD), method TSRMLS_CC);
     zval_ptr_dtor(&method);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_POST), PG(http_globals)[TRACK_VARS_POST] TSRMLS_CC);
-    zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_GET), PG(http_globals)[TRACK_VARS_GET] TSRMLS_CC);
+    zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_QUERY), PG(http_globals)[TRACK_VARS_GET] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_FILES), PG(http_globals)[TRACK_VARS_FILES] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_COOKIE), PG(http_globals)[TRACK_VARS_COOKIE] TSRMLS_CC);
     return instance;
@@ -75,12 +74,31 @@ PHP_METHOD(linger_framework_request, __construct)
 
 PHP_METHOD(linger_framework_request, getMethod)
 {
-
+    zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
+    RETURN_ZVAL(method, 1, 0);
 }
 
 PHP_METHOD(linger_framework_request, getQuery)
 {
+    char *key;
+    uint key_len = 0;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
+        return;
+    }
 
+    zval *query = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_QUERY), 1 TSRMLS_CC);
+
+    if (!key_len) {
+        RETURN_ZVAL(query, 1, 0);
+    } else {
+        HashTable *ht = Z_ARRVAL_P(query);
+        zval **ret;
+        if (zend_hash_find(ht, key, key_len + 1, (void **)&ret) == FAILURE) {
+            RETURN_NULL();
+        } else {
+            RETURN_ZVAL(*ret, 1, 0);
+        }
+    }
 }
 
 PHP_METHOD(linger_framework_request, getParam)
@@ -125,6 +143,7 @@ PHP_METHOD(linger_framework_request, isAjax)
 
 zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_request, getMethod, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getQuery, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getParam, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getPost, NULL, ZEND_ACC_PUBLIC)
@@ -147,7 +166,6 @@ LINGER_MINIT_FUNCTION(request)
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_HEADER), ZEND_ACC_PROTECTED);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_COOKIE), ZEND_ACC_PROTECTED);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_QUERY), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_GET), ZEND_ACC_PROTECTED);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_POST), ZEND_ACC_PROTECTED);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_FILES), ZEND_ACC_PROTECTED);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_RAWCONTENT), ZEND_ACC_PROTECTED);

@@ -6,7 +6,9 @@ $config = $app->getConfig();
 var_dump($config);
 var_dump($app->getDispatcher());
 var_dump($config->get('appname'));
-var_dump($app->getRequest());
+$request = $app->getRequest();
+var_dump($request);
+var_dump($request->getMethod());
 
 
 $config = new linger\framework\Config(['bbb' => 'sadfsaf']);
