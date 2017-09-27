@@ -99,13 +99,13 @@ void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
         }
 end:
         if (Z_TYPE_P(module) == IS_NULL) {
-            ZVAL_STRING(module, "index", 0);
+            ZVAL_STRING(module, "index", 1);
         }
         if (Z_TYPE_P(controller) == IS_NULL) {
-            ZVAL_STRING(controller, "index", 0);
+            ZVAL_STRING(controller, "index", 1);
         }
         if (Z_TYPE_P(action) == IS_NULL) {
-            ZVAL_STRING(action, "index", 0);
+            ZVAL_STRING(action, "index", 1);
         }
         zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), module TSRMLS_CC);
         zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), controller TSRMLS_CC);

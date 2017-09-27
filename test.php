@@ -17,5 +17,6 @@ $config = new linger\framework\Config(['bbb' => 'sadfsaf']);
 var_dump($config);
 var_dump($config->get('bbb'));
 
-$app->getRequest()->setUri('/dsfsa/ttt/dfs');
+$app->getRequest()->setUri('/dsfsa/ttt');
 $app->run();
+var_dump($app->getDispatcher());
