@@ -30,31 +30,31 @@ ZEND_DECLARE_MODULE_GLOBALS(linger_framework)
 static int le_linger_framework;
 
 PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("linger_framework.display_errors", "1", PHP_INI_ALL, OnUpdateBool, display_errors, zend_linger_framework_globals, linger_framework_globals)
-    STD_PHP_INI_ENTRY("linger_framework.throw_exception", "1", PHP_INI_ALL, OnUpdateBool, throw_exception, zend_linger_framework_globals, linger_framework_globals)
+STD_PHP_INI_ENTRY("linger_framework.display_errors", "1", PHP_INI_ALL, OnUpdateBool, display_errors, zend_linger_framework_globals, linger_framework_globals)
+STD_PHP_INI_ENTRY("linger_framework.throw_exception", "1", PHP_INI_ALL, OnUpdateBool, throw_exception, zend_linger_framework_globals, linger_framework_globals)
 PHP_INI_END()
 
 static void php_linger_framework_init_globals(zend_linger_framework_globals *linger_framework_globals)
 {
-	linger_framework_globals->display_errors = 1;
-	linger_framework_globals->throw_exception = 1;
+    linger_framework_globals->display_errors = 1;
+    linger_framework_globals->throw_exception = 1;
 }
 
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(linger_framework)
 {
-	REGISTER_INI_ENTRIES();
+    REGISTER_INI_ENTRIES();
 
-	LINGER_STARTUP(application);
-	LINGER_STARTUP(config);
-	LINGER_STARTUP(router);
-	LINGER_STARTUP(request);
-	LINGER_STARTUP(dispatcher);
-	//LINGER_STARTUP(response);
-	//LINGER_STARTUP(exception);
+    LINGER_STARTUP(application);
+    LINGER_STARTUP(config);
+    LINGER_STARTUP(router);
+    LINGER_STARTUP(request);
+    LINGER_STARTUP(dispatcher);
+    //LINGER_STARTUP(response);
+    //LINGER_STARTUP(exception);
 
-	return SUCCESS;
+    return SUCCESS;
 }
 /* }}} */
 
@@ -62,8 +62,8 @@ PHP_MINIT_FUNCTION(linger_framework)
  */
 PHP_MSHUTDOWN_FUNCTION(linger_framework)
 {
-	UNREGISTER_INI_ENTRIES();
-	return SUCCESS;
+    UNREGISTER_INI_ENTRIES();
+    return SUCCESS;
 }
 /* }}} */
 
@@ -71,7 +71,7 @@ PHP_MSHUTDOWN_FUNCTION(linger_framework)
  */
 PHP_RINIT_FUNCTION(linger_framework)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 /* }}} */
 
@@ -79,7 +79,7 @@ PHP_RINIT_FUNCTION(linger_framework)
  */
 PHP_RSHUTDOWN_FUNCTION(linger_framework)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 /* }}} */
 
@@ -87,26 +87,26 @@ PHP_RSHUTDOWN_FUNCTION(linger_framework)
  */
 PHP_MINFO_FUNCTION(linger_framework)
 {
-	php_info_print_table_start();
-	php_info_print_table_header(2, "linger_framework support", "enabled");
-	php_info_print_table_end();
-	DISPLAY_INI_ENTRIES();
+    php_info_print_table_start();
+    php_info_print_table_header(2, "linger_framework support", "enabled");
+    php_info_print_table_end();
+    DISPLAY_INI_ENTRIES();
 }
 /* }}} */
 
 /* {{{ linger_framework_module_entry
  */
 zend_module_entry linger_framework_module_entry = {
-	STANDARD_MODULE_HEADER,
-	"linger_framework",
-	NULL,
-	PHP_MINIT(linger_framework),
-	PHP_MSHUTDOWN(linger_framework),
-	PHP_RINIT(linger_framework),
-	PHP_RSHUTDOWN(linger_framework),
-	PHP_MINFO(linger_framework),
-	PHP_LINGER_FRAMEWORK_VERSION,
-	STANDARD_MODULE_PROPERTIES
+    STANDARD_MODULE_HEADER,
+    "linger_framework",
+    NULL,
+    PHP_MINIT(linger_framework),
+    PHP_MSHUTDOWN(linger_framework),
+    PHP_RINIT(linger_framework),
+    PHP_RSHUTDOWN(linger_framework),
+    PHP_MINFO(linger_framework),
+    PHP_LINGER_FRAMEWORK_VERSION,
+    STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
 

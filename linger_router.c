@@ -30,7 +30,8 @@ zend_class_entry *router_ce;
 #define ROUTER_PROPERTIES_INSTANCE "_instance"
 #define ROUTER_PROPERTIES_RULS  "_ruls"
 
-zval *linger_router_instance(zval *this TSRMLS_DC) {
+zval *linger_router_instance(zval *this TSRMLS_DC)
+{
 
     return NULL;
 }

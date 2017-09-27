@@ -46,21 +46,21 @@ PHP_METHOD(linger_framework_application, __construct)
     zval *oresponse;
     zval *odispatcher;
     zval *app;
-    
+
     app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);
-    
+
     if (!ZVAL_IS_NULL(app)) {
-        zend_throw_exception(NULL, "Can not reinstance application", 0 TSRMLS_CC);        
+        zend_throw_exception(NULL, "Can not reinstance application", 0 TSRMLS_CC);
         RETURN_FALSE;
     }
-    
+
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &aconfig) == FAILURE) {
         return;
     }
     zval *self = getThis();
     oconfig = linger_config_instance(NULL, aconfig TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
-   
+
     orequest = linger_request_instance(NULL, NULL TSRMLS_CC);
     odispatcher = linger_dispatcher_instance(NULL, orequest TSRMLS_CC);
     orouter = linger_router_instance(NULL TSRMLS_CC);
@@ -76,7 +76,7 @@ PHP_METHOD(linger_framework_application, __construct)
 
 PHP_METHOD(linger_framework_application, run)
 {
-    //dispatcher dispatche. 
+    //dispatcher dispatche.
     zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1 TSRMLS_CC);
     linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
 }
@@ -84,7 +84,7 @@ PHP_METHOD(linger_framework_application, run)
 PHP_METHOD(linger_framework_application, app)
 {
     //static method to get app instance.
-    zval *app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);      
+    zval *app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);
     RETURN_ZVAL(app, 1, 0);
 }
 
@@ -133,7 +133,7 @@ PHP_METHOD(linger_framework_application, __destruct)
 }
 
 zend_function_entry application_methods[] = {
-    PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR) 
+    PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
