@@ -25,3 +25,19 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
+zend_class_entry *router_ce;
+
+#define ROUTER_PROPERTIES_RULS  "_ruls"
+
+zend_function_entry router_methods[] = {
+    PHP_FE_END
+};
+
+PHP_MINIT_FUNCTION(router)
+{
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(&ce, "Linger\\Framework\\Router", router_methods);
+    router_ce = zend_register_internal_class(ce TSRMLS_CC);
+    zend_declare_property_null(router_ce, ZEND_STRL(ROUTER_PROPERTIES_RULS), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
+    return SUCCESS;
+}
