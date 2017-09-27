@@ -32,7 +32,7 @@ zend_class_entry *request_ce;
 zval *linger_request_instance(TSRMLS_DC) {
     zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) != IS_OBJECT ||
-            !instanceof_function(Z_OBJECT_P(instance), request_ce)) {
+            !instanceof_function(Z_OBJCE_P(instance), request_ce)) {
         instance = NULL;
         MAKE_STD_ZVAL(instance);
         object_init_ex(instance, request_ce);

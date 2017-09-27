@@ -57,7 +57,7 @@ PHP_METHOD(linger_framework_application, __construct)
         return;
     }
     zval *self = getThis();
-    oconfig = linger_config_instance(aconfig TSRMLS_CC);
+    oconfig = linger_config_instance(NULL, aconfig TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
    
     orequest = linger_request_instance(TSRMLS_CC);

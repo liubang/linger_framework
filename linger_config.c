@@ -30,16 +30,21 @@ zend_class_entry *config_ce;
 #define CONFIG_PROPERTIES_INSTANCE  "_instance"
 #define CONFIG_PROPERTIES_CONFIG    "_config"
 
-zval *linger_config_instance(zval *config TSRMLS_DC) {
+zval *linger_config_instance(zval *this, zval *config TSRMLS_DC) {
     zval *instance = zend_read_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), 1 TSRMLS_CC); 
-    if (Z_TYPE_P(instance) != IS_OBJECT ||
-            !instanceof_function(Z_OBJECT_P(instance), config_ce)) {
+    if (Z_TYPE_P(instance) == IS_OBJECT &&
+            !instanceof_function(Z_OBJCE_P(instance), config_ce)) {
+        return instance;
+    }
+    if (this) {
+        instance = this;
+    } else {
         instance = NULL;
         MAKE_STD_ZVAL(instance);
         object_init_ex(instance, config_ce);
-        zend_update_property(config_ce, instance, ZEND_STRL(CONFIG_PROPERTIES_CONFIG), config TSRMLS_CC);
-        zend_update_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), instance TSRMLS_CC);
     }
+    zend_update_property(config_ce, instance, ZEND_STRL(CONFIG_PROPERTIES_CONFIG), config TSRMLS_CC);
+    zend_update_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), instance TSRMLS_CC);
     return instance;
 }
 
@@ -53,7 +58,7 @@ PHP_METHOD(linger_framework_config, __construct)
         zval_ptr_dtor(&prop);
         return;
     }
-    (void)linger_config_instance(config TSRMLS_CC);
+    (void)linger_config_instance(getThis(), config TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_config, get)
@@ -61,7 +66,7 @@ PHP_METHOD(linger_framework_config, get)
     char *key;
     uint key_len = 0;
     zval **ppzval;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|z", &key, &key_len) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
         return;
     }
     if (!key_len) {
