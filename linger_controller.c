@@ -32,6 +32,7 @@ int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC) {
 
     if (!instanceof_function(ce, controller_ce)) {
         zend_throw_exception(NULL, "controller must be a instance of linger_framework_Controller");
+        return 0;
     }
     // call _init method
     if (zend_hash_exists(&(ce->function_table), ZEND_STRS("_init"))) {

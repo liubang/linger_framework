@@ -169,7 +169,9 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC) {
         zval *icontroller;
         MAKE_STD_ZVAL(icontroller);
         object_init_ex(icontroller, ce);
-        linger_controller_construct(ce, icontroller);
+        if (!linger_controller_construct(ce, icontroller)) {
+            return; 
+        }
         char *action_lower = zend_str_tolower_dup(Z_STRVAL_P(action), Z_STRLEN_P(action));
         char *func_name;
         int func_name_len;
@@ -178,9 +180,9 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC) {
         zval **fptr, *ret;
         if (zend_hash_find(&((ce)->function_table), func_name, func_name_len + 1, (void **)&fptr) == SUCCESS) {
             zend_call_method(&icontroller, ce, NULL, func_name, func_name_len, &ret, 0, NULL, NULL TSRMLS_CC);
+            zval_ptr_dtor(&ret);
         }
         linger_efree(func_name);
-        zval_ptr_dtor(&ret);
     } else {
         zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
         return;
