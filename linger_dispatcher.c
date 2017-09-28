@@ -79,8 +79,11 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
         zval *controller;
         zval *action;
         MAKE_STD_ZVAL(module);
+        ZVAL_NULL(module);
         MAKE_STD_ZVAL(controller);
+        ZVAL_NULL(controller);
         MAKE_STD_ZVAL(action);
+        ZVAL_NULL(action);
         mvc = strtok(copy, "/"); 
         if (mvc != NULL) {
             ZVAL_STRING(module, mvc, 1);
