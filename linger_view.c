@@ -29,8 +29,32 @@ zend_class_entry *view_ce;
 
 #define VIEW_PROPERTIES_VARS "_vars"
 
-zend_function_entry view_methods[] = {
+zval *linger_view_instance(TSRMLS_DC)
+{
+    zval *instance = NULL;       
+    MAKE_STD_ZVAL(instance);
+    object_init_ex(instance, view_ce);
+    zval *vars = NULL;
+    MAKE_STD_ZVAL(vars);
+    array_init(vars);
+    zend_update_property(view_ce, instance, ZEND_STRL(VIEW_PROPERTIES_VARS), vars TSRMLS_CC);
+    zval_ptr_dtor(&vars);
+    return instance;
+}
+
+void linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
+{
+    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
     
+}
+
+PHP_METHOD(linger_framework_view, __construct)
+{
+
+}
+
+zend_function_entry view_methods[] = {
+    PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)    
     PHP_FE_END
 };
 

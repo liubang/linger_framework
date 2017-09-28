@@ -19,6 +19,6 @@
 #ifndef LINGER_VIEW_H_
 #define LINGER_VIEW_H_
 
-
+zval *linger_view_instance(TSRMLS_DC);
 
 #endif /* LINGER_VIEW_H_ */
