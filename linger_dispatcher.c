@@ -183,6 +183,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         module = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), 1 TSRMLS_CC);
         controller = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), 1 TSRMLS_CC);
         action = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
+        zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
         if (Z_TYPE_P(module) != IS_STRING || Z_TYPE_P(controller) != IS_STRING || Z_TYPE_P(action) != IS_STRING) {
             zend_throw_exception(NULL, "illegal access", 0 TSRMLS_CC);
             return;
@@ -195,7 +196,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         zval *icontroller;
         MAKE_STD_ZVAL(icontroller);
         object_init_ex(icontroller, ce);
-        if (!linger_controller_construct(ce, icontroller)) {
+        if (!linger_controller_construct(ce, icontroller, request TSRMLS_CC)) {
             return;
         }
         char *action_lower = zend_str_tolower_dup(Z_STRVAL_P(action), Z_STRLEN_P(action));
