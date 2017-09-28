@@ -33,7 +33,7 @@ zend_class_entry *router_ce;
 zval *linger_router_instance(zval *this TSRMLS_DC)
 {
     zval *instance = zend_read_static_property(router_ce, ZEND_STRL(ROUTER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
-    if (Z_TYPE_P(instance) == IS_OBJECT && 
+    if (Z_TYPE_P(instance) == IS_OBJECT &&
             instanceof_function(Z_OBJCE_P(instance), router_ce)) {
         return instance;
     }

@@ -28,12 +28,16 @@
 #include "linger_controller.h"
 zend_class_entry *controller_ce;
 
-int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC) {
+#define CONTROLLER_PROPERTIES_REQUEST   "_request"
+#define CONTROLLER_PROPERTIES_RESPONSE  "_response"
 
+int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request TSRMLS_DC)
+{
     if (!instanceof_function(ce, controller_ce)) {
         zend_throw_exception(NULL, "controller must be a instance of linger_framework_Controller");
         return 0;
     }
+    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request TSRMLS_CC);
     // call _init method
     if (zend_hash_exists(&(ce->function_table), ZEND_STRS("_init"))) {
         zend_call_method_with_0_params(&this, ce, NULL, "_init", NULL);
@@ -51,9 +55,16 @@ PHP_METHOD(linger_framework_controller, _init)
 
 }
 
+PHP_METHOD(linger_framework_controller, getRequest)
+{
+    zval *request = zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
+    RETURN_ZVAL(request, 1, 0);
+}
+
 zend_function_entry controller_methods[] = {
     PHP_ME(linger_framework_controller, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_controller, _init, NULL, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, getRequest, NULL, ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
 
@@ -62,6 +73,9 @@ LINGER_MINIT_FUNCTION(controller)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Controller", controller_methods);
     controller_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    controller_ce->ce_flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
+    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }
 

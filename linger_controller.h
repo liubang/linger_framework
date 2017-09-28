@@ -19,6 +19,6 @@
 #ifndef LINGER_EXCEPTION_H_
 #define LINGER_EXCEPTION_H_
 
-int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC);
+int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request TSRMLS_DC);
 
 #endif /* LINGER_EXCEPTION_H_ */

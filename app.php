@@ -8,5 +8,5 @@ $app = new linger\framework\Application([
 
 var_dump($app);
 //$app->getRequest()->setUri('/index/index/index');
-$app->getRequest()->setUri('/');
+$app->getRequest()->setUri('/index/index/index/aaa/bbb');
 $app->run();
