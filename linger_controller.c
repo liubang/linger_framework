@@ -38,6 +38,7 @@ int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC) {
     if (zend_hash_exists(&(ce->function_table), ZEND_STRS("_init"))) {
         zend_call_method_with_0_params(&this, ce, NULL, "_init", NULL);
     }
+    return 1;
 }
 
 PHP_METHOD(linger_framework_controller, __construct)
