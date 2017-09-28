@@ -60,7 +60,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC) {
     return instance;
 }
 
-void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
+static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
     if (this == NULL) {
         zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
         return;
@@ -119,10 +119,56 @@ end:
     }
 }
 
+//TODO
+static int linger_dispatcher_auto_load() {
+    return 1;
+}
+
+#define LINGER_FRAMEWORK_MODULE_DIR_NAME        "module"
+#define LINGER_FRAMEWORK_CONTROLLER_DIR_NAME    "controller"
+#define LINGER_FRAMEWORK_VIEW_DIR_NAME          "view"
+
+static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *module, char *controller TSRMLS_DC) {
+    char *directory = NULL;
+    int directory_len = 0;
+    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, "/", LINGER_FRAMEWORK_MODULE_DIR_NAME, "/", module, "/", LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
+    if (directory_len) {
+        char *class = NULL;
+        char *class_lowercase = NULL;
+        int class_len = 0;
+        zend_class_entry **ce = NULL;
+        class_len = spprintf(&class, 0, "%s%s", controller, "Controller");
+        class_lowercase = zend_str_tolower_dup(class, class_len);
+        if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
+            //TODO autoload 
+        }
+        linger_efree(class);
+        linger_efree(class_lowercase);
+        linger_efree(directory);
+        return *ce;
+    }
+    return NULL;
+}
+
 void linger_dispatcher_dispatch(zval *this TSRMLS_DC) {
     if (this != NULL) {
         linger_dispatcher_prepare(this TSRMLS_CC);
+        zval *module, *controller, *action;
+        module = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), 1 TSRMLS_CC);
+        controller = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), 1 TSRMLS_CC);
+        action = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
+        if (Z_TYPE_P(module) != IS_STRING || Z_TYPE_P(controller) != IS_STRING || Z_TYPE_P(action) != IS_STRING) {
+            zend_throw_exception(NULL, "illegal access", 0 TSRMLS_CC);
+        }
 
+        zend_class_ce *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
+        if (!ce) {
+            return;
+        }
+        zval *icontroller;
+        MAKE_STD_ZVAL(icontroller);
+        object_init_ex(icontroller, ce);
+        linger_controller_construct(ce, icontroller);
     } else {
         zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
     }
