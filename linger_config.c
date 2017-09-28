@@ -30,8 +30,9 @@ zend_class_entry *config_ce;
 #define CONFIG_PROPERTIES_INSTANCE  "_instance"
 #define CONFIG_PROPERTIES_CONFIG    "_config"
 
-zval *linger_config_instance(zval *this, zval *config TSRMLS_DC) {
-    zval *instance = zend_read_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), 1 TSRMLS_CC); 
+zval *linger_config_instance(zval *this, zval *config TSRMLS_DC)
+{
+    zval *instance = zend_read_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
             !instanceof_function(Z_OBJCE_P(instance), config_ce)) {
         return instance;

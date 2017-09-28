@@ -26,7 +26,7 @@ extern zend_class_entry *config_ce;
 extern zend_class_entry *request_ce;
 #define phpext_linger_framework_ptr &linger_framework_module_entry
 
-#define PHP_LINGER_FRAMEWORK_VERSION "0.1" 
+#define PHP_LINGER_FRAMEWORK_VERSION "0.1"
 
 #ifdef PHP_WIN32
 #	define PHP_LINGER_FRAMEWORK_API __declspec(dllexport)
@@ -41,8 +41,8 @@ extern zend_class_entry *request_ce;
 #endif
 
 ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
-	zend_bool display_errors;
-	zend_bool throw_exception;
+zend_bool display_errors;
+zend_bool throw_exception;
 ZEND_END_MODULE_GLOBALS(linger_framework)
 
 #ifdef ZTS
@@ -62,6 +62,7 @@ ZEND_END_MODULE_GLOBALS(linger_framework)
 LINGER_MINIT_FUNCTION(application);
 LINGER_MINIT_FUNCTION(config);
 LINGER_MINIT_FUNCTION(router);
+LINGER_MINIT_FUNCTION(controller);
 LINGER_MINIT_FUNCTION(request);
 LINGER_MINIT_FUNCTION(response);
 LINGER_MINIT_FUNCTION(exception);

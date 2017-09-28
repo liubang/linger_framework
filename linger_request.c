@@ -36,7 +36,8 @@ zend_class_entry *request_ce;
 #define REQUEST_PROPERTIES_POST         "_post"
 #define REQUEST_PROPERTIES_FILES        "_files"
 
-zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC) {
+zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
+{
     zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
             instanceof_function(Z_OBJCE_P(instance), request_ce)) {
@@ -77,7 +78,7 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC) {
         zval *server = PG(http_globals)[TRACK_VARS_SERVER];
         HashTable *ht = Z_ARRVAL_P(server);
         zval **ret;
-        if (zend_hash_find(ht, "REQUEST_URI", sizeof("REQUEST_URI"), (void **)&ret) == SUCCESS) {        
+        if (zend_hash_find(ht, "REQUEST_URI", sizeof("REQUEST_URI"), (void **)&ret) == SUCCESS) {
             if (strstr(Z_STRVAL_P(*ret), "http") == Z_STRVAL_P(*ret)) {
                 php_url *url_info = php_url_parse(Z_STRVAL_P(*ret));
                 if (url_info && url_info->path) {
@@ -220,7 +221,7 @@ PHP_METHOD(linger_framework_request, isGet)
     zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
     if (Z_TYPE_P(method) == IS_STRING) {
         if (!strncasecmp(Z_STRVAL_P(method), "GET", 3)) {
-            RETURN_TRUE; 
+            RETURN_TRUE;
         }
     }
     RETURN_FALSE;
@@ -231,7 +232,7 @@ PHP_METHOD(linger_framework_request, isPost)
     zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
     if (Z_TYPE_P(method) == IS_STRING) {
         if (!strncasecmp(Z_STRVAL_P(method), "POST", 4)) {
-            RETURN_TRUE; 
+            RETURN_TRUE;
         }
     }
     RETURN_FALSE;
@@ -269,6 +270,7 @@ PHP_METHOD(linger_framework_request, setUri)
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
     } else {
         zend_throw_excpetion(NULL, "uri must be a string.", 0 TSRMLS_CC);
+        return;
     }
     RETURN_ZVAL(getThis(), 1, 0);
 }

@@ -55,10 +55,27 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC) {
             zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request TSRMLS_CC);
         } else {
             zend_throw_exception(NULL, "request must be a instance of linger_framework_Request", 0 TSRMLS_CC);
+            return;
         }
     }
     return instance;
 }
+
+#define MAKE_STD_ZVAL_NULL(z)  \
+    do {                       \
+        MAKE_STD_ZVAL(z);      \     
+        ZVAL_NULL(z);          \
+    } while(0)
+
+#define STRTOK(s, d, v)             \
+    do {                            \
+        mvc = strtok(s, d);         \
+        if (mvc) {                  \
+            ZVAL_STRING(v, mvc, 1); \
+        } else {                    \
+            goto end;               \
+        }                           \
+    } while(0) 
 
 static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
     if (this == NULL) {
@@ -70,33 +87,22 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
         char *uri = linger_request_get_request_uri(request);
         if (uri == NULL) {
             zend_throw_exception(NULL, "illegal access!", 0 TSRMLS_CC); 
+            return;
         }
         char *copy = estrdup(uri);
         char *mvc;
         zval *module;
         zval *controller;
         zval *action;
-        MAKE_STD_ZVAL(module);
-        MAKE_STD_ZVAL(controller);
-        MAKE_STD_ZVAL(action);
-        mvc = strtok(copy, "/"); 
-        if (mvc != NULL) {
-            ZVAL_STRING(module, mvc, 1);
-        } else {
-            goto end;
-        }
-        mvc = strtok(NULL, "/");
-        if (mvc != NULL) {
-            ZVAL_STRING(controller, mvc, 1);
-        } else {
-            goto end;
-        }
-        mvc = strtok(NULL, "/");
-        if (mvc != NULL) {
-            ZVAL_STRING(action, mvc, 1);
-        } else {
-            goto end;
-        }
+
+        MAKE_STD_ZVAL_NULL(module);
+        MAKE_STD_ZVAL_NULL(controller);
+        MAKE_STD_ZVAL_NULL(action);
+
+        STRTOK(copy, "/", module);
+        STRTOK(NULL, "/", controller);
+        STRTOK(NULL, "/", action);
+
 end:
         if (Z_TYPE_P(module) == IS_NULL) {
             ZVAL_STRING(module, "index", 1);
@@ -116,6 +122,7 @@ end:
         linger_efree(copy);
     } else {
         zend_throw_exception(NULL, "illegal arrtribute", 0 TSRMLS_CC);
+        return;
     }
 }
 
@@ -131,7 +138,7 @@ static int linger_dispatcher_auto_load() {
 static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *module, char *controller TSRMLS_DC) {
     char *directory = NULL;
     int directory_len = 0;
-    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, "/", LINGER_FRAMEWORK_MODULE_DIR_NAME, "/", module, "/", LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
+    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, '/', LINGER_FRAMEWORK_MODULE_DIR_NAME, '/', module, '/', LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
     if (directory_len) {
         char *class = NULL;
         char *class_lowercase = NULL;
@@ -141,6 +148,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
         class_lowercase = zend_str_tolower_dup(class, class_len);
         if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
             //TODO autoload 
+            return;
         }
         linger_efree(class);
         linger_efree(class_lowercase);
@@ -154,23 +162,38 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC) {
     if (this != NULL) {
         linger_dispatcher_prepare(this TSRMLS_CC);
         zval *module, *controller, *action;
-        module = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), 1 TSRMLS_CC);
-        controller = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), 1 TSRMLS_CC);
-        action = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
+        module = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), 1 TSRMLS_CC);
+        controller = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), 1 TSRMLS_CC);
+        action = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
         if (Z_TYPE_P(module) != IS_STRING || Z_TYPE_P(controller) != IS_STRING || Z_TYPE_P(action) != IS_STRING) {
             zend_throw_exception(NULL, "illegal access", 0 TSRMLS_CC);
+            return;
         }
 
-        zend_class_ce *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
+        zend_class_entry *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
         if (!ce) {
             return;
         }
         zval *icontroller;
         MAKE_STD_ZVAL(icontroller);
         object_init_ex(icontroller, ce);
-        linger_controller_construct(ce, icontroller);
+        if (!linger_controller_construct(ce, icontroller)) {
+            return; 
+        }
+        char *action_lower = zend_str_tolower_dup(Z_STRVAL_P(action), Z_STRLEN_P(action));
+        char *func_name;
+        int func_name_len;
+        func_name_len = spprintf(&func_name, 0, "%s%s", action_lower, "action");
+        linger_efree(action_lower);
+        zval **fptr, *ret;
+        if (zend_hash_find(&((ce)->function_table), func_name, func_name_len + 1, (void **)&fptr) == SUCCESS) {
+            zend_call_method(&icontroller, ce, NULL, func_name, func_name_len, &ret, 0, NULL, NULL TSRMLS_CC);
+            zval_ptr_dtor(&ret);
+        }
+        linger_efree(func_name);
     } else {
         zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
+        return;
     }
 }
 

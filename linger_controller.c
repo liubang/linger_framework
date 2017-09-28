@@ -23,20 +23,22 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "Zend/zend_interfaces.h"
 #include "php_linger_framework.h"
 #include "linger_controller.h"
-
 zend_class_entry *controller_ce;
 
 int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC) {
 
     if (!instanceof_function(ce, controller_ce)) {
         zend_throw_exception(NULL, "controller must be a instance of linger_framework_Controller");
+        return 0;
     }
     // call _init method
     if (zend_hash_exists(&(ce->function_table), ZEND_STRS("_init"))) {
         zend_call_method_with_0_params(&this, ce, NULL, "_init", NULL);
     }
+    return 1;
 }
 
 PHP_METHOD(linger_framework_controller, __construct)
@@ -57,8 +59,9 @@ zend_function_entry controller_methods[] = {
 
 LINGER_MINIT_FUNCTION(controller)
 {
-    zend_class_ce ce;
-    INIT_CLASS_ENTRY(&ce, "Linger\\Framework\\Controller", controller_methods);
-    controller_ce = zend_register_class_entry(ce TSRMLS_CC);
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Controller", controller_methods);
+    controller_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    return SUCCESS;
 }
 
