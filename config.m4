@@ -52,6 +52,7 @@ if test "$PHP_LINGER_FRAMEWORK" != "no"; then
     linger_controller.c     \
     linger_request.c        \
     linger_response.c       \
+    linger_view.c           \
     linger_exception.c, 
     $ext_shared)
 fi

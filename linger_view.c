@@ -25,3 +25,21 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
+zend_class_entry *view_ce;
+
+#define VIEW_PROPERTIES_VARS "_vars"
+
+zend_function_entry view_methods[] = {
+    
+    PHP_FE_END
+};
+
+LINGER_MINIT_FUNCTION(view)
+{
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(ce, "Linger\\Framework\\View", view_methods);
+    view_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED);
+    
+    return SUCCESS;
+}
