@@ -74,6 +74,12 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_QUERY), PG(http_globals)[TRACK_VARS_GET] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_FILES), PG(http_globals)[TRACK_VARS_FILES] TSRMLS_CC);
     zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_COOKIE), PG(http_globals)[TRACK_VARS_COOKIE] TSRMLS_CC);
+    zval *param;
+    MAKE_STD_ZVAL(param);
+    array_init(param);
+    zend_update_property(request_ce, instance, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+    zval_ptr_dtor(&param);
+
     if (uri == NULL) {
         zval *server = PG(http_globals)[TRACK_VARS_SERVER];
         HashTable *ht = Z_ARRVAL_P(server);
@@ -117,6 +123,15 @@ char *linger_request_get_request_uri(zval *this TSRMLS_DC)
         }
     }
     return NULL;
+}
+
+void *linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC)
+{
+    if (this != NULL) {
+        zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
+        add_assoc_string(param, key, val, 1);    
+        zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+    }
 }
 
 PHP_METHOD(linger_framework_request, __construct)

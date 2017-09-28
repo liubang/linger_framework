@@ -105,6 +105,19 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
         STRTOK(NULL, "/", controller);
         STRTOK(NULL, "/", action);
 
+        //param
+        if (copy != NULL) {
+            char *key = NULL;
+            char *val = NULL;
+            key = strtok(NULL, "/");
+            val = strtok(NULL, "/");
+            while(key && val) {
+                linger_request_set_param(request, key, val TSRMLS_CC);
+                key = strtok(NULL, "/");
+                val = strtok(NULL, "/");
+            }
+        }
+
 end:
         if (Z_TYPE_P(module) == IS_NULL) {
             ZVAL_STRING(module, "index", 1);
