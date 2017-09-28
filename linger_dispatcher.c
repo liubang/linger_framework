@@ -61,6 +61,22 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC) {
     return instance;
 }
 
+#define MAKE_STD_ZVAL_NULL(z)  \
+    do {                       \
+        MAKE_STD_ZVAL(z);      \     
+        ZVAL_NULL(z);          \
+    } while(0)
+
+#define STRTOK(s, d, v)             \
+    do {                            \
+        mvc = strtok(s, d);         \
+        if (mvc) {                  \
+            ZVAL_STRING(v, mvc, 1); \
+        } else {                    \
+            goto end;               \
+        }                           \
+    } while(0) 
+
 static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
     if (this == NULL) {
         zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
@@ -78,30 +94,15 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
         zval *module;
         zval *controller;
         zval *action;
-        MAKE_STD_ZVAL(module);
-        ZVAL_NULL(module);
-        MAKE_STD_ZVAL(controller);
-        ZVAL_NULL(controller);
-        MAKE_STD_ZVAL(action);
-        ZVAL_NULL(action);
-        mvc = strtok(copy, "/"); 
-        if (mvc != NULL) {
-            ZVAL_STRING(module, mvc, 1);
-        } else {
-            goto end;
-        }
-        mvc = strtok(NULL, "/");
-        if (mvc != NULL) {
-            ZVAL_STRING(controller, mvc, 1);
-        } else {
-            goto end;
-        }
-        mvc = strtok(NULL, "/");
-        if (mvc != NULL) {
-            ZVAL_STRING(action, mvc, 1);
-        } else {
-            goto end;
-        }
+
+        MAKE_STD_ZVAL_NULL(module);
+        MAKE_STD_ZVAL_NULL(controller);
+        MAKE_STD_ZVAL_NULL(action);
+
+        STRTOK(copy, "/", module);
+        STRTOK(NULL, "/", controller);
+        STRTOK(NULL, "/", action);
+
 end:
         if (Z_TYPE_P(module) == IS_NULL) {
             ZVAL_STRING(module, "index", 1);
