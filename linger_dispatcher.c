@@ -208,6 +208,9 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         if (zend_hash_find(&((ce)->function_table), func_name, func_name_len + 1, (void **)&fptr) == SUCCESS) {
             zend_call_method(&icontroller, ce, NULL, func_name, func_name_len, &ret, 0, NULL, NULL TSRMLS_CC);
             zval_ptr_dtor(&ret);
+        } else {
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the method %sAction of controller %s is not exists", Z_STRVAL_P(action), Z_STRVAL_P(controller));
+            return;
         }
         linger_efree(func_name);
     } else {
