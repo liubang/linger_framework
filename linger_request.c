@@ -84,7 +84,7 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
         zval *server = PG(http_globals)[TRACK_VARS_SERVER];
         HashTable *ht = Z_ARRVAL_P(server);
         zval **ret;
-        if (zend_hash_find(ht, "REQUEST_URI", sizeof("REQUEST_URI"), (void **)&ret) == SUCCESS) {
+        if (zend_hash_find(ht, ZEND_STRS("REQUEST_URI"), (void **)&ret) == SUCCESS) {
             if (strstr(Z_STRVAL_P(*ret), "http") == Z_STRVAL_P(*ret)) {
                 php_url *url_info = php_url_parse(Z_STRVAL_P(*ret));
                 if (url_info && url_info->path) {
@@ -266,7 +266,7 @@ PHP_METHOD(linger_framework_request, isAjax)
     zval *server = PG(http_globals)[TRACK_VARS_SERVER];
     HashTable *arr = Z_ARRVAL_P(server);
     zval **ret;
-    if (zend_hash_find(arr, "HTTP_X_REQUEST_WITH", sizeof("HTTP_X_REQUEST_WITH"), (void **)&ret) == SUCCESS) {
+    if (zend_hash_find(arr, ZEND_STRS("HTTP_X_REQUEST_WITH"), (void **)&ret) == SUCCESS) {
         if (Z_TYPE_P(*ret) == IS_STRING) {
             RETURN_TRUE;
         }
