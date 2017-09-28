@@ -152,6 +152,7 @@ LINGER_MINIT_FUNCTION(application)
     application_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), ZEND_ACC_PROTECTED);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), ZEND_ACC_PROTECTED);
     return SUCCESS;

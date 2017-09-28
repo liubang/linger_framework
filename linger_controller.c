@@ -23,9 +23,9 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "Zend/zend_interfaces.h"
 #include "php_linger_framework.h"
 #include "linger_controller.h"
-
 zend_class_entry *controller_ce;
 
 int linger_controller_construct(zend_class_entry *ce, zval *this TSRMLS_DC) {
@@ -57,8 +57,9 @@ zend_function_entry controller_methods[] = {
 
 LINGER_MINIT_FUNCTION(controller)
 {
-    zend_class_ce ce;
-    INIT_CLASS_ENTRY(&ce, "Linger\\Framework\\Controller", controller_methods);
-    controller_ce = zend_register_class_entry(ce TSRMLS_CC);
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Controller", controller_methods);
+    controller_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    return SUCCESS;
 }
 
