@@ -55,6 +55,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC) {
             zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request TSRMLS_CC);
         } else {
             zend_throw_exception(NULL, "request must be a instance of linger_framework_Request", 0 TSRMLS_CC);
+            return;
         }
     }
     return instance;
@@ -70,6 +71,7 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC) {
         char *uri = linger_request_get_request_uri(request);
         if (uri == NULL) {
             zend_throw_exception(NULL, "illegal access!", 0 TSRMLS_CC); 
+            return;
         }
         char *copy = estrdup(uri);
         char *mvc;
@@ -116,6 +118,7 @@ end:
         linger_efree(copy);
     } else {
         zend_throw_exception(NULL, "illegal arrtribute", 0 TSRMLS_CC);
+        return;
     }
 }
 
@@ -160,6 +163,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC) {
         action = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
         if (Z_TYPE_P(module) != IS_STRING || Z_TYPE_P(controller) != IS_STRING || Z_TYPE_P(action) != IS_STRING) {
             zend_throw_exception(NULL, "illegal access", 0 TSRMLS_CC);
+            return;
         }
 
         zend_class_entry *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
