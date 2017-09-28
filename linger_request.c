@@ -129,7 +129,7 @@ void *linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC)
 {
     if (this != NULL) {
         zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
-        add_assoc_string(param, key, val, 1);    
+        add_assoc_string(param, key, val, 1);
         zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
     }
 }
