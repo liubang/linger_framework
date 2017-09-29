@@ -27,7 +27,8 @@
 
 zend_class_entry *view_ce;
 
-#define VIEW_PROPERTIES_VARS "_vars"
+#define VIEW_PROPERTIES_VARS   "_vars"
+#define VIEW_PROPERTIES_TPLDIR "_tplDir"
 
 zval *linger_view_instance(TSRMLS_DC)
 {
@@ -94,8 +95,74 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
     if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
         script = Z_STRVAL_P(tpl);
         len = Z_STRLEN_P(tpl);
-        //TODO loader
+        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
+            php_output_end(TSRMLS_C);
+
+            if (scope_var_table) {
+                zend_hash_destroy(EG(active_symbol_table));
+                FREE_HASHTABLE(EG(active_symbol_table));
+                EG(active_symbol_table) = scope_var_table;
+            }
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s: %s", script, strerror(errno));
+            return FAILURE;
+        }
+    } else {
+        zval *tpl_dir = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 0 TSRMLS_CC);
+        if (Z_TYPE_P(tpl_dir) != IS_STRING) {
+            if (LINGER_FRAMEWORK_G(view_directory)) {
+                len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+            } else {
+                php_output_end(TSRMLS_C);
+                if (scope_var_table) {
+                    zend_hash_destroy(EG(active_symbol_table));
+                    FREE_HASHTABLE(EG(active_symbol_table));
+                    EG(active_symbol_table) = scope_var_table;
+                }
+                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Could not determine the view script path, call %s::setScriptPath to specific it", view_ce->name);
+                return FAILURE;
+            }
+        } else {
+            len = spprintf(&script, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+        }
+        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == 0) {
+            php_output_end(TSRMLS_C);
+            if (scope_var_table) {
+                zend_hash_destroy(EG(active_symbol_table));
+                FREE_HASHTABLE(EG(active_symbol_table));
+                EG(active_symbol_table) = scope_var_table;
+            }
+            zend_throw_excpetion_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            linger_efree(script);
+            return FAILURE;
+        }
+        linger_efree(script);
     }
+
+    if (scope_var_table) {
+        zend_hash_destroy(EG(active_symbol_table));
+        FREE_HASHTABLE(EG(active_symbol_table));
+        EG(active_symbol_table) = scope_var_table;
+    }
+
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
+    CG(short_tags) = short_open_tag;
+    if (buffer->len) {
+        ZVAL_STRINGL(ret, buffer->buffer, buffer->len, 1);
+    }
+#else
+    if (php_output_get_contents(ret TSRMLS_CC) == FAILURE) {
+        php_output_end(TSRMLS_C);
+        zend_throw_exception(NULL, "unable to fetch ob content", 0 TSRMLS_CC);
+        return FAILURE;
+    }
+    if (php_output_discard(TSRMLS_C) != SUCCESS) {
+        return FAILURE;
+    }
+#endif
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
+
+#endif
+    return SUCCESS;
 }
 
 int linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
@@ -172,5 +239,6 @@ LINGER_MINIT_FUNCTION(view)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\View", view_methods);
     view_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }
