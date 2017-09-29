@@ -155,7 +155,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
 {
     char *directory = NULL;
     int directory_len = 0;
-    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, '/', LINGER_FRAMEWORK_MODULE_DIR_NAME, '/', module, '/', LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
+    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, DEFAULT_SLASH, LINGER_FRAMEWORK_MODULE_DIR_NAME, DEFAULT_SLASH, module, DEFAULT_SLASH, LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
     if (directory_len) {
         char *class = NULL;
         char *class_lowercase = NULL;
@@ -164,9 +164,30 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
         class_len = spprintf(&class, 0, "%s%s", controller, "Controller");
         class_lowercase = zend_str_tolower_dup(class, class_len);
         if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
-            //TODO autoload
-            return NULL;
+            char *controller_path = NULL;
+            int controller_path_len = 0;
+            controller_path_len = spprintf(&controller_path, 0, "%s%s%s", directory, controller, ".php");
+            if (linger_application_import(controller_path, controller_path_len + 1, 0 TSRMLS_CC) == FAILURE) {
+                linger_efree(controller_path);
+                linger_efree(class);
+                linger_efree(class_lowercase);
+                linger_efree(directory);
+                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening script %s", controller_path);
+                return NULL;
+            } else {
+                if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
+                    linger_efree(class);
+                    linger_efree(class_lowercase);
+                    linger_efree(directory);
+                    zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "could not find class %s", class);
+                    return NULL;
+                }
+            }
         }
+        linger_efree(LINGER_FRAMEWORK_G(view_directory));
+        char *view_directory = NULL;
+        (void)spprintf(&view_directory, 0, "%s%c%s%c%s%c%s", app_dir, DEFAULT_SLASH, LINGER_FRAMEWORK_MODULE_DIR_NAME, DEFAULT_SLASH, module, DEFAULT_SLASH, LINGER_FRAMEWORK_VIEW_DIR_NAME);
+        LINGER_FRAMEWORK_G(view_directory) = view_directory;
         linger_efree(class);
         linger_efree(class_lowercase);
         linger_efree(directory);
@@ -205,10 +226,10 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         int func_name_len;
         func_name_len = spprintf(&func_name, 0, "%s%s", action_lower, "action");
         linger_efree(action_lower);
-        zval **fptr, *ret;
+        zval **fptr, *ret = NULL;
         if (zend_hash_find(&((ce)->function_table), func_name, func_name_len + 1, (void **)&fptr) == SUCCESS) {
             zend_call_method(&icontroller, ce, NULL, func_name, func_name_len, &ret, 0, NULL, NULL TSRMLS_CC);
-            zval_ptr_dtor(&ret);
+            if (ret) zval_ptr_dtor(&ret);
         } else {
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the method %sAction of controller %s is not exists", Z_STRVAL_P(action), Z_STRVAL_P(controller));
             return;
