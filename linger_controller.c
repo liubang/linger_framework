@@ -37,7 +37,7 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request 
 {
     if (!instanceof_function(ce, controller_ce)) {
         zend_throw_exception(NULL, "controller must be a instance of linger_framework_Controller");
-        return 0;
+        return FAILURE;
     }
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request TSRMLS_CC);
     zval *view = linger_view_instance(TSRMLS_CC);
@@ -47,7 +47,7 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request 
     if (zend_hash_exists(&(ce->function_table), ZEND_STRS("_init"))) {
         zend_call_method_with_0_params(&this, ce, NULL, "_init", NULL);
     }
-    return 1;
+    return SUCCESS;
 }
 
 PHP_METHOD(linger_framework_controller, __construct)

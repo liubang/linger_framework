@@ -2,11 +2,10 @@
 
 error_reporting(E_ALL);
 
-
 try {
 
-    define(APP_PATH, realpath(__DIR__) . '/');
-	$app = new linger\framework\Application([
+    define('APP_PATH', realpath(__DIR__) . '/');
+    $app = new linger\framework\Application([
         'app_directory' => APP_PATH . 'app'
 	]);
 

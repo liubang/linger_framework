@@ -143,12 +143,6 @@ end:
     }
 }
 
-//TODO
-static int linger_dispatcher_auto_load()
-{
-    return 1;
-}
-
 #define LINGER_FRAMEWORK_MODULE_DIR_NAME        "module"
 #define LINGER_FRAMEWORK_CONTROLLER_DIR_NAME    "controller"
 #define LINGER_FRAMEWORK_VIEW_DIR_NAME          "view"
@@ -220,7 +214,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         zval *icontroller;
         MAKE_STD_ZVAL(icontroller);
         object_init_ex(icontroller, ce);
-        if (!linger_controller_construct(ce, icontroller, request TSRMLS_CC)) {
+        if (FAILURE == linger_controller_construct(ce, icontroller, request TSRMLS_CC)) {
             return;
         }
         char *action_lower = zend_str_tolower_dup(Z_STRVAL_P(action), Z_STRLEN_P(action));
