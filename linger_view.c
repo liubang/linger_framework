@@ -71,6 +71,15 @@ static int linger_view_extrace(zval *vars TSRMLS_DC)
     return SUCCESS;
 }
 
+#define RESTORE_ACTIVE_SYMBOL_TABLE() \
+    do {\
+        if (scope_var_table) { \
+            zend_hash_destroy(EG(active_symbol_table)); \
+            FREE_HASHTABLE(EG(active_symbol_table)); \
+            EG(active_symbol_table) = scope_var_table; \
+        } \
+    } while(0)
+
 int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
 {
     zval *vars;
@@ -97,12 +106,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         len = Z_STRLEN_P(tpl);
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
             php_output_end(TSRMLS_C);
-
-            if (scope_var_table) {
-                zend_hash_destroy(EG(active_symbol_table));
-                FREE_HASHTABLE(EG(active_symbol_table));
-                EG(active_symbol_table) = scope_var_table;
-            }
+            RESTORE_ACTIVE_SYMBOL_TABLE();
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s: %s", script, strerror(errno));
             return FAILURE;
         }
@@ -113,11 +117,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
                 len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
             } else {
                 php_output_end(TSRMLS_C);
-                if (scope_var_table) {
-                    zend_hash_destroy(EG(active_symbol_table));
-                    FREE_HASHTABLE(EG(active_symbol_table));
-                    EG(active_symbol_table) = scope_var_table;
-                }
+                RESTORE_ACTIVE_SYMBOL_TABLE();
                 zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Could not determine the view script path, call %s::setScriptPath to specific it", view_ce->name);
                 return FAILURE;
             }
@@ -126,11 +126,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         }
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == 0) {
             php_output_end(TSRMLS_C);
-            if (scope_var_table) {
-                zend_hash_destroy(EG(active_symbol_table));
-                FREE_HASHTABLE(EG(active_symbol_table));
-                EG(active_symbol_table) = scope_var_table;
-            }
+            RESTORE_ACTIVE_SYMBOL_TABLE();
             zend_throw_excpetion_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
             linger_efree(script);
             return FAILURE;
@@ -138,11 +134,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         linger_efree(script);
     }
 
-    if (scope_var_table) {
-        zend_hash_destroy(EG(active_symbol_table));
-        FREE_HASHTABLE(EG(active_symbol_table));
-        EG(active_symbol_table) = scope_var_table;
-    }
+    RESTORE_ACTIVE_SYMBOL_TABLE();
 
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
     CG(short_tags) = short_open_tag;
