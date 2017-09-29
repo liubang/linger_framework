@@ -32,6 +32,7 @@ static int le_linger_framework;
 PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("linger_framework.display_errors", "1", PHP_INI_ALL, OnUpdateBool, display_errors, zend_linger_framework_globals, linger_framework_globals)
 STD_PHP_INI_ENTRY("linger_framework.throw_exception", "1", PHP_INI_ALL, OnUpdateBool, throw_exception, zend_linger_framework_globals, linger_framework_globals)
+STD_PHP_INI_ENTRY("linger_framework.view_directory", "", PHP_INI_ALL, OnUpdateString, throw_exception, zend_linger_framework_globals, linger_framework_globals)
 PHP_INI_END()
 
 static void php_linger_framework_init_globals(zend_linger_framework_globals *linger_framework_globals)
