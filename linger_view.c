@@ -27,7 +27,8 @@
 
 zend_class_entry *view_ce;
 
-#define VIEW_PROPERTIES_VARS "_vars"
+#define VIEW_PROPERTIES_VARS   "_vars"
+#define VIEW_PROPERTIES_TPLDIR "_tplDir"
 
 zval *linger_view_instance(TSRMLS_DC)
 {
@@ -42,10 +43,139 @@ zval *linger_view_instance(TSRMLS_DC)
     return instance;
 }
 
-void linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
+static int linger_view_extrace(zval *vars TSRMLS_DC)
 {
-    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    zval **entry;
+    char *var_name;
+    uint var_name_len;
+    ulong num_key;
+    HashPosition pos;
 
+    if (vars && Z_TYPE_P(vars) == IS_ARRAY) {
+        for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(vars), &pos);
+                zend_hash_get_current_data_ex(Z_ARRVAL_P(vars), (void **)&entry, &pos) == SUCCESS;
+                zend_hash_move_forward_ex(Z_ARRVAL_P(vars), &pos)) {
+            if (zend_hash_get_current_key_ex(Z_ARRVAL_P(vars), &var_name, &var_name_len, &num_key, 0, &pos) != HASH_KEY_IS_STRING) {
+                continue;
+            }
+            if (var_name_len == sizeof("GLOBALS") && !strcmp(var_name, "GLOBALS")) {
+                continue;
+            }
+            if (var_name_len == sizeof("this") && !strcmp(var_name, "this") && EG(scope) && EG(scope)->name_length != 0) {
+                continue;
+            }
+            ZEND_SET_SYMBOL_WITH_LENGTH(EG(active_symbol_table), var_name, var_name_len, *entry, Z_REFCOUNT_P(*entry) + 1, PZVAL_IS_REF(*entry));
+        }
+    }
+
+    return SUCCESS;
+}
+
+#define RESTORE_ACTIVE_SYMBOL_TABLE() \
+    do {\
+        if (scope_var_table) { \
+            zend_hash_destroy(EG(active_symbol_table)); \
+            FREE_HASHTABLE(EG(active_symbol_table)); \
+            EG(active_symbol_table) = scope_var_table; \
+        } \
+    } while(0)
+
+int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
+{
+    zval *vars;
+    char *script;
+    uint len;
+    HashTable *scope_var_table = NULL;
+    if (Z_TYPE_P(tpl) != IS_STRING) {
+        return FAILURE;
+    }
+    ZVAL_NULL(ret);
+    vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    if (EG(active_symbol_table)) {
+        scope_var_table = EG(active_symbol_table);
+    }
+    ALLOC_HASHTABLE(EG(active_symbol_table));
+    zend_hash_init(EG(active_symbol_table), 0, NULL, ZVAL_PTR_DTOR, 0);
+    (void)linger_view_extrace(vars TSRMLS_CC);
+    
+    if (php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS TSRMLS_CC) == FAILURE) {
+        php_error_docref("ref.outcontrol" TSRMLS_CC, E_WARNING, "failed to create buffer");
+        return FAILURE;
+    }
+    if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
+        script = Z_STRVAL_P(tpl);
+        len = Z_STRLEN_P(tpl);
+        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
+            php_output_end(TSRMLS_C);
+            RESTORE_ACTIVE_SYMBOL_TABLE();
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s: %s", script, strerror(errno));
+            return FAILURE;
+        }
+    } else {
+        zval *tpl_dir = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 0 TSRMLS_CC);
+        if (Z_TYPE_P(tpl_dir) != IS_STRING) {
+            if (LINGER_FRAMEWORK_G(view_directory)) {
+                len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+            } else {
+                php_output_end(TSRMLS_C);
+                RESTORE_ACTIVE_SYMBOL_TABLE();
+                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Could not determine the view script path, call %s::setScriptPath to specific it", view_ce->name);
+                return FAILURE;
+            }
+        } else {
+            len = spprintf(&script, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+        }
+        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == 0) {
+            php_output_end(TSRMLS_C);
+            RESTORE_ACTIVE_SYMBOL_TABLE();
+            zend_throw_excpetion_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            linger_efree(script);
+            return FAILURE;
+        }
+        linger_efree(script);
+    }
+
+    RESTORE_ACTIVE_SYMBOL_TABLE();
+
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
+    CG(short_tags) = short_open_tag;
+    if (buffer->len) {
+        ZVAL_STRINGL(ret, buffer->buffer, buffer->len, 1);
+    }
+#else
+    if (php_output_get_contents(ret TSRMLS_CC) == FAILURE) {
+        php_output_end(TSRMLS_C);
+        zend_throw_exception(NULL, "unable to fetch ob content", 0 TSRMLS_CC);
+        return FAILURE;
+    }
+    if (php_output_discard(TSRMLS_C) != SUCCESS) {
+        return FAILURE;
+    }
+#endif
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
+
+#endif
+    return SUCCESS;
+}
+
+int linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
+{
+    if (!this || !key || !val) {
+        return FAILURE;
+    }
+    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    add_assoc_zval(vars, key, val);
+    zend_update_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), vars TSRMLS_CC);
+    return SUCCESS;
+}
+
+zval *linger_view_getVars(zval *this TSRMLS_DC)
+{
+    if (!this) {
+        return NULL;
+    } 
+    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    return vars;
 }
 
 PHP_METHOD(linger_framework_view, __construct)
@@ -53,8 +183,62 @@ PHP_METHOD(linger_framework_view, __construct)
 
 }
 
+PHP_METHOD(linger_framework_view, assign)
+{
+    char *key = NULL;
+    uint key_len;
+    zval *val = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &key, &key_len, &val) == FAILURE) {
+        return;
+    }
+    if (key_len > 0 && val != NULL) {
+        if (linger_view_assign(getThis(), key, val) == FAILURE) {
+            zend_throw_exception(NULL, "assign variable fail");
+            return;
+        }
+        Z_ADDREF_P(val);
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_view, setScriptPath)
+{
+    zval *path = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &path) == FAILURE) {
+        return;
+    }
+    if (path && Z_TYPE_P(path) == IS_STRING) {
+        zend_update_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), path TSRMLS_CC);
+    } else {
+        zend_throw_exception(NULL, "script path must be a string", 0 TSRMLS_CC);
+        return;
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_view, display)
+{
+
+}
+
+PHP_METHOD(linger_framework_view, render)
+{
+
+}
+
+PHP_METHOD(linger_framework_view, getVars)
+{
+    zval *vars = linger_view_getVars(getThis() TSRMLS_CC);
+    RETURN_ZVAL(vars, 1, 0);
+}
+
 zend_function_entry view_methods[] = {
     PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_view, setScriptPath, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, assign, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, display, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, render, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, getVars, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -64,6 +248,6 @@ LINGER_MINIT_FUNCTION(view)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\View", view_methods);
     view_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED);
-
+    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }

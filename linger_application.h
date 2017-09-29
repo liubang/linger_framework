@@ -19,6 +19,6 @@
 #ifndef LINGER_APPLICATION_H_
 #define LINGER_APPLICATION_H_
 
-
+int linger_application_import(char *path, int len, int use_path TSRMLS_DC);
 
 #endif /* LINGER_APPLICATION_H_ */

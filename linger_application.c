@@ -31,12 +31,84 @@
 zend_class_entry *application_ce;
 zend_class_entry *config_ce;
 
+#define MAXPATHLEN                        1024
 #define APPLICATION_PROPERTIES_APP        "_app"
 #define APPLICATION_PROPERTIES_CONFIG     "_config"
 #define APPLICATION_PROPERTIES_ROUTER     "_router"
 #define APPLICATION_PROPERTIES_REQUEST    "_request"
 #define APPLICATION_PROPERTIES_RESPONSE   "_response"
 #define APPLICATION_PROPERTIES_DISPATCHER "_dispatcher"
+
+#define STORE_EG_ENVIRON() \
+{ \
+    zval **__old_return_value_pp = EG(return_value_ptr_ptr); \
+    zend_op **__old_opline_ptr   = EG(opline_ptr); \
+    zend_op_array *__old_op_array= EG(active_op_array);
+
+#define RESTORE_EG_ENVIRON() \
+    EG(return_value_ptr_ptr)     = __old_return_value_pp;\
+    EG(opline_ptr)               = __old_opline_ptr;\
+    EG(active_op_array)          = __old_op_array;\
+}
+
+int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
+{
+    zend_file_handle file_handle;
+    zend_op_array *op_array;
+    char *realpath[MAXPATHLEN];
+    if (!VCWD_REALPATH(path, realpath)) {
+        return FAILURE;
+    }
+
+    file_handle.filename = path;
+    file_handle.free_filename = 0;
+    file_handle.type = ZEND_HANDLE_FILENAME;
+    file_handle.opened_path = NULL;
+    file_handle.handle.fp = NULL;
+
+    op_array = zend_compile_file(&file_handle, ZEND_INCLUDE TSRMLS_CC);
+
+    if (op_array && file_handle.handle.stream.handle) {
+        int dummy = 1;
+        if (!file_handle.opened_path) {
+            file_handle.opened_path = path;
+        }
+        zend_hash_add(&EG(included_files), file_handle.opened_path, strlen(file_handle.opened_path) + 1, (void **)&dummy, sizeof(int), NULL);
+    }
+    zend_destroy_file_handle(&file_handle TSRMLS_CC);
+    
+    if (op_array) {
+        zval *result = NULL;
+        STORE_EG_ENVIRON();
+
+        EG(return_value_ptr_ptr) = &result;
+        EG(active_op_array) = op_array;
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION > 2) || (PHP_MAJOR_VERSION > 5))
+        if (!EG(active_symbol_table)) {
+#if PHP_MINOR_VERSION < 5
+            zval *orig_this = EG(This);
+            EG(This) = NULL;
+            zend_rebuild_symbol_table(TSRMLS_C);
+            EG(This) = orig_this;
+#else
+            zend_rebuild_symbol_table(TSRMLS_C); 
+#endif
+        }
+#endif
+        zend_execute(op_array TSRMLS_CC);
+        destroy_op_array(op_array TSRMLS_CC);
+        linger_efree(op_array);
+        if (!EG(exception)) {
+            if (EG(return_value_ptr_ptr) && *EG(return_value_ptr_ptr)) {
+                zval_ptr_dtor(EG(return_value_ptr_ptr));
+            }
+        }
+        RESTORE_EG_ENVIRON();
+        return SUCCESS;
+    }
+
+    return FAILURE;
+}
 
 PHP_METHOD(linger_framework_application, __construct)
 {

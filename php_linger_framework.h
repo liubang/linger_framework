@@ -43,6 +43,7 @@ extern zend_class_entry *request_ce;
 ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
 zend_bool display_errors;
 zend_bool throw_exception;
+char *view_directory;
 ZEND_END_MODULE_GLOBALS(linger_framework)
 
 #ifdef ZTS
@@ -66,6 +67,8 @@ LINGER_MINIT_FUNCTION(controller);
 LINGER_MINIT_FUNCTION(request);
 LINGER_MINIT_FUNCTION(response);
 LINGER_MINIT_FUNCTION(exception);
+
+extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
 
 #endif	/* PHP_LINGER_FRAMEWORK_H */
 
