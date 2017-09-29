@@ -97,6 +97,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
     ALLOC_HASHTABLE(EG(active_symbol_table));
     zend_hash_init(EG(active_symbol_table), 0, NULL, ZVAL_PTR_DTOR, 0);
     (void)linger_view_extrace(vars TSRMLS_CC);
+    
     if (php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS TSRMLS_CC) == FAILURE) {
         php_error_docref("ref.outcontrol" TSRMLS_CC, E_WARNING, "failed to create buffer");
         return FAILURE;
@@ -200,6 +201,21 @@ PHP_METHOD(linger_framework_view, assign)
     RETURN_ZVAL(getThis(), 1, 0);
 }
 
+PHP_METHOD(linger_framework_view, setScriptPath)
+{
+    zval *path = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &path) == FAILURE) {
+        return;
+    }
+    if (path && Z_TYPE_P(path) == IS_STRING) {
+        zend_update_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), path TSRMLS_CC);
+    } else {
+        zend_throw_exception(NULL, "script path must be a string", 0 TSRMLS_CC);
+        return;
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
 PHP_METHOD(linger_framework_view, display)
 {
 
@@ -218,6 +234,7 @@ PHP_METHOD(linger_framework_view, getVars)
 
 zend_function_entry view_methods[] = {
     PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_view, setScriptPath, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_view, assign, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_view, display, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_view, render, NULL, ZEND_ACC_PUBLIC)
