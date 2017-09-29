@@ -76,7 +76,7 @@ int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
         zend_hash_add(&EG(included_files), file_handle.opened_path, strlen(file_handle.opened_path) + 1, (void **)&dummy, sizeof(int), NULL);
     }
     zend_destroy_file_handle(&file_handle TSRMLS_CC);
-    
+
     if (op_array) {
         zval *result = NULL;
         STORE_EG_ENVIRON();
@@ -91,7 +91,7 @@ int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
             zend_rebuild_symbol_table(TSRMLS_C);
             EG(This) = orig_this;
 #else
-            zend_rebuild_symbol_table(TSRMLS_C); 
+            zend_rebuild_symbol_table(TSRMLS_C);
 #endif
         }
 #endif
@@ -150,11 +150,11 @@ PHP_METHOD(linger_framework_application, __construct)
     zval_ptr_dtor(&orequest);
     zval_ptr_dtor(&odispatcher);
 
-    HashTable *conf = Z_ARRVAL_P(aconfig); 
+    HashTable *conf = Z_ARRVAL_P(aconfig);
     zval **ppzval;
     if (zend_hash_find(conf, ZEND_STRS("app_directory"), (void **)&ppzval) == FAILURE) {
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "must set app_directory in config");
-        RETURN_FALSE; 
+        RETURN_FALSE;
     }
 
     if (*(Z_STRVAL_PP(ppzval) + Z_STRLEN_PP(ppzval) - 1) == DEFAULT_SLASH) {

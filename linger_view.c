@@ -98,7 +98,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
     ALLOC_HASHTABLE(EG(active_symbol_table));
     zend_hash_init(EG(active_symbol_table), 0, NULL, ZVAL_PTR_DTOR, 0);
     (void)linger_view_extract(vars TSRMLS_CC);
-    
+
     if (php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS TSRMLS_CC) == FAILURE) {
         php_error_docref("ref.outcontrol" TSRMLS_CC, E_WARNING, "failed to create buffer");
         return FAILURE;
@@ -237,7 +237,7 @@ zval *linger_view_getVars(zval *this TSRMLS_DC)
 {
     if (!this) {
         return NULL;
-    } 
+    }
     zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
     return vars;
 }
