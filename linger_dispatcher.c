@@ -165,7 +165,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
         class_lowercase = zend_str_tolower_dup(class, class_len);
         if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
             //TODO autoload
-            return;
+            return NULL;
         }
         linger_efree(class);
         linger_efree(class_lowercase);
@@ -191,6 +191,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
 
         zend_class_entry *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
         if (!ce) {
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %sController is not exists", Z_STRVAL_P(controller));
             return;
         }
         zval *icontroller;
