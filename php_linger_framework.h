@@ -44,6 +44,7 @@ ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
 	zend_bool display_errors;
 	zend_bool throw_exception;
 	char *view_directory;
+	char *app_directory;
 ZEND_END_MODULE_GLOBALS(linger_framework)
 
 extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
