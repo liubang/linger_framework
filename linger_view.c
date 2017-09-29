@@ -126,10 +126,10 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         } else {
             len = spprintf(&script, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
         }
-        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == 0) {
+        if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
             php_output_end(TSRMLS_C);
             RESTORE_ACTIVE_SYMBOL_TABLE();
-            zend_throw_excpetion_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
             linger_efree(script);
             return FAILURE;
         }
