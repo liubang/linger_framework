@@ -42,10 +42,24 @@ zval *linger_view_instance(TSRMLS_DC)
     return instance;
 }
 
-void linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
+int linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
 {
+    if (!this || !key || !val) {
+        return FAILURE;
+    }
     zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    add_assoc_zval(vars, key, val);
+    zend_update_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), vars TSRMLS_CC);
+    return SUCCESS;
+}
 
+zval *linger_view_getVars(zval *this TSRMLS_DC)
+{
+    if (!this) {
+        return NULL;
+    } 
+    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    return vars;
 }
 
 PHP_METHOD(linger_framework_view, __construct)
@@ -53,8 +67,46 @@ PHP_METHOD(linger_framework_view, __construct)
 
 }
 
+PHP_METHOD(linger_framework_view, assign)
+{
+    char *key = NULL;
+    uint key_len;
+    zval *val = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &key, &key_len, &val) == FAILURE) {
+        return;
+    }
+    if (key_len > 0 && val != NULL) {
+        if (linger_view_assign(getThis(), key, val) == FAILURE) {
+            zend_throw_exception(NULL, "assign variable fail");
+            return;
+        }
+        Z_ADDREF_P(val);
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_view, display)
+{
+
+}
+
+PHP_METHOD(linger_framework_view, render)
+{
+
+}
+
+PHP_METHOD(linger_framework_view, getVars)
+{
+    zval *vars = linger_view_getVars(getThis() TSRMLS_CC);
+    RETURN_ZVAL(vars, 1, 0);
+}
+
 zend_function_entry view_methods[] = {
     PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_view, assign, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, display, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, render, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_view, getVars, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -64,6 +116,5 @@ LINGER_MINIT_FUNCTION(view)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\View", view_methods);
     view_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED);
-
     return SUCCESS;
 }

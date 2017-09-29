@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 try {
 
-	//include __DIR__ . '/app/module/index/controller/Index.php';
+	include __DIR__ . '/app/module/index/controller/Index.php';
 
 	$app = new linger\framework\Application([
     		'name' => 'test'
