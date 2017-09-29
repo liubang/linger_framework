@@ -42,6 +42,62 @@ zval *linger_view_instance(TSRMLS_DC)
     return instance;
 }
 
+static int linger_view_extrace(zval *vars TSRMLS_DC)
+{
+    zval **entry;
+    char *var_name;
+    uint var_name_len;
+    ulong num_key;
+    HashPosition pos;
+
+    if (vars && Z_TYPE_P(vars) == IS_ARRAY) {
+        for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(vars), &pos);
+                zend_hash_get_current_data_ex(Z_ARRVAL_P(vars), (void **)&entry, &pos) == SUCCESS;
+                zend_hash_move_forward_ex(Z_ARRVAL_P(vars), &pos)) {
+            if (zend_hash_get_current_key_ex(Z_ARRVAL_P(vars), &var_name, &var_name_len, &num_key, 0, &pos) != HASH_KEY_IS_STRING) {
+                continue;
+            }
+            if (var_name_len == sizeof("GLOBALS") && !strcmp(var_name, "GLOBALS")) {
+                continue;
+            }
+            if (var_name_len == sizeof("this") && !strcmp(var_name, "this") && EG(scope) && EG(scope)->name_length != 0) {
+                continue;
+            }
+            ZEND_SET_SYMBOL_WITH_LENGTH(EG(active_symbol_table), var_name, var_name_len, *entry, Z_REFCOUNT_P(*entry) + 1, PZVAL_IS_REF(*entry));
+        }
+    }
+
+    return SUCCESS;
+}
+
+int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
+{
+    zval *vars;
+    char *script;
+    uint len;
+    HashTable *scope_var_table = NULL;
+    if (Z_TYPE_P(tpl) != IS_STRING) {
+        return FAILURE;
+    }
+    ZVAL_NULL(ret);
+    vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1 TSRMLS_CC);
+    if (EG(active_symbol_table)) {
+        scope_var_table = EG(active_symbol_table);
+    }
+    ALLOC_HASHTABLE(EG(active_symbol_table));
+    zend_hash_init(EG(active_symbol_table), 0, NULL, ZVAL_PTR_DTOR, 0);
+    (void)linger_view_extrace(vars TSRMLS_CC);
+    if (php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS TSRMLS_CC) == FAILURE) {
+        php_error_docref("ref.outcontrol" TSRMLS_CC, E_WARNING, "failed to create buffer");
+        return FAILURE;
+    }
+    if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
+        script = Z_STRVAL_P(tpl);
+        len = Z_STRLEN_P(tpl);
+        //TODO loader
+    }
+}
+
 int linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
 {
     if (!this || !key || !val) {
