@@ -32,19 +32,20 @@ static int le_linger_framework;
 PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("linger_framework.display_errors", "1", PHP_INI_ALL, OnUpdateBool, display_errors, zend_linger_framework_globals, linger_framework_globals)
 STD_PHP_INI_ENTRY("linger_framework.throw_exception", "1", PHP_INI_ALL, OnUpdateBool, throw_exception, zend_linger_framework_globals, linger_framework_globals)
-STD_PHP_INI_ENTRY("linger_framework.view_directory", "", PHP_INI_ALL, OnUpdateString, throw_exception, zend_linger_framework_globals, linger_framework_globals)
 PHP_INI_END()
 
 static void php_linger_framework_init_globals(zend_linger_framework_globals *linger_framework_globals)
 {
     linger_framework_globals->display_errors = 1;
     linger_framework_globals->throw_exception = 1;
+	linger_framework_globals->view_directory = NULL;
 }
 
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(linger_framework)
 {
+	ZEND_INIT_MODULE_GLOBALS(linger_framework, php_linger_framework_init_globals, NULL);
     REGISTER_INI_ENTRIES();
 
     LINGER_STARTUP(application);
@@ -74,6 +75,7 @@ PHP_MSHUTDOWN_FUNCTION(linger_framework)
  */
 PHP_RINIT_FUNCTION(linger_framework)
 {
+	LINGER_FRAMEWORK_G(view_directory) = NULL;
     return SUCCESS;
 }
 /* }}} */
@@ -82,6 +84,9 @@ PHP_RINIT_FUNCTION(linger_framework)
  */
 PHP_RSHUTDOWN_FUNCTION(linger_framework)
 {
+	if (LINGER_FRAMEWORK_G(view_directory)) {
+		linger_efree(LINGER_FRAMEWORK_G(view_directory));
+	}
     return SUCCESS;
 }
 /* }}} */
