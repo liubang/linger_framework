@@ -59,7 +59,7 @@ class IndexController extends linger\framework\Controller {
         $this->getView()
             ->assign('name', 'liubang');
             ->assign('list', $list);
-        $str = $this->getView()->display('index.html');
+        $this->getView()->display('index.html');
     }
 }
 ```
