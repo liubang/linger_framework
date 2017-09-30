@@ -52,12 +52,13 @@ $app->run();
 class IndexController extends linger\framework\Controller {
 
     public function indexAction() {
-        $this->getView()->assign('name', 'liubang');
         $list = [];
         for ($i = 0; $i < 10; ++$i) {
             $list[] = "这是测试{$i}";
         }
-        $this->getView()->assign('list', $list);
+        $this->getView()
+            ->assign('name', 'liubang');
+            ->assign('list', $list);
         $str = $this->getView()->display('index.html');
     }
 }
