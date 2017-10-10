@@ -2,13 +2,11 @@
 
 error_reporting(E_ALL);
 
-
 try {
 
-	include __DIR__ . '/app/module/index/controller/Index.php';
-
-	$app = new linger\framework\Application([
-    		'name' => 'test'
+    define('APP_PATH', realpath(__DIR__) . '/');
+    $app = new linger\framework\Application([
+        'app_directory' => APP_PATH . 'app'
 	]);
 
 	//var_dump($app);

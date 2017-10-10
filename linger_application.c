@@ -76,7 +76,7 @@ int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
         zend_hash_add(&EG(included_files), file_handle.opened_path, strlen(file_handle.opened_path) + 1, (void **)&dummy, sizeof(int), NULL);
     }
     zend_destroy_file_handle(&file_handle TSRMLS_CC);
-    
+
     if (op_array) {
         zval *result = NULL;
         STORE_EG_ENVIRON();
@@ -91,7 +91,7 @@ int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
             zend_rebuild_symbol_table(TSRMLS_C);
             EG(This) = orig_this;
 #else
-            zend_rebuild_symbol_table(TSRMLS_C); 
+            zend_rebuild_symbol_table(TSRMLS_C);
 #endif
         }
 #endif
@@ -112,7 +112,7 @@ int linger_application_import(char *path, int len, int use_path TSRMLS_DC)
 
 PHP_METHOD(linger_framework_application, __construct)
 {
-    zval *oconfig, *aconfig;
+    zval *oconfig, *aconfig = NULL;
     zval *orouter;
     zval *orequest;
     zval *oresponse;
@@ -129,6 +129,11 @@ PHP_METHOD(linger_framework_application, __construct)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &aconfig) == FAILURE) {
         return;
     }
+
+    if (aconfig && Z_TYPE_P(aconfig) != IS_ARRAY) {
+        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "config must be array");
+        RETURN_FALSE;
+    }
     zval *self = getThis();
     oconfig = linger_config_instance(NULL, aconfig TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
@@ -144,6 +149,19 @@ PHP_METHOD(linger_framework_application, __construct)
     zval_ptr_dtor(&oconfig);
     zval_ptr_dtor(&orequest);
     zval_ptr_dtor(&odispatcher);
+
+    HashTable *conf = Z_ARRVAL_P(aconfig);
+    zval **ppzval;
+    if (zend_hash_find(conf, ZEND_STRS("app_directory"), (void **)&ppzval) == FAILURE) {
+        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "must set app_directory in config");
+        RETURN_FALSE;
+    }
+
+    if (*(Z_STRVAL_PP(ppzval) + Z_STRLEN_PP(ppzval) - 1) == DEFAULT_SLASH) {
+        LINGER_FRAMEWORK_G(app_directory) = estrndup(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval) - 1);
+    } else {
+        LINGER_FRAMEWORK_G(app_directory) = estrndup(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval));
+    }
 }
 
 PHP_METHOD(linger_framework_application, run)

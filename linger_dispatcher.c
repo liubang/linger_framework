@@ -123,7 +123,9 @@ end:
             ZVAL_STRING(module, "index", 1);
         }
         if (Z_TYPE_P(controller) == IS_NULL) {
-            ZVAL_STRING(controller, "index", 1);
+            ZVAL_STRING(controller, "Index", 1);
+        } else {
+            *(Z_STRVAL_P(controller)) = toupper(*(Z_STRVAL_P(controller)));
         }
         if (Z_TYPE_P(action) == IS_NULL) {
             ZVAL_STRING(action, "index", 1);
@@ -139,12 +141,6 @@ end:
         zend_throw_exception(NULL, "illegal arrtribute", 0 TSRMLS_CC);
         return;
     }
-}
-
-//TODO
-static int linger_dispatcher_auto_load()
-{
-    return 1;
 }
 
 #define LINGER_FRAMEWORK_MODULE_DIR_NAME        "module"
@@ -166,7 +162,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
         if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
             char *controller_path = NULL;
             int controller_path_len = 0;
-            controller_path_len = spprintf(&controller_path, 0, "%s%s%s", directory, controller, ".php");
+            controller_path_len = spprintf(&controller_path, 0, "%s%c%s%s", directory, DEFAULT_SLASH, controller, ".php");
             if (linger_application_import(controller_path, controller_path_len + 1, 0 TSRMLS_CC) == FAILURE) {
                 linger_efree(controller_path);
                 linger_efree(class);
@@ -210,7 +206,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
             return;
         }
 
-        zend_class_entry *ce = linger_dispatcher_get_controller("app", Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
+        zend_class_entry *ce = linger_dispatcher_get_controller(LINGER_FRAMEWORK_G(app_directory), Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
         if (!ce) {
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %sController is not exists", Z_STRVAL_P(controller));
             return;
@@ -218,7 +214,7 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         zval *icontroller;
         MAKE_STD_ZVAL(icontroller);
         object_init_ex(icontroller, ce);
-        if (!linger_controller_construct(ce, icontroller, request TSRMLS_CC)) {
+        if (FAILURE == linger_controller_construct(ce, icontroller, request TSRMLS_CC)) {
             return;
         }
         char *action_lower = zend_str_tolower_dup(Z_STRVAL_P(action), Z_STRLEN_P(action));

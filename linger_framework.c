@@ -38,14 +38,15 @@ static void php_linger_framework_init_globals(zend_linger_framework_globals *lin
 {
     linger_framework_globals->display_errors = 1;
     linger_framework_globals->throw_exception = 1;
-	linger_framework_globals->view_directory = NULL;
+    linger_framework_globals->view_directory = NULL;
+    linger_framework_globals->app_directory = NULL;
 }
 
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(linger_framework)
 {
-	ZEND_INIT_MODULE_GLOBALS(linger_framework, php_linger_framework_init_globals, NULL);
+    ZEND_INIT_MODULE_GLOBALS(linger_framework, php_linger_framework_init_globals, NULL);
     REGISTER_INI_ENTRIES();
 
     LINGER_STARTUP(application);
@@ -75,7 +76,8 @@ PHP_MSHUTDOWN_FUNCTION(linger_framework)
  */
 PHP_RINIT_FUNCTION(linger_framework)
 {
-	LINGER_FRAMEWORK_G(view_directory) = NULL;
+    LINGER_FRAMEWORK_G(app_directory) = NULL;
+    LINGER_FRAMEWORK_G(view_directory) = NULL;
     return SUCCESS;
 }
 /* }}} */
@@ -84,9 +86,9 @@ PHP_RINIT_FUNCTION(linger_framework)
  */
 PHP_RSHUTDOWN_FUNCTION(linger_framework)
 {
-	if (LINGER_FRAMEWORK_G(view_directory)) {
-		linger_efree(LINGER_FRAMEWORK_G(view_directory));
-	}
+    linger_efree(LINGER_FRAMEWORK_G(app_directory));
+    linger_efree(LINGER_FRAMEWORK_G(view_directory));
+
     return SUCCESS;
 }
 /* }}} */
