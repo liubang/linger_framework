@@ -25,12 +25,14 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 #include "linger_request.h"
+#include "linger_router.h"
 
 zend_class_entry *dispatcher_ce;
 zend_class_entry *request_ce;
 
 #define DISPATCHER_PROPERTIES_INSTANCE "_instance"
 #define DISPATCHER_PROPERTIES_REQUEST  "_request"
+#define DISPATCHER_PROPERTIES_ROUTER   "_router"
 #define DISPATCHER_PROPERTIES_MODULE "_module"
 #define DISPATCHER_PROPERTIES_CONTROLLER "_controller"
 #define DISPATCHER_PROPERTIES_ACTION "_action"
@@ -59,6 +61,8 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
             return;
         }
     }
+    zval *router = linger_router_instance(NULL TSRMLS_CC);
+    zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), router TSRMLS_CC);
     return instance;
 }
 
@@ -260,6 +264,7 @@ LINGER_MINIT_FUNCTION(dispatcher)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Dispatcher", dispatcher_methods);
     dispatcher_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC TSRMLS_CC);
+    zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), ZEND_ACC_PRIVATE);

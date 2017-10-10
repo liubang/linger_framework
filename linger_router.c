@@ -48,6 +48,10 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
+zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC) {
+
+}
+
 PHP_METHOD(linger_framework_router, __construct)
 {
 
