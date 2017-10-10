@@ -24,6 +24,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
+#include "linger_router_rule.h"
 
 zend_class_entry *router_ce;
 
@@ -64,7 +65,20 @@ PHP_METHOD(linger_framework_router, __construct)
 
 PHP_METHOD(linger_framework_router, add)
 {
-
+    char *uri;
+    char *class;
+    char *class_method;
+    uint uri_len;
+    uint class_len;
+    uint class_method_len;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss", &uri, &uri_len, &class, &class_len, &class_method, &class_method_len) == FAILURE) {
+        return;
+    }
+    zval *rule_item = linger_router_rule_instance(uri, class, class_method TSRMLS_CC);
+    zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES) 1 TSRMLS_CC);
+    add_next_index_zval(rules, rule_item);
+    zend_update_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
+    RETURN_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(linger_framework_router, get)
