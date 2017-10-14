@@ -72,14 +72,14 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
         ZVAL_NULL(z);          \
     } while(0)
 
-#define STRTOK(s, d, v)             \
-    do {                            \
-        mvc = strtok(s, d);         \
-        if (mvc) {                  \
-            ZVAL_STRING(v, mvc, 1); \
-        } else {                    \
-            goto end;               \
-        }                           \
+#define STRTOK(s, d, v)                     \
+    do {                                    \
+        mvc = php_strtok_r(s, d, &ptrptr);  \
+        if (mvc) {                          \
+            ZVAL_STRING(v, mvc, 1);         \
+        } else {                            \
+            goto end;                       \
+        }                                   \
     } while(0)
 
 static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
@@ -105,6 +105,7 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
         MAKE_STD_ZVAL_NULL(controller);
         MAKE_STD_ZVAL_NULL(action);
 
+        char *ptrptr;
         STRTOK(copy, "/", module);
         STRTOK(NULL, "/", controller);
         STRTOK(NULL, "/", action);
@@ -113,12 +114,12 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
         if (copy != NULL) {
             char *key = NULL;
             char *val = NULL;
-            key = strtok(NULL, "/");
-            val = strtok(NULL, "/");
+            key = php_strtok_r(NULL, "/", &ptrptr);
+            val = php_strtok_r(NULL, "/", &ptrptr);
             while(key && val) {
                 linger_request_set_param(request, key, val TSRMLS_CC);
-                key = strtok(NULL, "/");
-                val = strtok(NULL, "/");
+                key = php_strtok_r(NULL, "/", &ptrptr);
+                val = php_strtok_r(NULL, "/", &ptrptr);
             }
         }
 
