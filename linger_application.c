@@ -164,6 +164,37 @@ PHP_METHOD(linger_framework_application, __construct)
     }
 }
 
+PHP_METHOD(linger_framework_application, bootstrap)
+{
+    zval *bootclasses = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &bootclasses) == FAILURE) {
+        return;
+    }
+    if (IS_ARRAY != Z_TYPE_P(bootclasses)) {
+        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter must be an array.");
+        RETURN_FALSE;
+    }
+    HashTable *hash = HASH_OF(bootclasses); 
+    HashPosition pos;
+    for (zend_hash_internal_pointer_reset_ex(hash, &pos); 
+            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS; 
+            zend_hash_move_forward_ex(hash, &pos)) {
+        zval **ppzval;
+        if (zend_hash_get_current_data_ex(arrht,(void**)&ppzval, &pos) == FAILURE) {
+            continue;
+        }
+        if (IS_STRING != Z_TYPE_PP(ppzval)) {
+            continue;
+        } 
+        zend_class_entry **ce;
+        if (zend_hash_find(EG(class_table), Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval), (void **)&ce) != SUCCESS) {
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
+            RETURN_FALSE;
+        }
+        //
+    }
+}
+
 PHP_METHOD(linger_framework_application, run)
 {
     //dispatcher dispatche.

@@ -45,6 +45,7 @@ if test "$PHP_LINGER_FRAMEWORK" != "no"; then
 
   PHP_NEW_EXTENSION(linger_framework, 
     linger_framework.c      \
+    linger_bootstrap.c      \
     linger_application.c    \
     linger_config.c         \
     linger_router.c         \
