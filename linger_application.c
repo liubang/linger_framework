@@ -191,8 +191,17 @@ PHP_METHOD(linger_framework_application, bootstrap)
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
             RETURN_FALSE;
         }
-        //
+        zval *bootObj;
+        zval **fptr, *ret = NULL;
+        MAKE_STD_ZVAL(bootObj);
+        object_init_ex(bootObj, ce);
+        if (zend_hash_find(&((ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
+            zend_call_method_with_1_params(&icontroller, ce, NULL, "bootstrap", &ret, getThis());
+            if (ret) zval_ptr_dtor(&ret);      
+        }
     }
+
+    RETURN_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, run)
