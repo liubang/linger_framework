@@ -188,9 +188,7 @@ PHP_METHOD(linger_framework_application, bootstrap)
             continue;
         } 
         zend_class_entry **ce;
-        char *class_lowercase = NULL;
-        class_lowercase = zend_str_tolower_dup(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval));
-        if (zend_hash_find(EG(class_table), class_lowercase, Z_STRLEN_PP(ppzval) + 1, (void **)&ce) != SUCCESS) {
+        if (zend_lookup_class(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval), &ce TSRMLS_CC) != SUCCESS) {
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
             RETURN_FALSE;
         }
@@ -201,7 +199,6 @@ PHP_METHOD(linger_framework_application, bootstrap)
         if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
             zend_call_method_with_1_params(&bootObj, *ce, NULL, "bootstrap", NULL, getThis());
         }
-        linger_efree(class_lowercase);
     }
 
     RETURN_ZVAL(getThis(), 1, 0);

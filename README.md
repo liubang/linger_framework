@@ -33,21 +33,25 @@
 <?php
 define('APP_PATH', realpath(__DIR__ . '/../') . '/');
 
+spl_autoload_register(function ($class) {
+    $filename = APP_PATH . 'app/' . str_replace('\\', '/', $class) . '.php';
+    if (file_exists($filename)) {
+        require $filename;
+    }
+});
+
 set_exception_handler(function(Exception $e) {
         echo $e->getMessage(),PHP_EOL;
             echo $e->getTraceAsString();
 
     });
-include APP_PATH . 'app/boot/Session.php';
-include APP_PATH . 'app/boot/Test.php';
-$bootclass = [
-      \boot\Session::class,
-          \boot\Test::class
 
+$bootclass = [
+		\boot\Session::class,
+		\boot\Test::class
 ];
 $app = new linger\framework\Application([
-        'app_directory' => APP_PATH . 'app'
-
+		'app_directory' => APP_PATH . 'app'
 ]);
 $app->bootstrap($bootclass)
       ->run();
