@@ -13,6 +13,9 @@
 ```
 .
 ├── app
+│   ├── boot
+│   │   ├── Session.php
+│   │   └── Test.php
 │   └── module
 │       └── index
 │           ├── controller
@@ -28,19 +31,50 @@
 
 ```php
 <?php
-session_start();
 define('APP_PATH', realpath(__DIR__ . '/../') . '/');
 
 set_exception_handler(function(Exception $e) {
-	echo $e->getMessage(),PHP_EOL;
-	echo $e->getTraceAsString();
+        echo $e->getMessage(),PHP_EOL;
+            echo $e->getTraceAsString();
 
-});
+    });
+include APP_PATH . 'app/boot/Session.php';
+include APP_PATH . 'app/boot/Test.php';
+$bootclass = [
+      \boot\Session::class,
+          \boot\Test::class
 
+];
 $app = new linger\framework\Application([
-	'app_directory' => APP_PATH . 'app',
+        'app_directory' => APP_PATH . 'app'
+
 ]);
-$app->run();
+$app->bootstrap($bootclass)
+      ->run();
+```
+
+**app/boot/Session.php**
+
+```php
+namespace boot;
+
+class Session implements \linger\framework\Bootstrap {
+    public function bootstrap(\linger\framework\Application $app) {
+      \session_start();
+    }
+}
+```
+
+**app/boot/Test.php**
+
+```php
+namespace boot;
+
+class Test implements \linger\framework\Bootstrap {
+    public function bootstrap() {
+        echo __METHOD__,"<br>";
+    }
+}
 ```
 
 **app/module/index/controller/Index.php**
