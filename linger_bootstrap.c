@@ -22,7 +22,6 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "ext/standard/info.h"
 #include "php_linger_framework.h"
 #include "linger_router_rule.h"
 
