@@ -24,15 +24,16 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
+#include "linger_router_rule.h"
 
 zend_class_entry *router_ce;
 
-#define ROUTER_PROPERTIES_INSTANCE "_instance"
-#define ROUTER_PROPERTIES_RULS  "_ruls"
+#define LINGER_ROUTER_PROPERTIES_INSTANCE "_instance"
+#define LINGER_ROUTER_PROPERTIES_RULES  "_rules"
 
 zval *linger_router_instance(zval *this TSRMLS_DC)
 {
-    zval *instance = zend_read_static_property(router_ce, ZEND_STRL(ROUTER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
+    zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
             instanceof_function(Z_OBJCE_P(instance), router_ce)) {
         return instance;
@@ -44,23 +45,57 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
         MAKE_STD_ZVAL(instance);
         object_init_ex(instance, router_ce);
     }
-    zend_update_static_property(router_ce, ZEND_STRL(ROUTER_PROPERTIES_INSTANCE), instance TSRMLS_CC);
+    zend_update_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), instance TSRMLS_CC);
+    zval *rules;
+    MAKE_STD_ZVAL(rules);
+    array_init(rules);
+    zend_update_property(router_ce, instance, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
+    zval_ptr_dtor(&rules);
     return instance;
+}
+
+zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC) {
+
 }
 
 PHP_METHOD(linger_framework_router, __construct)
 {
-
+     
 }
 
 PHP_METHOD(linger_framework_router, add)
 {
-
+    char *uri;
+    char *class;
+    char *class_method;
+    uint uri_len;
+    uint class_len;
+    uint class_method_len;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss", &uri, &uri_len, &class, &class_len, &class_method, &class_method_len) == FAILURE) {
+        return;
+    }
+    zval *rule_item = linger_router_rule_instance(uri, class, class_method TSRMLS_CC);
+    zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
+    add_next_index_zval(rules, rule_item);
+    zend_update_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
+    RETURN_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(linger_framework_router, get)
 {
+    char *uri;
+    uint uri_len = 0;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &uri, &uri_len) == FAILURE) {
+        return;
+    }
 
+    zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
+    if (uri_len == 0) {
+        RETURN_ZVAL(rules, 1, 0);    
+    } else {
+        zval *rule = linger_router_rule_match(uri, uri_len TSRMLS_CC);
+        RETURN_ZVAL(rule, 1, 0);
+    }
 }
 
 PHP_METHOD(linger_framework_router, post)
@@ -93,7 +128,7 @@ LINGER_MINIT_FUNCTION(router)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Router", router_methods);
     router_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    zend_declare_property_null(router_ce, ZEND_STRL(ROUTER_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
-    zend_declare_property_null(router_ce, ZEND_STRL(ROUTER_PROPERTIES_RULS), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
+    zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), ZEND_ACC_PROTECTED);
     return SUCCESS;
 }

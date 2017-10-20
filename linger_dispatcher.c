@@ -25,12 +25,14 @@
 #include "ext/standard/info.h"
 #include "php_linger_framework.h"
 #include "linger_request.h"
+#include "linger_router.h"
 
 zend_class_entry *dispatcher_ce;
 zend_class_entry *request_ce;
 
 #define DISPATCHER_PROPERTIES_INSTANCE "_instance"
 #define DISPATCHER_PROPERTIES_REQUEST  "_request"
+#define DISPATCHER_PROPERTIES_ROUTER   "_router"
 #define DISPATCHER_PROPERTIES_MODULE "_module"
 #define DISPATCHER_PROPERTIES_CONTROLLER "_controller"
 #define DISPATCHER_PROPERTIES_ACTION "_action"
@@ -59,6 +61,8 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
             return;
         }
     }
+    zval *router = linger_router_instance(NULL TSRMLS_CC);
+    zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), router TSRMLS_CC);
     return instance;
 }
 
@@ -68,14 +72,14 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
         ZVAL_NULL(z);          \
     } while(0)
 
-#define STRTOK(s, d, v)             \
-    do {                            \
-        mvc = strtok(s, d);         \
-        if (mvc) {                  \
-            ZVAL_STRING(v, mvc, 1); \
-        } else {                    \
-            goto end;               \
-        }                           \
+#define STRTOK(s, d, v)                     \
+    do {                                    \
+        mvc = php_strtok_r(s, d, &ptrptr);  \
+        if (mvc) {                          \
+            ZVAL_STRING(v, mvc, 1);         \
+        } else {                            \
+            goto end;                       \
+        }                                   \
     } while(0)
 
 static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
@@ -101,6 +105,7 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
         MAKE_STD_ZVAL_NULL(controller);
         MAKE_STD_ZVAL_NULL(action);
 
+        char *ptrptr;
         STRTOK(copy, "/", module);
         STRTOK(NULL, "/", controller);
         STRTOK(NULL, "/", action);
@@ -109,12 +114,12 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
         if (copy != NULL) {
             char *key = NULL;
             char *val = NULL;
-            key = strtok(NULL, "/");
-            val = strtok(NULL, "/");
+            key = php_strtok_r(NULL, "/", &ptrptr);
+            val = php_strtok_r(NULL, "/", &ptrptr);
             while(key && val) {
                 linger_request_set_param(request, key, val TSRMLS_CC);
-                key = strtok(NULL, "/");
-                val = strtok(NULL, "/");
+                key = php_strtok_r(NULL, "/", &ptrptr);
+                val = php_strtok_r(NULL, "/", &ptrptr);
             }
         }
 
@@ -260,6 +265,7 @@ LINGER_MINIT_FUNCTION(dispatcher)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Dispatcher", dispatcher_methods);
     dispatcher_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC TSRMLS_CC);
+    zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), ZEND_ACC_PRIVATE);
