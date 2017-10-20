@@ -19,6 +19,4 @@
 #ifndef LINGER_BOOTSTRAP_H_
 #define LINGER_BOOTSTRAP_H_
 
-int linger_bootstrap_construct(zend_class_entry *ce, zval *this TSRMLS_DC);
-
 #endif /* LINGER_BOOTSTRAP_H_ */

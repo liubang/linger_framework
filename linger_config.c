@@ -22,7 +22,6 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
 zend_class_entry *config_ce;

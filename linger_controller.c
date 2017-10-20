@@ -21,8 +21,6 @@
 #endif
 
 #include "php.h"
-#include "php_ini.h"
-#include "ext/standard/info.h"
 #include "Zend/zend_interfaces.h"
 #include "php_linger_framework.h"
 #include "linger_controller.h"

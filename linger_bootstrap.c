@@ -28,14 +28,6 @@
 
 zend_class_entry *linger_bootstrap_ce;
 
-int linger_bootstrap_construct(zend_class_entry *ce, zval *this TSRMLS_CC) {
-    if (!instanceof_function(ce, linger_bootstrap_ce)) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s must be subclass of %s", ce->name, linger_bootstrap_ce->name);
-        return FAILURE;
-    }
-    
-}
-
 zend_function_entry linger_bootstrap_methods[] = {
     PHP_ABSTRACT_ME(linger_framework_bootstrap, bootstrap, NULL)
     PHP_FE_END

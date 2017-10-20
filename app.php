@@ -1,13 +1,24 @@
 <?php
 
 error_reporting(E_ALL);
+define('APP_PATH', realpath(__DIR__) . '/');
 
+require APP_PATH . 'app/boot/A.php';
+
+
+$bootclass = [
+    \boot\A::class
+];
+
+print_r($bootclass);
 try {
 
-    define('APP_PATH', realpath(__DIR__) . '/');
+
     $app = new linger\framework\Application([
         'app_directory' => APP_PATH . 'app'
 	]);
+
+    $app->bootstrap($bootclass);
 
 	//var_dump($app);
 	//$app->getRequest()->setUri('/index/index/index');

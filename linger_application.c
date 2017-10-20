@@ -21,6 +21,7 @@
 #endif
 
 #include "php.h"
+#include "Zend/zend_interfaces.h" // zend_call_method_with_1_params
 #include "php_linger_framework.h"
 #include "linger_config.h"
 #include "linger_router.h"
@@ -180,25 +181,27 @@ PHP_METHOD(linger_framework_application, bootstrap)
             zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS; 
             zend_hash_move_forward_ex(hash, &pos)) {
         zval **ppzval;
-        if (zend_hash_get_current_data_ex(arrht,(void**)&ppzval, &pos) == FAILURE) {
+        if (zend_hash_get_current_data_ex(hash,(void**)&ppzval, &pos) == FAILURE) {
             continue;
         }
         if (IS_STRING != Z_TYPE_PP(ppzval)) {
             continue;
         } 
         zend_class_entry **ce;
-        if (zend_hash_find(EG(class_table), Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval), (void **)&ce) != SUCCESS) {
+        char *class_lowercase = NULL;
+        class_lowercase = zend_str_tolower_dup(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval));
+        if (zend_hash_find(EG(class_table), class_lowercase, Z_STRLEN_PP(ppzval) + 1, (void **)&ce) != SUCCESS) {
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
             RETURN_FALSE;
         }
         zval *bootObj;
-        zval **fptr, *ret = NULL;
+        zval **fptr;
         MAKE_STD_ZVAL(bootObj);
-        object_init_ex(bootObj, ce);
-        if (zend_hash_find(&((ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
-            zend_call_method_with_1_params(&icontroller, ce, NULL, "bootstrap", &ret, getThis());
-            if (ret) zval_ptr_dtor(&ret);      
+        object_init_ex(bootObj, *ce);
+        if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
+            zend_call_method_with_1_params(&bootObj, *ce, NULL, "bootstrap", NULL, getThis());
         }
+        linger_efree(class_lowercase);
     }
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -267,6 +270,7 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(linger_framework_application, bootstrap, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, setConfig, NULL, ZEND_ACC_PUBLIC)
