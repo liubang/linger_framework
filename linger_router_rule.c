@@ -32,8 +32,9 @@ zend_class_entry *router_rule_ce;
 #define LINGER_ROUTER_RULE_PROPERTIES_CLASS          "_class"
 #define LINGER_ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
 
-zval *linger_router_rule_instance(char *uri, char *class, char *class_method TSRMLS_DC) {
-    
+zval *linger_router_rule_instance(char *uri, char *class, char *class_method TSRMLS_DC)
+{
+
 }
 
 

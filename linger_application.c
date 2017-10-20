@@ -175,10 +175,10 @@ PHP_METHOD(linger_framework_application, bootstrap)
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter must be an array.");
         RETURN_FALSE;
     }
-    HashTable *hash = HASH_OF(bootclasses); 
+    HashTable *hash = HASH_OF(bootclasses);
     HashPosition pos;
-    for (zend_hash_internal_pointer_reset_ex(hash, &pos); 
-            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS; 
+    for (zend_hash_internal_pointer_reset_ex(hash, &pos);
+            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS;
             zend_hash_move_forward_ex(hash, &pos)) {
         zval **ppzval;
         if (zend_hash_get_current_data_ex(hash,(void**)&ppzval, &pos) == FAILURE) {
@@ -186,7 +186,7 @@ PHP_METHOD(linger_framework_application, bootstrap)
         }
         if (IS_STRING != Z_TYPE_PP(ppzval)) {
             continue;
-        } 
+        }
         zend_class_entry **ce;
         if (zend_lookup_class(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval), &ce TSRMLS_CC) != SUCCESS) {
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));

@@ -54,13 +54,14 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
-zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC) {
+zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC)
+{
 
 }
 
 PHP_METHOD(linger_framework_router, __construct)
 {
-     
+
 }
 
 PHP_METHOD(linger_framework_router, add)
@@ -91,7 +92,7 @@ PHP_METHOD(linger_framework_router, get)
 
     zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
     if (uri_len == 0) {
-        RETURN_ZVAL(rules, 1, 0);    
+        RETURN_ZVAL(rules, 1, 0);
     } else {
         zval *rule = linger_router_rule_match(uri, uri_len TSRMLS_CC);
         RETURN_ZVAL(rule, 1, 0);
