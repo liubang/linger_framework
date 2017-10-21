@@ -19,6 +19,6 @@
 #ifndef LINGER_ROUTER_RULE_H_
 #define LINGER_ROUTER_RULE_H_
 
-zval *linger_router_rule_instance(char *uri, char *class, char *class_method TSRMLS_DC);
+zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC);
 
 #endif /* LINGER_ROUTER_RULE_H_ */

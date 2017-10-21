@@ -150,6 +150,7 @@ PHP_METHOD(linger_framework_application, __construct)
     zval_ptr_dtor(&oconfig);
     zval_ptr_dtor(&orequest);
     zval_ptr_dtor(&odispatcher);
+    zval_ptr_dtor(&orouter);
 
     HashTable *conf = Z_ARRVAL_P(aconfig);
     zval **ppzval;
