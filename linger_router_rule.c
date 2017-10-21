@@ -55,24 +55,23 @@ PHP_METHOD(linger_framework_router_rule, __construct)
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter class_method must be string.");
         return;
     }
-    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method) + 1);        
-    php_printf("%s:%ld", Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));
-    php_printf("%s:%ld", lower_method, sizeof(lower_method));
-    if (strncmp(lower_method, "get", 3) || 
-            strncmp(lower_method, "post", 4) ||
-            strncmp(lower_method, "put", 3) ||
-            strncmp(lower_method, "delete", 6)) {
+    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));        
+    if (!strncmp(lower_method, "get", 3) ||
+            !strncmp(lower_method, "post", 4) ||
+            !strncmp(lower_method, "put", 3) ||
+            !strncmp(lower_method, "delete", 6)) {
+        ZVAL_STRING(request_method, lower_method, 1);
+        linger_efree(lower_method);
+        zval *this = getThis();
+        zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method TSRMLS_CC);
+        zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), uri TSRMLS_CC);
+        zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class TSRMLS_CC);
+        zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method TSRMLS_CC);
+    } else {
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "invalid http request method:%s.", Z_STRVAL_P(request_method));
         linger_efree(lower_method);
         return;
     }
-    ZVAL_STRING(request_method, lower_method, 1);
-    linger_efree(lower_method);
-    zval *this = getThis();
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method TSRMLS_CC);
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), uri TSRMLS_CC);
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class TSRMLS_CC);
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_router_rule, getRequestMethod)
