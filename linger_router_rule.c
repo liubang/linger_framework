@@ -22,7 +22,6 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "ext/standard/info.h"
 #include "php_linger_framework.h"
 
 zend_class_entry *router_rule_ce;
@@ -37,6 +36,23 @@ zval *linger_router_rule_instance(char *uri, char *class, char *class_method TSR
 
 }
 
+PHP_METHOD(linger_framework_router_rule, __construct)
+{
+    char *method, *uri,*class,*class_method;
+    uint method_len, uri_len, class_len, class_method_len;
+    if (zend_parse_parameters(ZEND_NUM_ARGS TSRMLS_CC, "ssss", 
+                &method, &method_len, &uri, &uri_len, &class, &class_len, &class_method, &class_method_len) == FAILURE) {
+        return;
+    }
+    
+    
+    
+}
+
+zend_function_entry router_rule_methods[] = {
+    PHP_FE(linger_framework_router_rule, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_FE_END
+};
 
 LINGER_MINIT_FUNCTION(router_rule)
 {
