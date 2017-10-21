@@ -63,13 +63,14 @@ zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC)
 void linger_router_add_rule(zval *this, zval *rule TSRMLS_DC)
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
+    /* add refcount, that's important! */
+    Z_ADDREF_P(rule);
     add_next_index_zval(rules, rule);
     zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_router, __construct)
 {
-    (void)linger_router_instance(getThis() TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_router, add)

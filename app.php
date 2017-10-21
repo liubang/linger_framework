@@ -20,17 +20,14 @@ try {
     //\var_dump($rule);die;
     //$router = new \linger\framework\Router();
     $router = $app->getRouter();
-var_dump($router);
+    var_dump($router);
 
     $router->add($rule);
-    var_dump($router);
-    /*
     $router->get('/get', 'Test', 'bootstrap')
             ->post('/post', 'Test', 'bootstrap')
             ->put('/put', 'Test', 'bootstrap')
             ->delete('/delete', 'Test', 'bootstrap');
-     */
-   // \var_dump($router);
+   var_dump($router);
 
 	//var_dump($app);
 	//$app->getRequest()->setUri('/index/index/index');
