@@ -53,7 +53,7 @@ $bootclass = [
 $app = new linger\framework\Application([
 		'app_directory' => APP_PATH . 'app'
 ]);
-$app->bootstrap($bootclass)
+$app->init($bootclass)
       ->run();
 ```
 

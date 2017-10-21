@@ -18,7 +18,7 @@ try {
         'app_directory' => APP_PATH . 'app'
 	]);
 
-    $app->bootstrap($bootclass);
+    $app->init($bootclass);
 
 	//var_dump($app);
 	//$app->getRequest()->setUri('/index/index/index');

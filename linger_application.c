@@ -165,7 +165,7 @@ PHP_METHOD(linger_framework_application, __construct)
     }
 }
 
-PHP_METHOD(linger_framework_application, bootstrap)
+PHP_METHOD(linger_framework_application, init)
 {
     zval *bootclasses = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &bootclasses) == FAILURE) {
@@ -267,7 +267,7 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(linger_framework_application, bootstrap, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, init, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, setConfig, NULL, ZEND_ACC_PUBLIC)
