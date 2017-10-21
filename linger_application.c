@@ -28,7 +28,7 @@
 #include "linger_request.h"
 #include "linger_dispatcher.h"
 #include "linger_response.h"
-
+/* class entry */
 zend_class_entry *application_ce;
 zend_class_entry *config_ce;
 
