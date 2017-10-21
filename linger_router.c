@@ -46,12 +46,12 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
         MAKE_STD_ZVAL(instance);
         object_init_ex(instance, router_ce);
     }
-    zval *rules;
-    MAKE_STD_ZVAL(rules);
-    array_init(rules);
-    zend_update_property(router_ce, instance, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
+    zval *router_rules;
+    MAKE_STD_ZVAL(router_rules);
+    array_init(router_rules);
+    zend_update_property(router_ce, instance, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), router_rules TSRMLS_CC);
     zend_update_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), instance TSRMLS_CC);
-    zval_ptr_dtor(&rules);
+    zval_ptr_dtor(&router_rules);
     return instance;
 }
 
@@ -145,7 +145,7 @@ PHP_METHOD(linger_framework_router, delete)
 }
 
 zend_function_entry router_methods[] = {
-    PHP_ME(linger_framework_router, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_router, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router, add, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, get, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, post, NULL, ZEND_ACC_PUBLIC)

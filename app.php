@@ -18,11 +18,12 @@ try {
     $app->init($bootclass);
 	$rule = new \linger\framework\RouterRule('GET', '/test/aaa', 'Test', 'bootstrap');
     //\var_dump($rule);die;
-    $router = new \linger\framework\Router();
-    //$router = $app->getRouter();
+    //$router = new \linger\framework\Router();
+    $router = $app->getRouter();
 var_dump($router);
 
     $router->add($rule);
+    var_dump($router);
     /*
     $router->get('/get', 'Test', 'bootstrap')
             ->post('/post', 'Test', 'bootstrap')
