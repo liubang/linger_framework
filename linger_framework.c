@@ -52,6 +52,7 @@ PHP_MINIT_FUNCTION(linger_framework)
     LINGER_STARTUP(application);
     LINGER_STARTUP(bootstrap);
     LINGER_STARTUP(config);
+    LINGER_STARTUP(router_rule);
     LINGER_STARTUP(router);
     LINGER_STARTUP(request);
     LINGER_STARTUP(dispatcher);

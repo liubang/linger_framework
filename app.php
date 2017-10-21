@@ -12,8 +12,6 @@ $bootclass = [
 
 print_r($bootclass);
 try {
-
-
     $app = new linger\framework\Application([
         'app_directory' => APP_PATH . 'app'
 	]);
