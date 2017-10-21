@@ -39,8 +39,8 @@ zval *linger_router_rule_instance(char *uri, char *class, char *class_method TSR
 PHP_METHOD(linger_framework_router_rule, __construct)
 {
     zval *request_method, *uri, *class, *class_method;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zzzz", 
-                &request_method, &uri, &class, &class_method) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zzzz",
+                              &request_method, &uri, &class, &class_method) == FAILURE) {
         return;
     }
     if (IS_STRING != Z_TYPE_P(request_method)) {
@@ -55,7 +55,7 @@ PHP_METHOD(linger_framework_router_rule, __construct)
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter class_method must be string.");
         return;
     }
-    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));        
+    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));
     if (!strncmp(lower_method, "get", 3) ||
             !strncmp(lower_method, "post", 4) ||
             !strncmp(lower_method, "put", 3) ||
