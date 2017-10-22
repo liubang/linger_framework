@@ -55,9 +55,49 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
-zval *linger_router_match(zval *dispatcher_obj, zval *this, char *uri TSRMLS_DC)
+zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
 {
+    zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
+    if (IS_ARRAY == Z_TYPE_P(rules)) {
+        HashTable *ht;
+        ulong idx = 0;
+        ht = Z_ARRVAL_P(rules);
+        zval **router_rule;
+        zval *zv_request_method, *zv_uri;
+        char *lower_request_method = NULL;
+        lower_request_method = zend_str_tolower_dup(ZEND_STRL(uri));
+        for (zend_hash_internal_pointer_reset(ht);
+                zend_hash_has_more_elements(ht) == SUCCESS;
+                zend_hash_move_forward(ht)) {
+            if (zend_hash_get_current_data(ht, (void **)&router_rule) == FAILURE) {
+                continue;
+            }
+            if (IS_OBJECT != Z_TYPE_PP(router_rule) ||
+                    instanceof_function(Z_OBJCE_PP(router_rule), router_rule_ce)) {
+                continue;
+            }
+            zv_request_method = linger_router_rule_get_request_method(*router_rule TSRMLS_CC);
+            if (zv_request_method && Z_TYPE_P(zv_request_method) == IS_STRING) {
+                if (strncmp(lower_request_method, Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
+                    continue;
+                }
+                //request method matched.
+                //match uri
+                zv_uri = linger_router_rule_get_uri(*router_rule TSRMLS_CC);
+                if (zv_uri && IS_STRING == Z_TYPE_P(zv_uri)) {
+                    //preg_match
 
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+        }
+        linger_efree(lower_request_method);
+    } else {
+        return NULL;
+    }
 }
 
 void linger_router_add_rule(zval *this, zval *rule TSRMLS_DC)
@@ -71,6 +111,7 @@ void linger_router_add_rule(zval *this, zval *rule TSRMLS_DC)
 
 PHP_METHOD(linger_framework_router, __construct)
 {
+
 }
 
 PHP_METHOD(linger_framework_router, add)

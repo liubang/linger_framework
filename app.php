@@ -30,7 +30,7 @@ try {
    var_dump($router);
 
 	//var_dump($app);
-	//$app->getRequest()->setUri('/index/index/index');
+	$app->getRequest()->setUri('/index/index/index');
 	//$app->run();
 } catch (Exception $e) {
 	echo $e->getMessage(), PHP_EOL;

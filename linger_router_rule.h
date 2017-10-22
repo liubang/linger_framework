@@ -20,5 +20,9 @@
 #define LINGER_ROUTER_RULE_H_
 
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC);
+zval *linger_router_rule_get_request_method(zval *this TSRMLS_DC);
+zval *linger_router_rule_get_uri(zval *this TSRMLS_DC);
+zval *linger_router_rule_get_class(zval *this TSRMLS_DC);
+zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC);
 
 #endif /* LINGER_ROUTER_RULE_H_ */

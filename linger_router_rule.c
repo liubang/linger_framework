@@ -71,6 +71,42 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
     }
 }
 
+zval *linger_router_rule_get_request_method(zval *this TSRMLS_DC)
+{
+    if (!this)
+        return NULL;
+    zval *request_method;
+    request_method = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), 1 TSRMLS_CC);
+    return request_method;
+}
+
+zval *linger_router_rule_get_uri(zval *this TSRMLS_DC)
+{
+    if (!this)
+        return NULL;
+    zval *uri = NULL;
+    uri = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), 1 TSRMLS_CC);
+    return uri;
+}
+
+zval *linger_router_rule_get_class(zval *this TSRMLS_DC)
+{
+    if (!this)
+        return NULL;
+    zval *class = NULL;
+    class = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), 1 TSRMLS_CC);
+    return class;
+}
+
+zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC)
+{
+    if (!this)
+        return NULL;
+    zval *class_method = NULL;
+    class_method = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1 TSRMLS_CC);
+    return class_method;
+}
+
 PHP_METHOD(linger_framework_router_rule, __construct)
 {
     zval *request_method, *uri, *class, *class_method;
