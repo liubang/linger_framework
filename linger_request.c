@@ -298,7 +298,7 @@ PHP_METHOD(linger_framework_request, setMethod)
                 || !strncmp(lower_method, "post", 4)
                 || !strncmp(lower_method, "put", 3)
                 || !strncmp(lower_method, "delete", 6)) {
-            zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
+            zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
             linger_efree(lower_method);
         }
     }

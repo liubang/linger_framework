@@ -16,8 +16,10 @@ try {
 	]);
     $app->init($bootclass);
     $router = $app->getRouter();
-    $router->get('/get/@userId:([0-9]+)/@orderId:([0-9]+)', 'Test', 'bootstrap');
-	$app->getRequest()->setMethod('get')->setUri('/get/124/2345');
+    $router->get('/get/@userId:([0-9]+)/@orderId:([0-9]+)', 'Test', 'bootstrap')
+        ->post('/test/post/@userId:([0-9]+)', "Test", 'test');
+	$app->getRequest()->setMethod('post')->setUri('/test/post/124');
+//    var_dump($app);
     var_dump($app->getDispatcher()->findRouter());
     die;
 } catch (Exception $e) {

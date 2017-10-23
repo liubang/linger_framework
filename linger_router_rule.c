@@ -115,7 +115,7 @@ zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC)
 
 zval *linger_router_rule_get_params(zval *this TSRMLS_DC)
 {
-    if (this)
+    if (!this)
         return NULL;
     zval *params = NULL;
     params = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
@@ -124,7 +124,7 @@ zval *linger_router_rule_get_params(zval *this TSRMLS_DC)
 
 int linger_router_rule_set_params(zval *this, zval *params TSRMLS_DC)
 {
-    if (this)
+    if (!this)
         return FAILURE;
     zval *old_params = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
     if (NULL != old_params) {

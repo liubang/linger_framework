@@ -55,17 +55,17 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
-zval *linger_router_match(zval *this, char *request_method, char *uri, int uri_len TSRMLS_DC)
+zval *linger_router_match(zval *this, char *request_method, int request_method_len, char *uri, int uri_len TSRMLS_DC)
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
     if (IS_ARRAY == Z_TYPE_P(rules)) {
         HashTable *ht;
         ulong idx = 0;
         ht = Z_ARRVAL_P(rules);
-        zval **router_rule;
+        zval **router_rule = NULL;
         zval *zv_request_method, *zv_uri;
         char *lower_request_method = NULL;
-        lower_request_method = zend_str_tolower_dup(ZEND_STRL(uri));
+        lower_request_method = zend_str_tolower_dup(request_method, request_method_len);
         for (zend_hash_internal_pointer_reset(ht);
                 zend_hash_has_more_elements(ht) == SUCCESS;
                 zend_hash_move_forward(ht)) {
@@ -78,16 +78,14 @@ zval *linger_router_match(zval *this, char *request_method, char *uri, int uri_l
             }
             zv_request_method = linger_router_rule_get_request_method(*router_rule TSRMLS_CC);
             if (zv_request_method && Z_TYPE_P(zv_request_method) == IS_STRING) {
-                if (!strncmp(lower_request_method, Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
+                if (strncmp(lower_request_method, Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
+                    // php_printf("request_method %s not match %s, len:%d\n", Z_STRVAL_P(zv_request_method), lower_request_method, Z_STRLEN_P(zv_request_method));
                     continue;
                 }
-                //request method matched.
-                //match uri
                 zv_uri = linger_router_rule_get_uri(*router_rule TSRMLS_CC);
                 if (zv_uri && IS_STRING == Z_TYPE_P(zv_uri)) {
                     pcre_cache_entry *pce_regexp;
                     zval matches, *subparts, *map;
-                    //preg_match
                     if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?)\:/") TSRMLS_CC)) == NULL) {
                         continue;
                     }
@@ -158,7 +156,8 @@ zval *linger_router_match(zval *this, char *request_method, char *uri, int uri_l
                         zval_ptr_dtor(&params);
                         linger_router_rule_set_params(*router_rule, ret);
                         zval_ptr_dtor(&ret);
-                        return *router_rule;
+                        break;
+                        //return *router_rule;
                     }
                 } else {
                     continue;
@@ -168,7 +167,11 @@ zval *linger_router_match(zval *this, char *request_method, char *uri, int uri_l
             }
         }
         linger_efree(lower_request_method);
-        return NULL;
+        if (*router_rule != NULL && router_rule != NULL) {
+            return *router_rule;
+        } else {
+            return NULL;
+        }
     } else {
         return NULL;
     }
