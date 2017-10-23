@@ -24,5 +24,7 @@ zval *linger_router_rule_get_request_method(zval *this TSRMLS_DC);
 zval *linger_router_rule_get_uri(zval *this TSRMLS_DC);
 zval *linger_router_rule_get_class(zval *this TSRMLS_DC);
 zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC);
+zval *linger_router_rule_get_params(zval *this TSRMLS_DC);
+zval *linger_router_rule_set_params(zval *this, zval *params TSRMLS_DC);
 
 #endif /* LINGER_ROUTER_RULE_H_ */

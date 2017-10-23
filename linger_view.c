@@ -221,7 +221,7 @@ int linger_view_display(zval *this, zval *tpl, zval *ret TSRMLS_DC)
     return SUCCESS;
 }
 
-int linger_view_assign(zval *this, zval *key, zval *val TSRMLS_DC)
+int linger_view_assign(zval *this, char *key, zval *val TSRMLS_DC)
 {
     if (!this || !key || !val) {
         return FAILURE;

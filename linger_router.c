@@ -22,7 +22,7 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "ext/standard/info.h"
+#include "ext/pcre/php_pcre.h"
 #include "php_linger_framework.h"
 #include "linger_router_rule.h"
 
@@ -85,8 +85,67 @@ zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
                 //match uri
                 zv_uri = linger_router_rule_get_uri(*router_rule TSRMLS_CC);
                 if (zv_uri && IS_STRING == Z_TYPE_P(zv_uri)) {
+                    pcre_cache_entry *pce_regexp;
+                    zval matches, *subparts, *map;
                     //preg_match
+                    if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?)\:/") TSRMLS_CC)) == NULL) {
+                        continue;
+                    }
+                    MAKE_STD_ZVAL(map);
+                    ZVAL_NULL(map);
+                    php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), &matches, map, 0, 0, 0, 0 TSRMLS_CC);
+                    if (!zend_hash_num_elements(Z_ARRVAL_P(map))) {
+                        zval_ptr_dtor(&map);
+                        continue;
+                    } else {
+                        zval *zv_replace_empty = NULL;
+                        MAKE_STD_ZVAL(zv_replace_empty);
+                        ZVAL_STRING(zv_replace_empty, "", 0);
+                        char *tmp_uri = NULL;
+//PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *replace_value,
+//    int is_callable_replace, int *result_len, int limit, int *replace_count TSRMLS_DC);
+                        tmp_uri = php_pcre_replace_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), zv_replace_empty, 0, 0, 0, 0 TSRMLS_CC);
+                        if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?)\:/") TSRMLS_CC)) == NULL) {
+                            continue;
+                        }
+                        zval *params;
+                        MAKE_STD_ZVAL(params);
+                        ZVAL_NULL(params);
+                        php_pcre_match_impl(pce_regexp, ZEND_STRL(tmp_uri), &matches, params, 0, 0, 0, 0 TSRMLS_CC);
+                        if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
+                            zval_ptr_dtor(&params);
+                            continue;
+                        }
 
+                        zval *ret, **name, **ppzval;
+                        char *key = NULL;
+                        uint len = 0;
+                        ulong index = 0;
+                        HashTable *hashtable;
+
+                        hashtable = Z_ARRVAL_P(params);
+                        for (zend_hash_internal_pointer_reset(hashtable);
+                                zend_hash_has_more_elements(hashtable) == SUCCESS;
+                                zend_hash_move_forward(hashtable)) {
+                            if (zend_hash_get_current_data(hashtable, (void **)&ppzval) == FAILURE) {
+                                continue;
+                            }
+                            if (zend_hash_get_current_key_ex(hashtable, &key, &len, &index, 0, NULL) == HASH_KEY_IS_LONG) {
+                                if (map && zend_hash_index_find(Z_ARRVAL_P(map), index, (void **)&name) == SUCCESS
+                                        && Z_TYPE_PP(name) == IS_STRING) {
+                                    Z_ADDREF_P(*ppzval);
+                                    zend_hash_update(Z_ARRVAL_P(ret), Z_STRVAl_PP(name), Z_STRLEN_PP(name) + 1, (void **)ppzval, sizeof(zval *), NULL);
+                                }
+                            } else {
+                                Z_ADDREFP_P(*ppzval);
+                                zend_hash_update(Z_ARRVAL_P(ret), key, len, (void **)ppzval, sizeof(zval *), NULL);
+                            }
+                        }
+                        zval_ptr_dtor(&params);
+                        linger_router_rule_set_params(router_rule, ret);
+                        zval_ptr_dtor(&ret);
+                        return router_rule;
+                    }
                 } else {
                     continue;
                 }
