@@ -30,7 +30,7 @@ zend_class_entry *router_rule_ce;
 #define ROUTER_RULE_PROPERTIES_URI            "_uri"
 #define ROUTER_RULE_PROPERTIES_CLASS          "_class"
 #define ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
-#define ROUTER_RULE_PROPERTIES_PARAMS         "_params"
+//#define ROUTER_RULE_PROPERTIES_PARAMS         "_params"
 
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC)
 {
@@ -60,15 +60,15 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
             MAKE_STD_ZVAL(instance);
             object_init_ex(instance, router_rule_ce);
         }
-        zval *params = NULL;
-        MAKE_STD_ZVAL(params);
-        array_init(params);
+        //zval *params = NULL;
+        //MAKE_STD_ZVAL(params);
+        //array_init(params);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method TSRMLS_CC);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), uri TSRMLS_CC);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class TSRMLS_CC);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method TSRMLS_CC);
-        zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), params TSRMLS_CC);
-        zval_ptr_dtor(&params);
+        //zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), params TSRMLS_CC);
+        //zval_ptr_dtor(&params);
         return instance;
     } else {
         zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "invalid http request method:%s.", Z_STRVAL_P(request_method));
@@ -113,27 +113,6 @@ zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC)
     return class_method;
 }
 
-zval *linger_router_rule_get_params(zval *this TSRMLS_DC)
-{
-    if (!this)
-        return NULL;
-    zval *params = NULL;
-    params = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
-    return params;
-}
-
-int linger_router_rule_set_params(zval *this, zval *params TSRMLS_DC)
-{
-    if (!this)
-        return FAILURE;
-    zval *old_params = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
-    if (NULL != old_params) {
-        zval_ptr_dtor(&old_params);
-    }
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), params TSRMLS_CC);
-    return SUCCESS;
-}
-
 PHP_METHOD(linger_framework_router_rule, __construct)
 {
     zval *request_method, *uri, *class, *class_method;
@@ -172,20 +151,12 @@ PHP_METHOD(linger_framework_router_rule, getClassMethod)
     RETURN_ZVAL(class_method, 1, 0);
 }
 
-PHP_METHOD(linger_framework_router_rule, getParams)
-{
-    zval *params;
-    params = zend_read_property(router_rule_ce, getThis(), ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
-    RETURN_ZVAL(params, 1, 0);
-}
-
 zend_function_entry router_rule_methods[] = {
     PHP_ME(linger_framework_router_rule, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router_rule, getRequestMethod, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getUri, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getClass, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getClassMethod, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router_rule, getParams, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -198,6 +169,5 @@ LINGER_MINIT_FUNCTION(router_rule)
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), ZEND_ACC_PRIVATE);
     return SUCCESS;
 }

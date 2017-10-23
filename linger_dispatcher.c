@@ -242,6 +242,11 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
     }
 }
 
+void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
+{
+
+}
+
 PHP_METHOD(linger_framework_dispatcher, __construct)
 {
 
@@ -251,9 +256,10 @@ PHP_METHOD(linger_framework_dispatcher, findRouter)
 {
     zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
     zval *router = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1 TSRMLS_CC);
-    zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
-    zval *request_method = linger_request_get_request_method(request TSRMLS_CC);
-    zval *router_rule = linger_router_match(router, Z_STRVAL_P(request_method), Z_STRLEN_P(request_method), Z_STRVAL_P(uri), Z_STRLEN_P(uri) TSRMLS_CC);
+    //zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
+    //zval *request_method = linger_request_get_request_method(request TSRMLS_CC);
+    //TODO params check.
+    zval *router_rule = linger_router_match(router, request TSRMLS_CC);
     if (NULL != router_rule) {
         RETURN_ZVAL(router_rule, 1, 0);
     } else {

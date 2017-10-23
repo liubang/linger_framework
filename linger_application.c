@@ -209,7 +209,8 @@ PHP_METHOD(linger_framework_application, run)
 {
     //dispatcher dispatche.
     zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1 TSRMLS_CC);
-    linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
+    //linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
+    linger_dispatcher_dispatch_ex(dispatcher TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_application, app)

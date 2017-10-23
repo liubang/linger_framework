@@ -25,6 +25,7 @@
 #include "ext/pcre/php_pcre.h"
 #include "php_linger_framework.h"
 #include "linger_router_rule.h"
+#include "linger_request.h"
 
 zend_class_entry *router_ce;
 zend_class_entry *router_rule_ce;
@@ -55,7 +56,7 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
-zval *linger_router_match(zval *this, char *request_method, int request_method_len, char *uri, int uri_len TSRMLS_DC)
+zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
     if (IS_ARRAY == Z_TYPE_P(rules)) {
@@ -65,7 +66,12 @@ zval *linger_router_match(zval *this, char *request_method, int request_method_l
         zval **router_rule = NULL;
         zval *zv_request_method, *zv_uri;
         char *lower_request_method = NULL;
-        lower_request_method = zend_str_tolower_dup(request_method, request_method_len);
+
+        zval *curr_request_method = linger_request_get_request_method(request TSRMLS_CC);
+        zval *curr_request_uri = linger_request_get_request_uri(request TSRMLS_CC);
+        if (!curr_request_method || !curr_request_uri)
+            return NULL;
+        lower_request_method = zend_str_tolower_dup(Z_STRVAL_P(curr_request_method), Z_STRLEN_P(curr_request_method));
         for (zend_hash_internal_pointer_reset(ht);
                 zend_hash_has_more_elements(ht) == SUCCESS;
                 zend_hash_move_forward(ht)) {
@@ -121,7 +127,7 @@ zval *linger_router_match(zval *this, char *request_method, int request_method_l
                             linger_efree(reg);
                             continue;
                         }
-                        php_pcre_match_impl(pce_regexp_t, uri, uri_len, &matches, params, 0, 0, 0, 0 TSRMLS_CC);
+                        php_pcre_match_impl(pce_regexp_t, Z_STRVAL_P(curr_request_uri), Z_STRLEN_P(curr_request_uri), &matches, params, 0, 0, 0, 0 TSRMLS_CC);
                         if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
                             zval_ptr_dtor(&params);
                             linger_efree(reg);
@@ -154,7 +160,8 @@ zval *linger_router_match(zval *this, char *request_method, int request_method_l
                             }
                         }
                         zval_ptr_dtor(&params);
-                        linger_router_rule_set_params(*router_rule, ret);
+                        //linger_router_rule_set_params(*router_rule, ret);
+                        linger_request_set_params(request, ret TSRMLS_CC);
                         zval_ptr_dtor(&ret);
                         break;
                         //return *router_rule;

@@ -138,11 +138,19 @@ char *linger_request_get_request_method(zval *this TSRMLS_DC)
 
 void *linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC)
 {
-    if (this != NULL) {
-        zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
-        add_assoc_string(param, key, val, 1);
-        zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+    zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
+    add_assoc_string(param, key, val, 1);
+    zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+}
+
+int linger_request_set_params(zval *this, zval *values TSRMLS_DC)
+{
+    if (values && IS_ARRAY == Z_TYPE_P(values)) {
+        zval *params = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
+        zend_hash_copy(Z_ARRVAL_P(params), Z_ARRVAL_P(values), (copy_ctor_func_t) zval_add_ref, NULL, sizeof(zval *));
+        return SUCCESS;
     }
+    return FAILURE;
 }
 
 PHP_METHOD(linger_framework_request, __construct)

@@ -21,6 +21,7 @@ try {
 	$app->getRequest()->setMethod('post')->setUri('/test/post/124');
 //    var_dump($app);
     var_dump($app->getDispatcher()->findRouter());
+    var_dump($app->getRequest());
     die;
 } catch (Exception $e) {
 	echo $e->getMessage(), PHP_EOL;
