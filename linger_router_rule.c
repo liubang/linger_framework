@@ -126,12 +126,10 @@ int linger_router_rule_set_params(zval *this, zval *params TSRMLS_DC)
 {
     if (this)
         return FAILURE;
-    /*
     zval *old_params = zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), 1 TSRMLS_CC);
     if (NULL != old_params) {
         zval_ptr_dtor(&old_params);
     }
-    */
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), params TSRMLS_CC);
     return SUCCESS;
 }
