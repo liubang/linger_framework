@@ -55,7 +55,7 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     return instance;
 }
 
-zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
+zval *linger_router_match(zval *this, char *request_method, char *uri, int uri_len TSRMLS_DC)
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
     if (IS_ARRAY == Z_TYPE_P(rules)) {
@@ -73,12 +73,12 @@ zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
                 continue;
             }
             if (IS_OBJECT != Z_TYPE_PP(router_rule) ||
-                    instanceof_function(Z_OBJCE_PP(router_rule), router_rule_ce)) {
+                    !instanceof_function(Z_OBJCE_PP(router_rule), router_rule_ce)) {
                 continue;
             }
             zv_request_method = linger_router_rule_get_request_method(*router_rule TSRMLS_CC);
             if (zv_request_method && Z_TYPE_P(zv_request_method) == IS_STRING) {
-                if (strncmp(lower_request_method, Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
+                if (!strncmp(lower_request_method, Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
                     continue;
                 }
                 //request method matched.
@@ -93,30 +93,45 @@ zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
                     }
                     MAKE_STD_ZVAL(map);
                     ZVAL_NULL(map);
-                    php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), &matches, map, 0, 0, 0, 0 TSRMLS_CC);
+                    php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), &matches, map, 1, 0, 0, 0 TSRMLS_CC);
                     if (!zend_hash_num_elements(Z_ARRVAL_P(map))) {
                         zval_ptr_dtor(&map);
                         continue;
                     } else {
+                        zval **params_map;
+                        if (zend_hash_index_find(Z_ARRVAL_P(map), 1, (void **)&params_map) != SUCCESS) {
+                            zval_ptr_dtor(&map);
+                            continue;
+                        }
+                        //return *params_map;
                         zval *zv_replace_empty = NULL;
                         MAKE_STD_ZVAL(zv_replace_empty);
                         ZVAL_STRING(zv_replace_empty, "", 0);
                         char *tmp_uri = NULL;
-//PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *replace_value,
-//    int is_callable_replace, int *result_len, int limit, int *replace_count TSRMLS_DC);
-                        tmp_uri = php_pcre_replace_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), zv_replace_empty, 0, 0, 0, 0 TSRMLS_CC);
-                        if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?)\:/") TSRMLS_CC)) == NULL) {
-                            continue;
-                        }
+                        int result_len = 0, replace_count = 0;
+                        //PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *replace_value,
+                        //    int is_callable_replace, int *result_len, int limit, int *replace_count TSRMLS_DC);
+                        tmp_uri = php_pcre_replace_impl(pce_regexp, Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), zv_replace_empty, 0, &result_len, -1, &replace_count TSRMLS_CC);
                         zval *params;
                         MAKE_STD_ZVAL(params);
                         ZVAL_NULL(params);
-                        php_pcre_match_impl(pce_regexp, ZEND_STRL(tmp_uri), &matches, params, 0, 0, 0, 0 TSRMLS_CC);
-                        if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
-                            zval_ptr_dtor(&params);
+                        int reg_len;
+                        char *reg = NULL;
+                        pcre_cache_entry *pce_regexp_t;
+                        reg_len = spprintf(&reg, 0, "#^%s$#", tmp_uri);
+                        if ((pce_regexp_t = pcre_get_compiled_regex_cache(reg, reg_len TSRMLS_CC)) == NULL) {
+                            linger_efree(reg);
                             continue;
                         }
-
+                        php_printf("%s::%d\n", uri, uri_len);
+                        php_printf("%s::%d\n", reg, reg_len);
+                        php_pcre_match_impl(pce_regexp_t, uri, uri_len, &matches, params, 0, 0, 0, 0 TSRMLS_CC);
+                        if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
+                            zval_ptr_dtor(&params);
+                            linger_efree(reg);
+                            continue;
+                        }
+                        linger_efree(reg);
                         zval *ret, **name, **ppzval;
                         char *key = NULL;
                         uint len = 0;
@@ -131,20 +146,22 @@ zval *linger_router_match(zval *this, char *request_method, char *uri TSRMLS_DC)
                                 continue;
                             }
                             if (zend_hash_get_current_key_ex(hashtable, &key, &len, &index, 0, NULL) == HASH_KEY_IS_LONG) {
-                                if (map && zend_hash_index_find(Z_ARRVAL_P(map), index, (void **)&name) == SUCCESS
+                                if (*params_map && zend_hash_index_find(Z_ARRVAL_PP(params_map), index, (void **)&name) == SUCCESS
                                         && Z_TYPE_PP(name) == IS_STRING) {
                                     Z_ADDREF_P(*ppzval);
-                                    zend_hash_update(Z_ARRVAL_P(ret), Z_STRVAl_PP(name), Z_STRLEN_PP(name) + 1, (void **)ppzval, sizeof(zval *), NULL);
+                                    zend_hash_update(Z_ARRVAL_P(ret), Z_STRVAL_PP(name), Z_STRLEN_PP(name) + 1, (void **)ppzval, sizeof(zval *), NULL);
                                 }
                             } else {
                                 Z_ADDREFP_P(*ppzval);
                                 zend_hash_update(Z_ARRVAL_P(ret), key, len, (void **)ppzval, sizeof(zval *), NULL);
                             }
                         }
+                        php_printf("005\n");
                         zval_ptr_dtor(&params);
-                        linger_router_rule_set_params(router_rule, ret);
+                        linger_router_rule_set_params(*router_rule, ret);
                         zval_ptr_dtor(&ret);
-                        return router_rule;
+                        php_printf("111\n");
+                        return *router_rule;
                     }
                 } else {
                     continue;

@@ -90,12 +90,12 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
     }
     zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
     if (Z_TYPE_P(request) == IS_OBJECT) {
-        char *uri = linger_request_get_request_uri(request);
+        zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
         if (uri == NULL) {
             zend_throw_exception(NULL, "illegal access!", 0 TSRMLS_CC);
             return;
         }
-        char *copy = estrdup(uri);
+        char *copy = estrdup(Z_STRVAL_P(uri));
         char *mvc;
         zval *module;
         zval *controller;
@@ -247,6 +247,20 @@ PHP_METHOD(linger_framework_dispatcher, __construct)
 
 }
 
+PHP_METHOD(linger_framework_dispatcher, findRouter)
+{
+    zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
+    zval *router = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1 TSRMLS_CC);
+    zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
+    zval *request_method = linger_request_get_request_method(request TSRMLS_CC);
+    zval *router_rule = linger_router_match(router, request_method, Z_STRVAL_P(uri), Z_STRLEN_P(uri) TSRMLS_CC);
+    if (NULL != router_rule) {
+        RETURN_ZVAL(router_rule, 1, 0);
+    } else {
+        RETURN_FALSE;
+    }
+}
+
 PHP_METHOD(linger_framework_dispatcher, getRequest)
 {
     zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
@@ -256,6 +270,7 @@ PHP_METHOD(linger_framework_dispatcher, getRequest)
 zend_function_entry dispatcher_methods[] = {
     PHP_ME(linger_framework_dispatcher, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_dispatcher, getRequest, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_dispatcher, findRouter, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

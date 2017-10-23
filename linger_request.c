@@ -119,7 +119,18 @@ char *linger_request_get_request_uri(zval *this TSRMLS_DC)
     if (this != NULL) {
         zval *uri = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_URI), 1 TSRMLS_CC);
         if (Z_TYPE_P(uri) == IS_STRING) {
-            return Z_STRVAL_P(uri);
+            return uri;
+        }
+    }
+    return NULL;
+}
+
+char *linger_request_get_request_method(zval *this TSRMLS_DC)
+{
+    if (this != NULL) {
+        zval *request_method = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
+        if (Z_TYPE_P(request_method) == IS_STRING) {
+            return request_method;
         }
     }
     return NULL;
@@ -275,6 +286,25 @@ PHP_METHOD(linger_framework_request, isAjax)
     RETURN_FALSE;
 }
 
+PHP_METHOD(linger_framework_request, setMethod)
+{
+    zval *method;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &method) == FAILURE) {
+        return;
+    }
+    if (Z_TYPE_P(method) == IS_STRING) {
+        char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(method), Z_STRLEN_P(method));
+        if (!strncmp(lower_method, "get", 3)
+                || !strncmp(lower_method, "post", 4)
+                || !strncmp(lower_method, "put", 3)
+                || !strncmp(lower_method, "delete", 6)) {
+            zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
+            linger_efree(lower_method);
+        }
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
 PHP_METHOD(linger_framework_request, setUri)
 {
     zval *uri;
@@ -301,6 +331,7 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, isPost, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, isAjax, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setUri, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setMethod, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

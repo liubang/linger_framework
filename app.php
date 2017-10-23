@@ -16,21 +16,21 @@ try {
 	]);
 
     $app->init($bootclass);
-	$rule = new \linger\framework\RouterRule('GET', '/test/aaa', 'Test', 'bootstrap');
+	//$rule = new \linger\framework\RouterRule('GET', '/test/aaa', 'Test', 'bootstrap');
     //\var_dump($rule);die;
     //$router = new \linger\framework\Router();
     $router = $app->getRouter();
-    var_dump($router);
 
-    $router->add($rule);
-    $router->get('/get', 'Test', 'bootstrap')
-            ->post('/post', 'Test', 'bootstrap')
-            ->put('/put', 'Test', 'bootstrap')
-            ->delete('/delete', 'Test', 'bootstrap');
+    //$router->add($rule);
+    $router->get('/get/@userId:([0-9]+)/@orderId:([0-9]+)', 'Test', 'bootstrap');
+//            ->post('/post', 'Test', 'bootstrap')
+ //           ->put('/put', 'Test', 'bootstrap')
+  //          ->delete('/delete', 'Test', 'bootstrap');
    var_dump($router);
 
 	//var_dump($app);
-	$app->getRequest()->setUri('/index/index/index');
+	$app->getRequest()->setMethod('get')->setUri('/get/124/2345');
+    var_dump($app->getDispatcher()->findRouter());
 	//$app->run();
 } catch (Exception $e) {
 	echo $e->getMessage(), PHP_EOL;
