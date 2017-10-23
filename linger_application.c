@@ -31,6 +31,7 @@
 /* class entry */
 zend_class_entry *application_ce;
 zend_class_entry *config_ce;
+zend_class_entry *bootstrap_ce;
 
 #define MAXPATHLEN                        1024
 #define APPLICATION_PROPERTIES_APP        "_app"
@@ -193,12 +194,16 @@ PHP_METHOD(linger_framework_application, init)
             zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
             RETURN_FALSE;
         }
-        zval *bootObj;
+        zval *boot_obj;
         zval **fptr;
-        MAKE_STD_ZVAL(bootObj);
-        object_init_ex(bootObj, *ce);
+        MAKE_STD_ZVAL(boot_obj);
+        object_init_ex(boot_obj, *ce);
+        if (!instanceof_function(Z_OBJCE_P(boot_obj), bootstrap_ce)) {
+            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s must be subclass of %s", Z_STRVAL_PP(ppzval), bootstrap_ce->name);
+            continue;
+        }
         if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
-            zend_call_method_with_1_params(&bootObj, *ce, NULL, "bootstrap", NULL, getThis());
+            zend_call_method_with_1_params(&boot_obj, *ce, NULL, "bootstrap", NULL, getThis());
         }
     }
 

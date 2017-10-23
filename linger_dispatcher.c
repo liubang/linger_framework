@@ -23,9 +23,11 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "Zend/zend_interfaces.h"
 #include "php_linger_framework.h"
 #include "linger_request.h"
 #include "linger_router.h"
+#include "linger_router_rule.h"
 
 zend_class_entry *dispatcher_ce;
 zend_class_entry *request_ce;
@@ -244,12 +246,36 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
 
 void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
 {
-
+    zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
+    zval *router = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1 TSRMLS_CC);
+    zval *router_rule;
+    if ((router_rule = linger_router_match(router, request TSRMLS_CC)) == NULL) {
+        return;
+    }
+    zval *class = linger_router_rule_get_class(router_rule TSRMLS_CC);
+    zval *class_method = linger_router_rule_get_class_method(router_rule TSRMLS_CC);
+    if (NULL != class && NULL != class_method) {
+        zend_class_entry **ce;
+        if (zend_lookup_class(Z_STRVAL_P(class), Z_STRLEN_P(class), &ce TSRMLS_CC) != SUCCESS) {
+            zend_throw_exception(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_P(class));
+            return;
+        }
+        zval *controller_obj;
+        zval **fptr;
+        MAKE_STD_ZVAL(controller_obj);
+        object_init_ex(controller_obj, *ce);
+        if (FAILURE == linger_controller_construct(*ce, controller_obj, request TSRMLS_CC)) {
+            return;
+        }
+        if (zend_hash_find(&((*ce)->function_table), Z_STRVAL_P(class_method), Z_STRLEN_P(class_method) + 1, (void **)&fptr) == SUCCESS) {
+            zend_call_method_with_0_params(&controller_obj, *ce, NULL, Z_STRVAL_P(class_method), NULL);
+        }
+    }
+    return;
 }
 
 PHP_METHOD(linger_framework_dispatcher, __construct)
 {
-
 }
 
 PHP_METHOD(linger_framework_dispatcher, findRouter)

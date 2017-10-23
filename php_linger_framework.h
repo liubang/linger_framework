@@ -25,6 +25,7 @@ extern zend_module_entry linger_framework_module_entry;
 extern zend_class_entry *config_ce;
 extern zend_class_entry *request_ce;
 extern zend_class_entry *router_rule_ce;
+extern zend_class_entry *bootstrap_ce;
 #define phpext_linger_framework_ptr &linger_framework_module_entry
 
 #define PHP_LINGER_FRAMEWORK_VERSION "0.1"
