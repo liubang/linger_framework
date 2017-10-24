@@ -23,6 +23,7 @@
 #include "php.h"
 #include "main/SAPI.h"
 #include "php_linger_framework.h"
+#include "Zend/zend_interfaces.h"
 #include "ext/standard/url.h"
 #include "ext/standard/php_string.h"
 
@@ -168,21 +169,35 @@ PHP_METHOD(linger_framework_request, getQuery)
 {
     char *key;
     uint key_len = 0;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
-        return;
+    zval *default_value = NULL;
+    zval *filter = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|szz", &key, &key_len, &default_value, &filter) == FAILURE) {
+        RETURN_FALSE;
     }
-
     zval *query = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_QUERY), 1 TSRMLS_CC);
-
     if (!key_len) {
         RETURN_ZVAL(query, 1, 0);
     } else {
         HashTable *ht = Z_ARRVAL_P(query);
         zval **ret;
         if (zend_hash_find(ht, key, key_len + 1, (void **)&ret) == FAILURE) {
-            RETURN_NULL();
+            if (default_value) {
+                RETURN_ZVAL(default_value, 1, 0);
+            }  else {
+                RETURN_NULL();
+            }
         } else {
-            RETURN_ZVAL(*ret, 1, 0);
+            char *func_name = NULL;
+            int func_name_len = 0;
+            if (filter && zend_is_callable_ex(filter, NULL, 0, &func_name, &func_name_len, NULL, NULL TSRMLS_CC)) {
+                zval *ret_val;
+                zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
+                linger_efree(func_name);
+                RETURN_ZVAL(ret_val, 1, 0);
+            } else {
+                linger_efree(func_name);
+                RETURN_ZVAL(*ret, 1, 0);
+            }
         }
     }
 }
@@ -191,8 +206,10 @@ PHP_METHOD(linger_framework_request, getParam)
 {
     char *key;
     uint key_len = 0;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
-        return;
+    zval *default_value = NULL;
+    zval *filter = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|szz", &key, &key_len, &default_value, &filter) == FAILURE) {
+        RETURN_FALSE;
     }
     zval *param = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
     if (!key_len) {
@@ -201,9 +218,23 @@ PHP_METHOD(linger_framework_request, getParam)
         HashTable *ht = Z_ARRVAL_P(param);
         zval **ret;
         if (zend_hash_find(ht, key, key_len + 1, (void **)&ret) == FAILURE) {
-            RETURN_NULL();
+            if (default_value) {
+                RETURN_ZVAL(default_value, 1, 0);
+            } else {
+                RETURN_NULL();
+            }
         } else {
-            RETURN_ZVAL(*ret, 1, 0);
+            char *func_name = NULL;
+            int func_name_len = 0;
+            if (filter && zend_is_callable_ex(filter, NULL, 0, &func_name, &func_name_len, NULL, NULL TSRMLS_CC)) {
+                zval *ret_val;
+                zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
+                linger_efree(func_name);
+                RETURN_ZVAL(ret_val, 1, 0);
+            } else {
+                linger_efree(func_name);
+                RETURN_ZVAL(*ret, 1, 0);
+            }
         }
     }
 }
@@ -212,8 +243,10 @@ PHP_METHOD(linger_framework_request, getPost)
 {
     char *key;
     uint key_len = 0;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
-        return;
+    zval *default_value = NULL;
+    zval *filter = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|szz", &key, &key_len, &default_value, &filter) == FAILURE) {
+        RETURN_FALSE;
     }
     zval *post = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_POST), 1 TSRMLS_CC);
     if (!key_len) {
@@ -222,9 +255,23 @@ PHP_METHOD(linger_framework_request, getPost)
         HashTable *ht = Z_ARRVAL_P(post);
         zval **ret;
         if (zend_hash_find(ht, key, key_len + 1, (void **)&ret) == FAILURE) {
-            RETURN_NULL();
+            if (default_value) {
+                RETURN_ZVAL(default_value, 1, 0);
+            } else {
+                RETURN_NULL();
+            }
         } else {
-            RETURN_ZVAL(*ret, 1, 0);
+            char *func_name = NULL;
+            int func_name_len = 0;
+            if (filter && zend_is_callable_ex(filter, NULL, 0, &func_name, &func_name_len, NULL, NULL TSRMLS_CC)) {
+                zval *ret_val;
+                zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
+                linger_efree(func_name);
+                RETURN_ZVAL(ret_val, 1, 0);
+            } else {
+                linger_efree(func_name);
+                RETURN_ZVAL(*ret, 1, 0);
+            }
         }
     }
 }
@@ -321,20 +368,7 @@ PHP_METHOD(linger_framework_request, setUri)
         return;
     }
     if (Z_TYPE_P(uri) == IS_STRING) {
-        /*
-        char *trim_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
-        char *format_uri = NULL;
-        int format_uri_len = spprintf(&format_uri, 0, "/%s/", trim_uri);
-        zval *zv_uri = NULL;
-        MAKE_STD_ZVAL(zv_uri);
-        ZVAL_STRING(zv_uri, format_uri, 1);
-        */
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
-        /*
-        linger_efree(trim_uri);
-        linger_efree(format_uri);
-        zval_ptr_dtor(&zv_uri);
-        */
     } else {
         linger_throw_exception(NULL, 0, "uri must be string.");
         return;
