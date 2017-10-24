@@ -101,8 +101,13 @@ class Home extends \linger\framework\Controller {
     }
 
     public function home() {
-        $userId = $this->getRequest()->getParam('userId');
-        $this->getView()->assign('name', 'liubang')
+        $userId = $this->getRequest()->getQuery('userId');
+        \var_dump($userId);
+        $userId = $this->getRequest()->getQuery('userId', 10, 'intval');
+        \var_dump($userId);
+        $userName = $this->getRequest()->getPost("userName", 'liubang');
+        \var_dump($userName);
+        $this->getView()->assign('name', $userName)
             ->assign('userId', $userId)
             ->assign('list', [
                 ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
