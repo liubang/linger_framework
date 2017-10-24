@@ -123,12 +123,12 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
                 return FAILURE;
             }
         } else {
-            len = spprintf(&script, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+            len = spprintf(&script, 0, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
         }
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
             php_output_end(TSRMLS_C);
             RESTORE_ACTIVE_SYMBOL_TABLE();
-            linger_throw_exception(NULL, 0, "failed opening template %s:%s.", script, strerror(errno));
+            linger_throw_exception(NULL, 0, "2failed opening template %s:%s.", script, strerror(errno));
             linger_efree(script);
             return FAILURE;
         }

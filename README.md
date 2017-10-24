@@ -14,15 +14,12 @@
 .
 ├── app
 │   ├── boot
-│   │   ├── Session.php
-│   │   └── Test.php
-│   └── module
-│       └── index
-│           ├── controller
-│           │   └── Index.php
-│           └── view
-│               ├── header.html
-│               └── index.html
+│   │   ├── Router.php
+│   │   └── Session.php
+│   ├── handler
+│   │   └── Home.php
+│   └── view
+│       └── index.html
 └── public
     └── index.php
 ```
@@ -41,20 +38,19 @@ spl_autoload_register(function ($class) {
 });
 
 set_exception_handler(function(Exception $e) {
-        echo $e->getMessage(),PHP_EOL;
-            echo $e->getTraceAsString();
-
-    });
+    echo $e->getMessage(),PHP_EOL;
+    echo $e->getTraceAsString();
+});
 
 $bootclass = [
-		\boot\Session::class,
-		\boot\Test::class
+    \boot\Session::class,
+    \boot\Router::class
 ];
 $app = new linger\framework\Application([
-		'app_directory' => APP_PATH . 'app'
+    'app_directory' => APP_PATH . 'app'
 ]);
 $app->init($bootclass)
-      ->run();
+    ->run();
 ```
 
 **app/boot/Session.php**
@@ -69,72 +65,85 @@ class Session implements \linger\framework\Bootstrap {
 }
 ```
 
-**app/boot/Test.php**
+**app/boot/Router.php**
 
 ```php
+<?php
 namespace boot;
 
-class Test implements \linger\framework\Bootstrap {
-    public function bootstrap() {
-        echo __METHOD__,"<br>";
+use handler\Home;
+
+class Router implements \linger\framework\Bootstrap {
+    public function bootstrap(\linger\framework\Application $app) {
+        $app->getRouter()->get('/', Home::class, 'index')
+            ->get('/home', Home::class, 'home');
     }
 }
 ```
 
-**app/module/index/controller/Index.php**
+**app/handler/Home.php**
 
 ```php
 <?php
+namespace handler;
 
-class IndexController extends linger\framework\Controller {
+class Home extends \linger\framework\Controller {
 
-    public function indexAction() {
-        $list = [];
-        for ($i = 0; $i < 10; ++$i) {
-            $list[] = "这是测试{$i}";
-        }
-        $this->getView()
-            ->assign('name', 'liubang')
-            ->assign('list', $list)
+    public function _init() {
+        $this->getView()->setScriptPath(\APP_PATH . 'app/view/');
+    }
+
+    public function index() {
+        echo \json_encode([
+            'status' => 1,
+            'message' => 'ok'
+        ]);
+    }
+
+    public function home() {
+				$this->getView()->assign('name', 'liubang')
+            ->assign('list', [
+                ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
+                ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
+                ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
+            ])
             ->display('index.html');
     }
 }
 ```
 
 
-**app/module/index/view/index.html**
+**app/view/index.html**
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Title</title>
 </head>
 <body>
     <?=$this->render('header.html');?>
-    <h1>hello <?=$name?></h1>
+    <hr>
+<section>
     <ul>
-        <?php foreach($list as $value): ?>
-            <li><?=$value?></li>
+        <?php foreach($list as $row) :?>
+            <li><?=$row['name']?> - <?=$row['email']?></li>
         <?php endforeach; ?>
     </ul>
+</section>
 </body>
 </html>
 ```
 
-**app/module/index/view/header.html**
+**app/view/header.html**
 
 ```html
-<header style="height: 75px; background: #ccc; text-align: center; line-height: 75px;">
-    <h1>hello world</h1>
-</header>
+<header style="height: 72px; background: #ccc; text-align: center; line-height: 72px; font-size: 26px;">hello world</header>
 ```
 
 运行效果：
 
 ![](snapshot/1.png)
+![](snapshot/2.png)
 
