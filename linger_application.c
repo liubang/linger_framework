@@ -28,9 +28,10 @@
 #include "linger_request.h"
 #include "linger_dispatcher.h"
 #include "linger_response.h"
-
+/* class entry */
 zend_class_entry *application_ce;
 zend_class_entry *config_ce;
+zend_class_entry *bootstrap_ce;
 
 #define MAXPATHLEN                        1024
 #define APPLICATION_PROPERTIES_APP        "_app"
@@ -123,7 +124,7 @@ PHP_METHOD(linger_framework_application, __construct)
     app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1 TSRMLS_CC);
 
     if (!ZVAL_IS_NULL(app)) {
-        zend_throw_exception(NULL, "Can not reinstance application", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "can not reinstance application.");
         RETURN_FALSE;
     }
 
@@ -132,7 +133,7 @@ PHP_METHOD(linger_framework_application, __construct)
     }
 
     if (aconfig && Z_TYPE_P(aconfig) != IS_ARRAY) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "config must be array");
+        linger_throw_exception(NULL, 0, "config must be an array.");
         RETURN_FALSE;
     }
     zval *self = getThis();
@@ -150,11 +151,12 @@ PHP_METHOD(linger_framework_application, __construct)
     zval_ptr_dtor(&oconfig);
     zval_ptr_dtor(&orequest);
     zval_ptr_dtor(&odispatcher);
+    zval_ptr_dtor(&orouter);
 
     HashTable *conf = Z_ARRVAL_P(aconfig);
     zval **ppzval;
     if (zend_hash_find(conf, ZEND_STRS("app_directory"), (void **)&ppzval) == FAILURE) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "must set app_directory in config");
+        linger_throw_exception(NULL, 0, "must set app_directory in config.");
         RETURN_FALSE;
     }
 
@@ -165,20 +167,20 @@ PHP_METHOD(linger_framework_application, __construct)
     }
 }
 
-PHP_METHOD(linger_framework_application, bootstrap)
+PHP_METHOD(linger_framework_application, init)
 {
     zval *bootclasses = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &bootclasses) == FAILURE) {
         return;
     }
     if (IS_ARRAY != Z_TYPE_P(bootclasses)) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter must be an array.");
+        linger_throw_exception(NULL, 0, "the parameter must be an array.");
         RETURN_FALSE;
     }
-    HashTable *hash = HASH_OF(bootclasses); 
+    HashTable *hash = HASH_OF(bootclasses);
     HashPosition pos;
-    for (zend_hash_internal_pointer_reset_ex(hash, &pos); 
-            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS; 
+    for (zend_hash_internal_pointer_reset_ex(hash, &pos);
+            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS;
             zend_hash_move_forward_ex(hash, &pos)) {
         zval **ppzval;
         if (zend_hash_get_current_data_ex(hash,(void**)&ppzval, &pos) == FAILURE) {
@@ -186,22 +188,23 @@ PHP_METHOD(linger_framework_application, bootstrap)
         }
         if (IS_STRING != Z_TYPE_PP(ppzval)) {
             continue;
-        } 
+        }
         zend_class_entry **ce;
-        char *class_lowercase = NULL;
-        class_lowercase = zend_str_tolower_dup(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval));
-        if (zend_hash_find(EG(class_table), class_lowercase, Z_STRLEN_PP(ppzval) + 1, (void **)&ce) != SUCCESS) {
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_PP(ppzval));
+        if (zend_lookup_class(Z_STRVAL_PP(ppzval), Z_STRLEN_PP(ppzval), &ce TSRMLS_CC) != SUCCESS) {
+            linger_throw_exception(NULL, 0, "class %s dose not exists.", Z_STRVAL_PP(ppzval));
             RETURN_FALSE;
         }
-        zval *bootObj;
+        zval *boot_obj;
         zval **fptr;
-        MAKE_STD_ZVAL(bootObj);
-        object_init_ex(bootObj, *ce);
-        if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
-            zend_call_method_with_1_params(&bootObj, *ce, NULL, "bootstrap", NULL, getThis());
+        MAKE_STD_ZVAL(boot_obj);
+        object_init_ex(boot_obj, *ce);
+        if (!instanceof_function(Z_OBJCE_P(boot_obj), bootstrap_ce)) {
+            linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_PP(ppzval), bootstrap_ce->name);
+            continue;
         }
-        linger_efree(class_lowercase);
+        if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
+            zend_call_method_with_1_params(&boot_obj, *ce, NULL, "bootstrap", NULL, getThis());
+        }
     }
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -211,7 +214,8 @@ PHP_METHOD(linger_framework_application, run)
 {
     //dispatcher dispatche.
     zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1 TSRMLS_CC);
-    linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
+    //linger_dispatcher_dispatch(dispatcher TSRMLS_CC);
+    linger_dispatcher_dispatch_ex(dispatcher TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_application, app)
@@ -256,7 +260,7 @@ PHP_METHOD(linger_framework_application, setConfig)
         zend_update_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), config TSRMLS_CC);
         RETURN_ZVAL(getThis(), 1, 0);
     } else {
-        zend_throw_exception(NULL, "config must be a instance of linger_framework_Config", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "config must be instance of linger_framework_Config");
         return;
     }
 }
@@ -270,7 +274,7 @@ zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(linger_framework_application, bootstrap, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, init, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, setConfig, NULL, ZEND_ACC_PUBLIC)

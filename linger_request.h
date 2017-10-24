@@ -20,7 +20,9 @@
 #define LINGER_REQUEST_H_
 
 zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC);
-char *linger_request_get_request_uri(zval *this TSRMLS_CC);
+zval *linger_request_get_request_uri(zval *this TSRMLS_DC);
+zval *linger_request_get_request_method(zval *this TSRMLS_DC);
 void linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC);
+int linger_request_set_params(zval *this, zval *values TSRMLS_DC);
 
 #endif /* LINGER_REQUEST_H_ */

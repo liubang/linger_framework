@@ -22,5 +22,6 @@
 zval *linger_dispatcher_instance(zval *this, zval *orequest TSRMLS_DC);
 void *linger_dispatcher_prepare(zval *this TSRMLS_DC);
 void *linger_dispatcher_dispatch(zval *this TSRMLS_DC);
+void *linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC);
 
 #endif /* LINGER_DISPATCHER_H_ */

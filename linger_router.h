@@ -20,5 +20,6 @@
 #define LINGER_ROUTER_H_
 
 zval *linger_router_instance(zval *this TSRMLS_DC);
+zval *linger_router_match(zval *this, zval *request TSRMLS_DC);
 
 #endif /* LINGER_ROUTER_H_ */

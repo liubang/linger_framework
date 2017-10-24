@@ -24,6 +24,7 @@
 #include "main/SAPI.h"
 #include "php_linger_framework.h"
 #include "ext/standard/url.h"
+#include "ext/standard/php_string.h"
 
 zend_class_entry *request_ce;
 
@@ -114,12 +115,23 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
     return instance;
 }
 
-char *linger_request_get_request_uri(zval *this TSRMLS_DC)
+zval *linger_request_get_request_uri(zval *this TSRMLS_DC)
 {
     if (this != NULL) {
         zval *uri = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_URI), 1 TSRMLS_CC);
         if (Z_TYPE_P(uri) == IS_STRING) {
-            return Z_STRVAL_P(uri);
+            return uri;
+        }
+    }
+    return NULL;
+}
+
+zval *linger_request_get_request_method(zval *this TSRMLS_DC)
+{
+    if (this != NULL) {
+        zval *request_method = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
+        if (Z_TYPE_P(request_method) == IS_STRING) {
+            return request_method;
         }
     }
     return NULL;
@@ -127,11 +139,19 @@ char *linger_request_get_request_uri(zval *this TSRMLS_DC)
 
 void *linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC)
 {
-    if (this != NULL) {
-        zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
-        add_assoc_string(param, key, val, 1);
-        zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+    zval *param = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
+    add_assoc_string(param, key, val, 1);
+    zend_update_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+}
+
+int linger_request_set_params(zval *this, zval *values TSRMLS_DC)
+{
+    if (values && IS_ARRAY == Z_TYPE_P(values)) {
+        zval *params = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1 TSRMLS_CC);
+        zend_hash_copy(Z_ARRVAL_P(params), Z_ARRVAL_P(values), (copy_ctor_func_t) zval_add_ref, NULL, sizeof(zval *));
+        return SUCCESS;
     }
+    return FAILURE;
 }
 
 PHP_METHOD(linger_framework_request, __construct)
@@ -270,9 +290,28 @@ PHP_METHOD(linger_framework_request, isAjax)
         if (Z_TYPE_P(*ret) == IS_STRING) {
             RETURN_TRUE;
         }
-        zend_ptr_dtor(&ret);
+        zval_ptr_dtor(ret);
     }
     RETURN_FALSE;
+}
+
+PHP_METHOD(linger_framework_request, setMethod)
+{
+    zval *method;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &method) == FAILURE) {
+        return;
+    }
+    if (Z_TYPE_P(method) == IS_STRING) {
+        char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(method), Z_STRLEN_P(method));
+        if (!strncmp(lower_method, "get", 3)
+                || !strncmp(lower_method, "post", 4)
+                || !strncmp(lower_method, "put", 3)
+                || !strncmp(lower_method, "delete", 6)) {
+            zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
+            linger_efree(lower_method);
+        }
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(linger_framework_request, setUri)
@@ -282,9 +321,22 @@ PHP_METHOD(linger_framework_request, setUri)
         return;
     }
     if (Z_TYPE_P(uri) == IS_STRING) {
+        /*
+        char *trim_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
+        char *format_uri = NULL;
+        int format_uri_len = spprintf(&format_uri, 0, "/%s/", trim_uri);
+        zval *zv_uri = NULL;
+        MAKE_STD_ZVAL(zv_uri);
+        ZVAL_STRING(zv_uri, format_uri, 1);
+        */
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
+        /*
+        linger_efree(trim_uri);
+        linger_efree(format_uri);
+        zval_ptr_dtor(&zv_uri);
+        */
     } else {
-        zend_throw_excpetion(NULL, "uri must be a string.", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "uri must be string.");
         return;
     }
     RETURN_ZVAL(getThis(), 1, 0);
@@ -301,6 +353,7 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, isPost, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, isAjax, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setUri, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setMethod, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
