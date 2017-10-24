@@ -70,6 +70,7 @@ PHP_MINIT_FUNCTION(linger_framework)
 PHP_MSHUTDOWN_FUNCTION(linger_framework)
 {
     UNREGISTER_INI_ENTRIES();
+
     return SUCCESS;
 }
 /* }}} */
@@ -80,6 +81,7 @@ PHP_RINIT_FUNCTION(linger_framework)
 {
     LINGER_FRAMEWORK_G(app_directory) = NULL;
     LINGER_FRAMEWORK_G(view_directory) = NULL;
+
     return SUCCESS;
 }
 /* }}} */
@@ -100,8 +102,10 @@ PHP_RSHUTDOWN_FUNCTION(linger_framework)
 PHP_MINFO_FUNCTION(linger_framework)
 {
     php_info_print_table_start();
-    php_info_print_table_header(2, "linger_framework support", "enabled");
+    php_info_print_table_row(2, "Author", "liubang <it.liubang@gmail.com>");
+    php_info_print_table_row(2, "Version", PHP_LINGER_FRAMEWORK_VERSION);
     php_info_print_table_end();
+
     DISPLAY_INI_ENTRIES();
 }
 /* }}} */
