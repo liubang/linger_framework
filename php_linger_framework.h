@@ -63,6 +63,7 @@ extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
 #define linger_efree(ptr)	if (ptr) efree(ptr)
 #define linger_php_error(level, fmt_str, ...)	if (LINGER_FRAMEWORK_G(display_errors)) php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__)
 #define linger_php_fatal_error(level, fmt_str, ...)  php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__)
+#define linger_throw_exception(e, level, fmt_str, ...) zend_throw_exception_ex(e, level TSRMLS_CC, fmt_str, ##__VA_ARGS__)
 
 /* declare components */
 LINGER_MINIT_FUNCTION(application);

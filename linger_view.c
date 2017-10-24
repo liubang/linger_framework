@@ -108,7 +108,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
             php_output_end(TSRMLS_C);
             RESTORE_ACTIVE_SYMBOL_TABLE();
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s: %s", script, strerror(errno));
+            linger_throw_exception(NULL, 0, "failed opening template %s:%s.", script, strerror(errno));
             return FAILURE;
         }
     } else {
@@ -119,7 +119,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
             } else {
                 php_output_end(TSRMLS_C);
                 RESTORE_ACTIVE_SYMBOL_TABLE();
-                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Could not determine the view script path, call %s::setScriptPath to specific it", view_ce->name);
+                linger_throw_exception(NULL, 0, "could not determine the view script path.");
                 return FAILURE;
             }
         } else {
@@ -128,7 +128,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
             php_output_end(TSRMLS_C);
             RESTORE_ACTIVE_SYMBOL_TABLE();
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            linger_throw_exception(NULL, 0, "failed opening template %s:%s.", script, strerror(errno));
             linger_efree(script);
             return FAILURE;
         }
@@ -145,7 +145,7 @@ int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC)
 #else
     if (php_output_get_contents(ret TSRMLS_CC) == FAILURE) {
         php_output_end(TSRMLS_C);
-        zend_throw_exception(NULL, "unable to fetch ob content", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "unable to fetch ob content.");
         return FAILURE;
     }
     if (php_output_discard(TSRMLS_C) != SUCCESS) {
@@ -186,7 +186,7 @@ int linger_view_display(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         script = Z_STRVAL_P(tpl);
         len = Z_STRLEN_P(tpl);
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            linger_throw_exception(NULL, 0, "failed opening template %s:%s.", script, strerror(errno));
             EG(scope) = old_scope;
             RESTORE_ACTIVE_SYMBOL_TABLE();
             return FAILURE;
@@ -197,7 +197,7 @@ int linger_view_display(zval *this, zval *tpl, zval *ret TSRMLS_DC)
             if (LINGER_FRAMEWORK_G(view_directory)) {
                 len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
             } else {
-                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "could not determine the view path, you should call %s::setScriptPath to specific it", view_ce->name);
+                linger_throw_exception(NULL, 0, "could not determine the view path.");
                 EG(scope) = old_scope;
                 RESTORE_ACTIVE_SYMBOL_TABLE();
                 return FAILURE;
@@ -207,7 +207,7 @@ int linger_view_display(zval *this, zval *tpl, zval *ret TSRMLS_DC)
         }
 
         if (linger_application_import(script, len + 1, 0 TSRMLS_CC) == FAILURE) {
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening template %s:%s", script, strerror(errno));
+            linger_throw_exception(NULL, 0, "failed opening template %s:%s", script, strerror(errno));
             linger_efree(script);
             EG(scope) = old_scope;
             RESTORE_ACTIVE_SYMBOL_TABLE();
@@ -256,7 +256,7 @@ PHP_METHOD(linger_framework_view, assign)
     }
     if (key_len > 0 && val != NULL) {
         if (linger_view_assign(getThis(), key, val) == FAILURE) {
-            zend_throw_exception(NULL, "assign variable fail");
+            linger_throw_exception(NULL, 0, "assign variable fail.");
             return;
         }
         Z_ADDREF_P(val);
@@ -273,7 +273,7 @@ PHP_METHOD(linger_framework_view, setScriptPath)
     if (path && Z_TYPE_P(path) == IS_STRING) {
         zend_update_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), path TSRMLS_CC);
     } else {
-        zend_throw_exception(NULL, "script path must be a string", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "script path must be a string.");
         return;
     }
     RETURN_ZVAL(getThis(), 1, 0);
