@@ -35,15 +35,15 @@ zend_class_entry *router_rule_ce;
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC)
 {
     if (IS_STRING != Z_TYPE_P(request_method)) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter request_method must be string.");
+        linger_throw_exception(NULL, 0, "the parameter request_method must be string.");
         return NULL;
     }
     if (IS_STRING != Z_TYPE_P(uri)) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter uri must be string.");
+        linger_throw_exception(NULL, 0, "the parameter uri must be string.");
         return NULL;
     }
     if (IS_STRING != Z_TYPE_P(class_method)) {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the parameter class_method must be string.");
+        linger_throw_exception(NULL, 0, "the parameter class_method must be string.");
         return NULL;
     }
     char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));
@@ -71,7 +71,7 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
         //zval_ptr_dtor(&params);
         return instance;
     } else {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "invalid http request method:%s.", Z_STRVAL_P(request_method));
+        linger_throw_exception(NULL, 0, "invalid http request method:%s.", Z_STRVAL_P(request_method));
         linger_efree(lower_method);
         return NULL;
     }

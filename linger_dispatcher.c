@@ -59,7 +59,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
                 instanceof_function(Z_OBJCE_P(request), request_ce)) {
             zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request TSRMLS_CC);
         } else {
-            zend_throw_exception(NULL, "request must be a instance of linger_framework_Request", 0 TSRMLS_CC);
+            linger_throw_exception(NULL, 0, "request must be a instance of linger_framework_Request.");
             return NULL;
         }
     }
@@ -87,14 +87,13 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
 static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
 {
     if (this == NULL) {
-        zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
         return;
     }
     zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
     if (Z_TYPE_P(request) == IS_OBJECT) {
         zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
         if (uri == NULL) {
-            zend_throw_exception(NULL, "illegal access!", 0 TSRMLS_CC);
+            linger_throw_exception(NULL, 0, 'illegal access.');
             return;
         }
         char *copy = estrdup(Z_STRVAL_P(uri));
@@ -145,7 +144,7 @@ end:
         zval_ptr_dtor(&action);
         linger_efree(copy);
     } else {
-        zend_throw_exception(NULL, "illegal arrtribute", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, 'illegal arrtribute.');
         return;
     }
 }
@@ -175,14 +174,14 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
                 linger_efree(class);
                 linger_efree(class_lowercase);
                 linger_efree(directory);
-                zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "failed opening script %s", controller_path);
+                linger_throw_exception(NULL, 0, "failed opening script %s.", controller_path);
                 return NULL;
             } else {
                 if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
                     linger_efree(class);
                     linger_efree(class_lowercase);
                     linger_efree(directory);
-                    zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "could not find class %s", class);
+                    linger_throw_exception(NULL, 0, "could not find class %s.", class);
                     return NULL;
                 }
             }
@@ -209,13 +208,13 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
         action = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), 1 TSRMLS_CC);
         zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
         if (Z_TYPE_P(module) != IS_STRING || Z_TYPE_P(controller) != IS_STRING || Z_TYPE_P(action) != IS_STRING) {
-            zend_throw_exception(NULL, "illegal access", 0 TSRMLS_CC);
+            linger_throw_exception(NULL, 0, "illegal access.");
             return;
         }
 
         zend_class_entry *ce = linger_dispatcher_get_controller(LINGER_FRAMEWORK_G(app_directory), Z_STRVAL_P(module), Z_STRVAL_P(controller) TSRMLS_CC);
         if (!ce) {
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class %sController is not exists", Z_STRVAL_P(controller));
+            linger_throw_exception(NULL, 0, "class %sController is not exists.", Z_STRVAL_P(controller));
             return;
         }
         zval *icontroller;
@@ -234,12 +233,11 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
             zend_call_method(&icontroller, ce, NULL, func_name, func_name_len, &ret, 0, NULL, NULL TSRMLS_CC);
             if (ret) zval_ptr_dtor(&ret);
         } else {
-            zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "the method %sAction of controller %s is not exists", Z_STRVAL_P(action), Z_STRVAL_P(controller));
+            linger_throw_exception(NULL, 0, "the method %sAction of controller %s is not exists.", Z_STRVAL_P(action), Z_STRVAL_P(controller));
             return;
         }
         linger_efree(func_name);
     } else {
-        zend_throw_exception(NULL, "null pointer exception", 0 TSRMLS_CC);
         return;
     }
 }
@@ -257,7 +255,7 @@ void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
     if (NULL != class && NULL != class_method) {
         zend_class_entry **ce;
         if (zend_lookup_class(Z_STRVAL_P(class), Z_STRLEN_P(class), &ce TSRMLS_CC) != SUCCESS) {
-            zend_throw_exception(NULL, 0 TSRMLS_CC, "class %s not exists.", Z_STRVAL_P(class));
+            linger_throw_exception(NULL, 0, "class %s does not exists.", Z_STRVAL_P(class));
             return;
         }
         zval *controller_obj;

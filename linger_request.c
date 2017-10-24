@@ -322,7 +322,7 @@ PHP_METHOD(linger_framework_request, setUri)
     if (Z_TYPE_P(uri) == IS_STRING) {
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
     } else {
-        zend_throw_exception(NULL, "uri must be a string.", 0 TSRMLS_CC);
+        linger_throw_exception(NULL, 0, "uri must be string.");
         return;
     }
     RETURN_ZVAL(getThis(), 1, 0);
