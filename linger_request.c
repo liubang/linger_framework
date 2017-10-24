@@ -24,6 +24,7 @@
 #include "main/SAPI.h"
 #include "php_linger_framework.h"
 #include "ext/standard/url.h"
+#include "ext/standard/php_string.h"
 
 zend_class_entry *request_ce;
 
@@ -320,7 +321,20 @@ PHP_METHOD(linger_framework_request, setUri)
         return;
     }
     if (Z_TYPE_P(uri) == IS_STRING) {
+        /*
+        char *trim_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
+        char *format_uri = NULL;
+        int format_uri_len = spprintf(&format_uri, 0, "/%s/", trim_uri);
+        zval *zv_uri = NULL;
+        MAKE_STD_ZVAL(zv_uri);
+        ZVAL_STRING(zv_uri, format_uri, 1);
+        */
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
+        /*
+        linger_efree(trim_uri);
+        linger_efree(format_uri);
+        zval_ptr_dtor(&zv_uri);
+        */
     } else {
         linger_throw_exception(NULL, 0, "uri must be string.");
         return;

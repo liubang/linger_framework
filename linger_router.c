@@ -23,6 +23,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/pcre/php_pcre.h"
+#include "ext/standard/php_string.h"
 #include "php_linger_framework.h"
 #include "linger_router_rule.h"
 #include "linger_request.h"
@@ -66,11 +67,16 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
         zval **router_rule = NULL;
         zval *zv_request_method, *zv_uri;
         char *lower_request_method = NULL;
+        zend_bool is_find = 0;
 
         zval *curr_request_method = linger_request_get_request_method(request TSRMLS_CC);
         zval *curr_request_uri = linger_request_get_request_uri(request TSRMLS_CC);
         if (!curr_request_method || !curr_request_uri)
             return NULL;
+        char *trimed_uri = php_trim(Z_STRVAL_P(curr_request_uri), Z_STRLEN_P(curr_request_uri), "/", 1, NULL, 3);
+        char *format_uri = NULL;
+        int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
+        linger_efree(trimed_uri);
         lower_request_method = zend_str_tolower_dup(Z_STRVAL_P(curr_request_method), Z_STRLEN_P(curr_request_method));
         for (zend_hash_internal_pointer_reset(ht);
                 zend_hash_has_more_elements(ht) == SUCCESS;
@@ -127,7 +133,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                             linger_efree(reg);
                             continue;
                         }
-                        php_pcre_match_impl(pce_regexp_t, Z_STRVAL_P(curr_request_uri), Z_STRLEN_P(curr_request_uri), &matches, params, 0, 0, 0, 0 TSRMLS_CC);
+                        php_pcre_match_impl(pce_regexp_t, format_uri, format_uri_len, &matches, params, 0, 0, 0, 0 TSRMLS_CC);
                         if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
                             zval_ptr_dtor(&params);
                             linger_efree(reg);
@@ -163,6 +169,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                         //linger_router_rule_set_params(*router_rule, ret);
                         linger_request_set_params(request, ret TSRMLS_CC);
                         zval_ptr_dtor(&ret);
+                        is_find = 1;
                         break;
                         //return *router_rule;
                     }
@@ -174,7 +181,8 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
             }
         }
         linger_efree(lower_request_method);
-        if (*router_rule != NULL && router_rule != NULL) {
+        linger_efree(format_uri);
+        if (is_find && *router_rule != NULL && router_rule != NULL) {
             return *router_rule;
         } else {
             return NULL;

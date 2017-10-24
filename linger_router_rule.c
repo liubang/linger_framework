@@ -23,6 +23,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "php_linger_framework.h"
+#include "ext/standard/php_string.h"
 
 zend_class_entry *router_rule_ce;
 
@@ -30,7 +31,6 @@ zend_class_entry *router_rule_ce;
 #define ROUTER_RULE_PROPERTIES_URI            "_uri"
 #define ROUTER_RULE_PROPERTIES_CLASS          "_class"
 #define ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
-//#define ROUTER_RULE_PROPERTIES_PARAMS         "_params"
 
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC)
 {
@@ -60,15 +60,15 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
             MAKE_STD_ZVAL(instance);
             object_init_ex(instance, router_rule_ce);
         }
-        //zval *params = NULL;
-        //MAKE_STD_ZVAL(params);
-        //array_init(params);
+        char *trimed_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
+        char *format_uri = NULL;
+        int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
+        linger_efree(trimed_uri);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method TSRMLS_CC);
-        zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), uri TSRMLS_CC);
+        zend_update_property_string(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), format_uri TSRMLS_CC);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class TSRMLS_CC);
         zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method TSRMLS_CC);
-        //zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS), params TSRMLS_CC);
-        //zval_ptr_dtor(&params);
+        linger_efree(format_uri);
         return instance;
     } else {
         linger_throw_exception(NULL, 0, "invalid http request method:%s.", Z_STRVAL_P(request_method));
