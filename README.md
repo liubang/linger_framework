@@ -76,7 +76,7 @@ use handler\Home;
 class Router implements \linger\framework\Bootstrap {
     public function bootstrap(\linger\framework\Application $app) {
         $app->getRouter()->get('/', Home::class, 'index')
-            ->get('/home', Home::class, 'home');
+            ->get('/home/@userId:([0-9]+)', Home::class, 'home');
     }
 }
 ```
@@ -96,12 +96,14 @@ class Home extends \linger\framework\Controller {
     public function index() {
         echo \json_encode([
             'status' => 1,
-            'message' => 'ok'
+            'message' => $this->getRequest()->getQuery()
         ]);
     }
 
     public function home() {
-				$this->getView()->assign('name', 'liubang')
+        $userId = $this->getRequest()->getParam('userId');
+        $this->getView()->assign('name', 'liubang')
+            ->assign('userId', $userId)
             ->assign('list', [
                 ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
                 ['name' => 'liubang', 'email' => 'it.liubang@gmail.com'],
@@ -126,6 +128,7 @@ class Home extends \linger\framework\Controller {
     <?=$this->render('header.html');?>
     <hr>
 <section>
+    <p>userId: <?=$userId?></p>
     <ul>
         <?php foreach($list as $row) :?>
             <li><?=$row['name']?> - <?=$row['email']?></li>
@@ -145,5 +148,5 @@ class Home extends \linger\framework\Controller {
 运行效果：
 
 ![](snapshot/1.png)
-![](snapshot/2.png)
 
+![](snapshot/2.png)
