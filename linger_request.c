@@ -114,7 +114,7 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
     return instance;
 }
 
-char *linger_request_get_request_uri(zval *this TSRMLS_DC)
+zval *linger_request_get_request_uri(zval *this TSRMLS_DC)
 {
     if (this != NULL) {
         zval *uri = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_URI), 1 TSRMLS_CC);
@@ -125,7 +125,7 @@ char *linger_request_get_request_uri(zval *this TSRMLS_DC)
     return NULL;
 }
 
-char *linger_request_get_request_method(zval *this TSRMLS_DC)
+zval *linger_request_get_request_method(zval *this TSRMLS_DC)
 {
     if (this != NULL) {
         zval *request_method = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1 TSRMLS_CC);
@@ -289,7 +289,7 @@ PHP_METHOD(linger_framework_request, isAjax)
         if (Z_TYPE_P(*ret) == IS_STRING) {
             RETURN_TRUE;
         }
-        zend_ptr_dtor(&ret);
+        zval_ptr_dtor(ret);
     }
     RETURN_FALSE;
 }
@@ -322,7 +322,7 @@ PHP_METHOD(linger_framework_request, setUri)
     if (Z_TYPE_P(uri) == IS_STRING) {
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
     } else {
-        zend_throw_excpetion(NULL, "uri must be a string.", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "uri must be a string.", 0 TSRMLS_CC);
         return;
     }
     RETURN_ZVAL(getThis(), 1, 0);

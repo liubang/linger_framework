@@ -60,7 +60,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
             zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request TSRMLS_CC);
         } else {
             zend_throw_exception(NULL, "request must be a instance of linger_framework_Request", 0 TSRMLS_CC);
-            return;
+            return NULL;
         }
     }
     zval *router = linger_router_instance(NULL TSRMLS_CC);

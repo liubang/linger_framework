@@ -92,7 +92,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                 if (zv_uri && IS_STRING == Z_TYPE_P(zv_uri)) {
                     pcre_cache_entry *pce_regexp;
                     zval matches, *subparts, *map;
-                    if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?)\:/") TSRMLS_CC)) == NULL) {
+                    if ((pce_regexp = pcre_get_compiled_regex_cache(ZEND_STRL("/@(.*?):/") TSRMLS_CC)) == NULL) {
                         continue;
                     }
                     MAKE_STD_ZVAL(map);
@@ -155,7 +155,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                                     zend_hash_update(Z_ARRVAL_P(ret), Z_STRVAL_PP(name), Z_STRLEN_PP(name) + 1, (void **)ppzval, sizeof(zval *), NULL);
                                 }
                             } else {
-                                Z_ADDREFP_P(*ppzval);
+                                Z_ADDREF_P(*ppzval);
                                 zend_hash_update(Z_ARRVAL_P(ret), key, len, (void **)ppzval, sizeof(zval *), NULL);
                             }
                         }
@@ -209,7 +209,7 @@ PHP_METHOD(linger_framework_router, add)
         linger_router_add_rule(getThis(), rule_item TSRMLS_CC);
         RETURN_ZVAL(getThis(), 1, 0);
     } else {
-        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "parameter must be instanceof class %s", router_rule_ce->name);
+        zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "parameter must be instanceof class %s.", router_rule_ce->name);
         RETURN_FALSE;
     }
 }
