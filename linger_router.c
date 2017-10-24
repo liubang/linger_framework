@@ -66,6 +66,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
         ht = Z_ARRVAL_P(rules);
         zval **router_rule = NULL;
         zval *zv_request_method, *zv_uri;
+        zval *zv_replace_empty = NULL;
         char *lower_request_method = NULL;
         zend_bool is_find = 0;
 
@@ -78,6 +79,8 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
         int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
         linger_efree(trimed_uri);
         lower_request_method = zend_str_tolower_dup(Z_STRVAL_P(curr_request_method), Z_STRLEN_P(curr_request_method));
+        MAKE_STD_ZVAL(zv_replace_empty);
+        ZVAL_STRING(zv_replace_empty, "", 1);
         for (zend_hash_internal_pointer_reset(ht);
                 zend_hash_has_more_elements(ht) == SUCCESS;
                 zend_hash_move_forward(ht)) {
@@ -114,9 +117,6 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                             continue;
                         }
                         //return *params_map;
-                        zval *zv_replace_empty = NULL;
-                        MAKE_STD_ZVAL(zv_replace_empty);
-                        ZVAL_STRING(zv_replace_empty, "", 0);
                         char *tmp_uri = NULL;
                         int result_len = 0, replace_count = 0;
                         //PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *replace_value,
@@ -182,14 +182,12 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
         }
         linger_efree(lower_request_method);
         linger_efree(format_uri);
-        if (is_find && *router_rule != NULL && router_rule != NULL) {
+        zval_ptr_dtor(&zv_replace_empty);
+        if (is_find && *router_rule != NULL && router_rule != NULL)  {
             return *router_rule;
-        } else {
-            return NULL;
         }
-    } else {
-        return NULL;
     }
+    return NULL;
 }
 
 void linger_router_add_rule(zval *this, zval *rule TSRMLS_DC)
