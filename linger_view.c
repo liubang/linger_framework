@@ -255,7 +255,7 @@ PHP_METHOD(linger_framework_view, assign)
         return;
     }
     if (key_len > 0 && val != NULL) {
-        if (linger_view_assign(getThis(), key, val) == FAILURE) {
+        if (linger_view_assign(getThis(), key, val TSRMLS_CC) == FAILURE) {
             linger_throw_exception(NULL, 0, "assign variable fail.");
             return;
         }
