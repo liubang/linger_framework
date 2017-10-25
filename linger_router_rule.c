@@ -65,7 +65,7 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
             MAKE_STD_ZVAL(instance);
             object_init_ex(instance, router_rule_ce);
         }
-        char *trimed_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
+        char *trimed_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3 TSRMLS_CC);
         char *format_uri = NULL;
         int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
         linger_efree(trimed_uri);
@@ -129,7 +129,7 @@ PHP_METHOD(linger_framework_router_rule, __construct)
                               &request_method, &uri, &class, &class_method) == FAILURE) {
         return;
     }
-    linger_router_rule_instance(getThis(), request_method, uri, class, class_method);
+    linger_router_rule_instance(getThis(), request_method, uri, class, class_method TSRMLS_CC);
 }
 
 PHP_METHOD(linger_framework_router_rule, getRequestMethod)

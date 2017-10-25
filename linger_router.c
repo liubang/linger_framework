@@ -80,7 +80,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
         if (!curr_request_method || !curr_request_uri)
             return NULL;
 
-        char *trimed_uri = php_trim(Z_STRVAL_P(curr_request_uri), Z_STRLEN_P(curr_request_uri), "/", 1, NULL, 3);
+        char *trimed_uri = php_trim(Z_STRVAL_P(curr_request_uri), Z_STRLEN_P(curr_request_uri), "/", 1, NULL, 3 TSRMLS_CC);
         char *format_uri = NULL;
         int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
 
@@ -264,7 +264,7 @@ PHP_METHOD(linger_framework_router, get)
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
     ZVAL_STRING(request_method,"get", 0);
-    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method);
+    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -281,7 +281,7 @@ PHP_METHOD(linger_framework_router, post)
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
     ZVAL_STRING(request_method, "post", 0);
-    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method);
+    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -298,7 +298,7 @@ PHP_METHOD(linger_framework_router, put)
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
     ZVAL_STRING(request_method, "put", 0);
-    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method);
+    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -315,7 +315,7 @@ PHP_METHOD(linger_framework_router, delete)
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
     ZVAL_STRING(request_method, "delete", 0);
-    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method);
+    zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
