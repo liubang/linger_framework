@@ -198,7 +198,7 @@ PHP_METHOD(linger_framework_application, init)
         zval **fptr;
         MAKE_STD_ZVAL(boot_obj);
         object_init_ex(boot_obj, *ce);
-        if (!instanceof_function(Z_OBJCE_P(boot_obj), bootstrap_ce)) {
+        if (!instanceof_function(Z_OBJCE_P(boot_obj), bootstrap_ce TSRMLS_CC)) {
             linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_PP(ppzval), bootstrap_ce->name);
             continue;
         }
@@ -256,7 +256,7 @@ PHP_METHOD(linger_framework_application, setConfig)
         return;
     }
     if (Z_TYPE_P(config) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(config), config_ce)) {
+            instanceof_function(Z_OBJCE_P(config), config_ce TSRMLS_CC)) {
         zend_update_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), config TSRMLS_CC);
         RETURN_ZVAL(getThis(), 1, 0);
     } else {
@@ -289,10 +289,10 @@ LINGER_MINIT_FUNCTION(application)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Application", application_methods);
     application_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
-    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC TSRMLS_CC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), ZEND_ACC_PROTECTED TSRMLS_CC);
     return SUCCESS;
 }
