@@ -40,7 +40,7 @@ zval *linger_router_instance(zval *this TSRMLS_DC)
     zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
 
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(instance), router_ce)) {
+            instanceof_function(Z_OBJCE_P(instance), router_ce TSRMLS_CC)) {
         return instance;
     }
 
@@ -99,7 +99,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                 continue;
             }
             if (IS_OBJECT != Z_TYPE_PP(router_rule) ||
-                    !instanceof_function(Z_OBJCE_PP(router_rule), router_rule_ce)) {
+                    !instanceof_function(Z_OBJCE_PP(router_rule), router_rule_ce TSRMLS_CC)) {
                 continue;
             }
 
@@ -241,7 +241,7 @@ PHP_METHOD(linger_framework_router, add)
     }
 
     if (IS_OBJECT == Z_TYPE_P(rule_item) &&
-            instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce)) {
+            instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce TSRMLS_CC)) {
 
         linger_router_add_rule(getThis(), rule_item TSRMLS_CC);
 

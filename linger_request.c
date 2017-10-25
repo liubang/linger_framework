@@ -44,7 +44,7 @@ zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC)
     zval *param;
     zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(instance), request_ce)) {
+            instanceof_function(Z_OBJCE_P(instance), request_ce TSRMLS_CC)) {
         return instance;
     }
     if (this) {

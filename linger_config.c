@@ -33,7 +33,7 @@ zval *linger_config_instance(zval *this, zval *config TSRMLS_DC)
 {
     zval *instance = zend_read_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            !instanceof_function(Z_OBJCE_P(instance), config_ce)) {
+            !instanceof_function(Z_OBJCE_P(instance), config_ce TSRMLS_CC)) {
         return instance;
     }
     if (this) {

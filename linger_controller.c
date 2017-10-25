@@ -33,7 +33,7 @@ zend_class_entry *controller_ce;
 
 int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request TSRMLS_DC)
 {
-    if (!instanceof_function(ce, controller_ce)) {
+    if (!instanceof_function(ce, controller_ce TSRMLS_CC)) {
         linger_throw_exception(NULL, 0, "controller must a subclass of linger_framework_Controller.");
         return FAILURE;
     }

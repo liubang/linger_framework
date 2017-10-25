@@ -44,7 +44,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
     zval *instance = zend_read_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
 
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(instance), dispatcher_ce)) {
+            instanceof_function(Z_OBJCE_P(instance), dispatcher_ce TSRMLS_CC)) {
         return instance;
     }
     if (this) {
@@ -58,7 +58,7 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
     zend_update_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), instance TSRMLS_CC);
     if (request != NULL) {
         if (Z_TYPE_P(request) == IS_OBJECT &&
-                instanceof_function(Z_OBJCE_P(request), request_ce)) {
+                instanceof_function(Z_OBJCE_P(request), request_ce TSRMLS_CC)) {
             zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request TSRMLS_CC);
         } else {
             linger_throw_exception(NULL, 0, "request must be a instance of linger_framework_Request.");
