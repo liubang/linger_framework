@@ -330,7 +330,7 @@ LINGER_MINIT_FUNCTION(view)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\View", view_methods);
     view_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_VARS), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(view_ce, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), ZEND_ACC_PROTECTED TSRMLS_CC);
     return SUCCESS;
 }

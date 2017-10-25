@@ -89,9 +89,9 @@ LINGER_MINIT_FUNCTION(controller)
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Controller", controller_methods);
     controller_ce = zend_register_internal_class(&ce TSRMLS_CC);
     controller_ce->ce_flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
-    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(controller_ce, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), ZEND_ACC_PROTECTED TSRMLS_CC);
     return SUCCESS;
 }
 
