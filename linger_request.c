@@ -174,6 +174,13 @@ PHP_METHOD(linger_framework_request, getMethod)
     RETURN_ZVAL(method, 1, 0);
 }
 
+PHP_METHOD(linger_framework_request, getUri)
+{
+    zval *uri = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), 1 TSRMLS_CC);
+
+    RETURN_ZVAL(uri, 1, 0);
+}
+
 PHP_METHOD(linger_framework_request, getQuery)
 {
     char *key;
@@ -424,6 +431,7 @@ PHP_METHOD(linger_framework_request, setUri)
 zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_request, getMethod,   NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, getUri,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getQuery,    NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getParam,    NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getPost,     NULL, ZEND_ACC_PUBLIC)

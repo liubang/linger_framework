@@ -66,17 +66,17 @@ PHP_METHOD(linger_framework_config, get)
     char *key;
     uint key_len = 0;
     zval **ppzval;
+    zval *config;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
-        return;
+        RETURN_FALSE;
     }
+    config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1 TSRMLS_CC);
     if (!key_len) {
-        RETURN_ZVAL(getThis(), 1, 0);
+        RETURN_ZVAL(config, 1, 0);
     } else {
-        zval *config;
         HashTable *ht;
         long lval;
         double dval;
-        config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1 TSRMLS_CC);
         ht = Z_ARRVAL_P(config);
         if (is_numeric_string(key, key_len, &lval, &dval, 0) != IS_LONG) {
             if (zend_hash_find(ht, key, key_len + 1, (void **)&ppzval) == FAILURE) {
