@@ -38,7 +38,7 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request 
         return FAILURE;
     }
 
-    zval *view = linger_view_instance();
+    zval *view = linger_view_instance(NULL TSRMLS_CC);
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request TSRMLS_CC);
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), view TSRMLS_CC);
     zval_ptr_dtor(&view);
