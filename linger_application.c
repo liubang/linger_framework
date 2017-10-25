@@ -267,7 +267,7 @@ PHP_METHOD(linger_framework_application, setConfig)
 
 PHP_METHOD(linger_framework_application, __destruct)
 {
-    zend_update_static_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP));
+    zend_update_static_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP) TSRMLS_CC);
 }
 
 zend_function_entry application_methods[] = {
