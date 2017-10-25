@@ -96,11 +96,13 @@ static void linger_dispatcher_prepare(zval *this TSRMLS_DC)
 
     zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
     if (Z_TYPE_P(request) == IS_OBJECT) {
+
         zval *uri = linger_request_get_request_uri(request TSRMLS_CC);
         if (uri == NULL) {
             linger_throw_exception(NULL, 0, 'illegal access.');
             return;
         }
+
         char *copy = estrdup(Z_STRVAL_P(uri));
         char *mvc;
         zval *module;
@@ -176,20 +178,25 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
         if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
             char *controller_path = NULL;
             int controller_path_len = 0;
+
             controller_path_len = spprintf(&controller_path, 0, "%s%c%s%s", directory, DEFAULT_SLASH, controller, ".php");
             if (linger_application_import(controller_path, controller_path_len + 1, 0 TSRMLS_CC) == FAILURE) {
+
                 linger_efree(controller_path);
                 linger_efree(class);
                 linger_efree(class_lowercase);
                 linger_efree(directory);
                 linger_throw_exception(NULL, 0, "failed opening script %s.", controller_path);
+
                 return NULL;
             } else {
                 if (zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) != SUCCESS) {
+
                     linger_efree(class);
                     linger_efree(class_lowercase);
                     linger_efree(directory);
                     linger_throw_exception(NULL, 0, "could not find class %s.", class);
+
                     return NULL;
                 }
             }
