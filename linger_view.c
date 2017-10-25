@@ -29,7 +29,7 @@ zend_class_entry *view_ce;
 #define VIEW_PROPERTIES_VARS   "_vars"
 #define VIEW_PROPERTIES_TPLDIR "_tpl_dir"
 
-zval *linger_view_instance(TSRMLS_DC)
+zval *linger_view_instance()
 {
     zval *instance = NULL;
     MAKE_STD_ZVAL(instance);
