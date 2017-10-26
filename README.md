@@ -77,8 +77,9 @@ use handler\Home;
 
 class Router implements \linger\framework\Bootstrap {
     public function bootstrap(\linger\framework\Application $app) {
-        $app->getRouter()->get('/', Home::class, 'index')
-            ->get('/home/@userId:([0-9]+)', Home::class, 'home');
+        $app->getRouter()
+          ->get('/', Home::class, 'index')
+          ->get('/home/@userId:([0-9]+)', Home::class, 'home');
     }
 }
 ```
