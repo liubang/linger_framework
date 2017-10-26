@@ -29,7 +29,7 @@ zend_class_entry *view_ce;
 #define VIEW_PROPERTIES_VARS   "_vars"
 #define VIEW_PROPERTIES_TPLDIR "_tpl_dir"
 
-zval *linger_view_instance()
+zval *linger_view_instance(zval *this TSRMLS_DC)
 {
     zval *instance = NULL;
     MAKE_STD_ZVAL(instance);
@@ -255,7 +255,7 @@ PHP_METHOD(linger_framework_view, assign)
         return;
     }
     if (key_len > 0 && val != NULL) {
-        if (linger_view_assign(getThis(), key, val) == FAILURE) {
+        if (linger_view_assign(getThis(), key, val TSRMLS_CC) == FAILURE) {
             linger_throw_exception(NULL, 0, "assign variable fail.");
             return;
         }
