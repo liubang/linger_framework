@@ -289,11 +289,15 @@ void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
         zval **fptr;
         MAKE_STD_ZVAL(controller_obj);
         object_init_ex(controller_obj, *ce);
+
         if (FAILURE == linger_controller_construct(*ce, controller_obj, request TSRMLS_CC)) {
             return;
         }
-        if (zend_hash_find(&((*ce)->function_table), Z_STRVAL_P(class_method), Z_STRLEN_P(class_method) + 1, (void **)&fptr) == SUCCESS) {
-            zend_call_method_with_0_params(&controller_obj, *ce, NULL, Z_STRVAL_P(class_method), NULL);
+
+        if (zend_hash_exists(&((*ce)->function_table), Z_STRVAL_P(class_method), Z_STRLEN_P(class_method) + 1)) {
+            zval *ret = NULL;
+            zend_call_method(&controller_obj, *ce, NULL, Z_STRVAL_P(class_method), Z_STRLEN_P(class_method), &ret, 0, NULL, NULL TSRMLS_CC);
+            if (ret) zval_ptr_dtor(&ret);
         }
     }
 
