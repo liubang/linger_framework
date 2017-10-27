@@ -141,8 +141,8 @@ PHP_METHOD(linger_framework_application, __construct)
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), oconfig TSRMLS_CC);
 
     orequest = linger_request_instance(NULL, NULL TSRMLS_CC);
-    odispatcher = linger_dispatcher_instance(NULL, orequest TSRMLS_CC);
     orouter = linger_router_instance(NULL TSRMLS_CC);
+    odispatcher = linger_dispatcher_instance(NULL, orequest, orouter TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), odispatcher TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), orequest TSRMLS_CC);
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), orouter TSRMLS_CC);

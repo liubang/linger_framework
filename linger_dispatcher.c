@@ -39,7 +39,7 @@ zend_class_entry *request_ce;
 #define DISPATCHER_PROPERTIES_CONTROLLER     "_controller"
 #define DISPATCHER_PROPERTIES_ACTION         "_action"
 
-zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
+zval *linger_dispatcher_instance(zval *this, zval *request, zval *router TSRMLS_DC)
 {
     zval *instance = zend_read_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), 1 TSRMLS_CC);
 
@@ -66,7 +66,6 @@ zval *linger_dispatcher_instance(zval *this, zval *request TSRMLS_DC)
         }
     }
 
-    zval *router = linger_router_instance(NULL TSRMLS_CC);
     zend_update_property(dispatcher_ce, instance, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), router TSRMLS_CC);
 
     return instance;
