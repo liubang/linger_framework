@@ -205,6 +205,7 @@ PHP_METHOD(linger_framework_application, init)
         if (zend_hash_find(&((*ce)->function_table), ZEND_STRS("bootstrap"), (void **)&fptr) == SUCCESS) {
             zend_call_method_with_1_params(&boot_obj, *ce, NULL, "bootstrap", NULL, getThis());
         }
+        zval_ptr_dtor(&boot_obj);
     }
 
     RETURN_ZVAL(getThis(), 1, 0);

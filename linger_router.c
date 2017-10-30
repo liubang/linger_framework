@@ -222,7 +222,7 @@ void linger_router_add_rule(zval *this, zval *rule TSRMLS_DC)
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1 TSRMLS_CC);
     /* add refcount, that's important! */
-    Z_ADDREF_P(rule);
+    //Z_ADDREF_P(rule);
     add_next_index_zval(rules, rule);
     zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), rules TSRMLS_CC);
 }
@@ -263,8 +263,9 @@ PHP_METHOD(linger_framework_router, get)
 
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
-    ZVAL_STRING(request_method,"get", 0);
+    ZVAL_STRING(request_method, "get", 1);
     zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
+    zval_ptr_dtor(&request_method);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -280,8 +281,9 @@ PHP_METHOD(linger_framework_router, post)
 
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
-    ZVAL_STRING(request_method, "post", 0);
+    ZVAL_STRING(request_method, "post", 1);
     zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
+    zval_ptr_dtor(&request_method);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -297,8 +299,9 @@ PHP_METHOD(linger_framework_router, put)
 
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
-    ZVAL_STRING(request_method, "put", 0);
+    ZVAL_STRING(request_method, "put", 1);
     zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
+    zval_ptr_dtor(&request_method);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -314,8 +317,9 @@ PHP_METHOD(linger_framework_router, delete)
 
     zval *request_method;
     MAKE_STD_ZVAL(request_method);
-    ZVAL_STRING(request_method, "delete", 0);
+    ZVAL_STRING(request_method, "delete", 1);
     zval *rule = linger_router_rule_instance(NULL, request_method, uri, class, class_method TSRMLS_CC);
+    zval_ptr_dtor(&request_method);
     linger_router_add_rule(getThis(), rule TSRMLS_CC);
 
     RETURN_ZVAL(getThis(), 1, 0);
