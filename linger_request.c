@@ -421,7 +421,43 @@ PHP_METHOD(linger_framework_request, setUri)
     if (Z_TYPE_P(uri) == IS_STRING) {
         zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri TSRMLS_CC);
     } else {
-        linger_throw_exception(NULL, 0, "uri must be string.");
+        linger_throw_exception(NULL, 0, "parameter must be string.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_request, setQuery)
+{
+    zval *query;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &query) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    if (Z_TYPE_P(query) == IS_ARRAY) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_QUERY), query TSRMLS_CC);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter must be an array.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_request, setParam)
+{
+    zval *param;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &param) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    if (Z_TYPE_P(param) == IS_ARRAY) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_PARAM), param TSRMLS_CC);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter must be an array.");
         return;
     }
 
@@ -441,6 +477,8 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, isAjax,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setUri,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setMethod,   NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setQuery,    NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setParam,    NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

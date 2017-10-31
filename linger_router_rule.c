@@ -34,34 +34,6 @@ zend_class_entry *router_rule_ce;
 
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC)
 {
-    /*
-    if (IS_STRING != Z_TYPE_P(request_method)) {
-        linger_throw_exception(NULL, 0, "the parameter request_method must be string.");
-        return NULL;
-    }
-    if (IS_STRING != Z_TYPE_P(uri)) {
-        linger_throw_exception(NULL, 0, "the parameter uri must be string.");
-        return NULL;
-    }
-    if (IS_STRING != Z_TYPE_P(class)) {
-        linger_throw_exception(NULL, 0, "the parameter class must be string.");
-        return NULL;
-    }
-    if (IS_STRING != Z_TYPE_P(class_method)) {
-        linger_throw_exception(NULL, 0, "the parameter class_method must be string.");
-        return NULL;
-    }
-    */
-
-    /*
-    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));
-    if (!strncmp(lower_method, "get", 3) ||
-            !strncmp(lower_method, "post", 4) ||
-            !strncmp(lower_method, "put", 3) ||
-            !strncmp(lower_method, "delete", 6)) {
-        ZVAL_STRING(request_method, lower_method, 1);
-        linger_efree(lower_method);
-    */
     zval *instance;
     if (this) {
         instance = this;
@@ -80,13 +52,6 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
     zend_update_property(router_rule_ce, instance, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method TSRMLS_CC);
     linger_efree(format_uri);
     return instance;
-    /*
-    } else {
-    linger_throw_exception(NULL, 0, "invalid http request method:%s.", Z_STRVAL_P(request_method));
-    linger_efree(lower_method);
-    return NULL;
-    }
-    */
 }
 
 zval *linger_router_rule_get_request_method(zval *this TSRMLS_DC)
