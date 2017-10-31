@@ -148,8 +148,11 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
 
                         reg_len = spprintf(&reg, 0, "#^%s$#", tmp_uri);
 
+                        linger_efree(tmp_uri);
+
                         if ((pce_regexp_t = pcre_get_compiled_regex_cache(reg, reg_len TSRMLS_CC)) == NULL) {
                             linger_efree(reg);
+                            zval_ptr_dtor(&map);
                             continue;
                         }
 
@@ -157,6 +160,7 @@ zval *linger_router_match(zval *this, zval *request TSRMLS_DC)
                         if (!zend_hash_num_elements(Z_ARRVAL_P(params))) {
                             zval_ptr_dtor(&params);
                             linger_efree(reg);
+                            zval_ptr_dtor(&map);
                             continue;
                         }
 

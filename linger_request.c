@@ -215,7 +215,7 @@ PHP_METHOD(linger_framework_request, getQuery)
                 zval *ret_val;
                 zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
                 linger_efree(func_name);
-                RETURN_ZVAL(ret_val, 1, 0);
+                RETURN_ZVAL(ret_val, 1, 1);
             } else {
                 linger_efree(func_name);
                 RETURN_ZVAL(*ret, 1, 0);
@@ -258,7 +258,7 @@ PHP_METHOD(linger_framework_request, getParam)
                 zval *ret_val;
                 zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
                 linger_efree(func_name);
-                RETURN_ZVAL(ret_val, 1, 0);
+                RETURN_ZVAL(ret_val, 1, 1);
             } else {
                 linger_efree(func_name);
                 RETURN_ZVAL(*ret, 1, 0);
@@ -301,7 +301,7 @@ PHP_METHOD(linger_framework_request, getPost)
                 zval *ret_val;
                 zend_call_method(NULL, NULL, NULL, func_name, func_name_len, &ret_val, 1, *ret, NULL TSRMLS_CC);
                 linger_efree(func_name);
-                RETURN_ZVAL(ret_val, 1, 0);
+                RETURN_ZVAL(ret_val, 1, 1);
             } else {
                 linger_efree(func_name);
                 RETURN_ZVAL(*ret, 1, 0);
