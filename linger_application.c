@@ -30,8 +30,8 @@
 #include "linger_response.h"
 /* class entry */
 zend_class_entry *application_ce;
-zend_class_entry *config_ce;
-zend_class_entry *bootstrap_ce;
+//zend_class_entry *config_ce;
+//zend_class_entry *bootstrap_ce;
 
 #define MAXPATHLEN                        1024
 #define APPLICATION_PROPERTIES_APP        "_app"

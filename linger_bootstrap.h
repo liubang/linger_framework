@@ -19,4 +19,6 @@
 #ifndef LINGER_BOOTSTRAP_H_
 #define LINGER_BOOTSTRAP_H_
 
+extern zend_class_entry *bootstrap_ce;
+
 #endif /* LINGER_BOOTSTRAP_H_ */
