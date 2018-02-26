@@ -30,7 +30,6 @@
 #include "linger_router_rule.h"
 
 zend_class_entry *dispatcher_ce;
-zend_class_entry *request_ce;
 
 #define DISPATCHER_PROPERTIES_INSTANCE       "_instance"
 #define DISPATCHER_PROPERTIES_REQUEST        "_request"

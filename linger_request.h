@@ -19,6 +19,8 @@
 #ifndef LINGER_REQUEST_H_
 #define LINGER_REQUEST_H_
 
+extern zend_class_entry *request_ce;
+
 zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC);
 zval *linger_request_get_request_uri(zval *this TSRMLS_DC);
 zval *linger_request_get_request_method(zval *this TSRMLS_DC);

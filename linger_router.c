@@ -29,7 +29,6 @@
 #include "linger_request.h"
 
 zend_class_entry *router_ce;
-zend_class_entry *router_rule_ce;
 
 #define LINGER_ROUTER_PROPERTIES_INSTANCE        "_instance"
 #define LINGER_ROUTER_PROPERTIES_RULES           "_rules"
