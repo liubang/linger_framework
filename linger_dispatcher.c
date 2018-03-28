@@ -265,6 +265,11 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
     }
 }
 
+void linger_dispatcher_404(TSRMLS_D) 
+{
+	php_printf("<h1>404 Not Found</h1>");
+}
+
 void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
 {
     zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1 TSRMLS_CC);
@@ -272,6 +277,7 @@ void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
     zval *router_rule;
 
     if ((router_rule = linger_router_match(router, request TSRMLS_CC)) == NULL) {
+		linger_dispatcher_404(TSRMLS_C);	
         return;
     }
 
