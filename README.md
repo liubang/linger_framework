@@ -158,3 +158,7 @@ class Home extends \linger\framework\Controller {
 ![](snapshot/1.png)
 
 ![](snapshot/2.png)
+
+## IDE代码补全
+
+将文件[example/linger_framework.php](example/linger_framework.php)添加到IDE的引用库中

@@ -296,7 +296,11 @@ void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
             zval *ret = NULL;
             zend_call_method(&controller_obj, *ce, NULL, Z_STRVAL_P(class_method), Z_STRLEN_P(class_method), &ret, 0, NULL, NULL TSRMLS_CC);
             if (ret) zval_ptr_dtor(&ret);
-        }
+		} else {
+            linger_throw_exception(NULL, 0, "the method %sAction of controller %s is not exists.", 
+					Z_STRVAL_P(class_method), Z_STRVAL_P(class));
+            return;
+		}
 
         zval_ptr_dtor(&controller_obj);
     }
