@@ -30,3 +30,4 @@ try {
 ?>
 --EXPECT--
 Boot::bootstrap
+<h1>404 Not Found</h1>
