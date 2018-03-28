@@ -32,7 +32,7 @@ class Application
      * Application constructor.
      * @param array $config
      */
-	public function __construct(array $config) { }
+	public function __construct(array $config = null) { }
 
 
 	public function run() { }
@@ -59,9 +59,9 @@ class Application
 	public function getRouter() { }
 
     /**
-     * @return Config
+     * @return $this
      */
-	public function setConfig() { }
+	public function setConfig(Config $config) { }
 
     /**
      * @return Dispatcher
