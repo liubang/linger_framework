@@ -163,6 +163,16 @@ int linger_request_set_params(zval *this, zval *values TSRMLS_DC)
     return FAILURE;
 }
 
+int linger_request_set_post(zval *this, zval *values TSRMLS_DC)
+{
+    if (values && IS_ARRAY == Z_TYPE_P(values)) {
+        zval *post = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_POST), 1 TSRMLS_CC);
+        zend_hash_copy(Z_ARRVAL_P(post), Z_ARRVAL_P(values), (copy_ctor_func_t) zval_add_ref, NULL, sizeof(zval *));
+        return SUCCESS;
+    }
+    return FAILURE;
+}
+
 PHP_METHOD(linger_framework_request, __construct)
 {
 }
@@ -464,6 +474,23 @@ PHP_METHOD(linger_framework_request, setParam)
     RETURN_ZVAL(getThis(), 1, 0);
 }
 
+PHP_METHOD(linger_framework_request, setPost)
+{
+	zval *post;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &post) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (Z_TYPE_P(post) == IS_ARRAY) {
+		zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_POST), post TSRMLS_CC);
+	} else {
+		linger_throw_exception(NULL, 0, "parameter nust be an array.");
+		return;
+	}
+
+	RETURN_ZVAL(getThis(), 1, 0);
+}
+
 zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_request, getMethod,   NULL, ZEND_ACC_PUBLIC)
@@ -479,6 +506,7 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, setMethod,   NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setQuery,    NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setParam,    NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setPost,     NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

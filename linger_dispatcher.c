@@ -305,13 +305,16 @@ void linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC)
             return;
         }
 
-        if (zend_hash_exists(&((*ce)->function_table), Z_STRVAL_P(class_method), Z_STRLEN_P(class_method) + 1)) {
+		char *class_method_lower = zend_str_tolower_dup(Z_STRVAL_P(class_method), Z_STRLEN_P(class_method));
+        if (zend_hash_exists(&((*ce)->function_table), class_method_lower, Z_STRLEN_P(class_method) + 1)) {
             zval *ret = NULL;
-            zend_call_method(&controller_obj, *ce, NULL, Z_STRVAL_P(class_method), Z_STRLEN_P(class_method), &ret, 0, NULL, NULL TSRMLS_CC);
+            zend_call_method(&controller_obj, *ce, NULL, class_method_lower, Z_STRLEN_P(class_method), &ret, 0, NULL, NULL TSRMLS_CC);
             if (ret) zval_ptr_dtor(&ret);
+			linger_efree(class_method_lower);
 		} else {
             linger_throw_exception(NULL, 0, "the method %sAction of controller %s is not exists.", 
 					Z_STRVAL_P(class_method), Z_STRVAL_P(class));
+			linger_efree(class_method_lower);
             return;
 		}
 
