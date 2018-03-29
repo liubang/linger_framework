@@ -269,11 +269,11 @@ void linger_dispatcher_dispatch(zval *this TSRMLS_DC)
 void linger_dispatcher_404(TSRMLS_D) 
 {
 	sapi_header_line ctr = {
-		"404 Not Found",
-		13,
-		404
-	};
+		.line = "HTTP/1.1 404 Not Found",
+		.line_len = 22,
+		.response_code = 404};
 	sapi_header_op(SAPI_HEADER_REPLACE, &ctr TSRMLS_CC);
+
 	php_printf("<h1>404 Not Found</h1>");
 }
 

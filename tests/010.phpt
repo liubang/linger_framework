@@ -6,7 +6,6 @@ Check for linger_framework presence
 <?php 
 class Boot implements \linger\framework\Bootstrap {
     public function bootstrap(\linger\framework\Application $app) {
-        echo __METHOD__,PHP_EOL; 
     }
 }
 
@@ -29,5 +28,4 @@ try {
 }
 ?>
 --EXPECT--
-Boot::bootstrap
 <h1>404 Not Found</h1>
