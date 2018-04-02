@@ -21,12 +21,18 @@
 #endif
 
 #include "php.h"
+#include "Zend/zend_interfaces.h" // zend_call_method_with_1_params
 #include "php_linger_framework.h"
 #include "linger_application.h"
+#include "linger_config.h"
+#include "linger_bootstrap.h"
 
 /* class entry */
 zend_class_entry *application_ce;
 
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_bootstrap_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, bootclasses)
+ZEND_END_ARG_INFO()
 
 PHP_METHOD(linger_framework_application, __construct)
 {
@@ -67,7 +73,49 @@ PHP_METHOD(linger_framework_application, __construct)
 
 PHP_METHOD(linger_framework_application, init)
 {
+    zval *bootclasses = NULL;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &bootclasses) == FAILURE) {
+        return;
+    }
 
+    if (IS_ARRAY != Z_TYPE_P(bootclasses)) {
+        linger_throw_exception(NULL, 0, "the parameter must be an array.");
+        return;
+    }
+
+    HashTable *hash = HASH_OF(bootclasses);
+    HashPosition pos;
+    for (zend_hash_internal_pointer_reset_ex(hash, &pos);
+            zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS;
+            zend_hash_move_forward_ex(hash, &pos)) {
+        zval *pzval;
+        if ((pzval = zend_hash_get_current_data_ex(hash, &pos)) == NULL) {
+            continue;
+        }
+        if (IS_STRING != Z_TYPE_P(pzval)) {
+            continue;
+        }
+        zend_class_entry *ce;
+        if ((ce = zend_lookup_class(Z_STR_P(pzval))) == NULL) {
+            linger_throw_exception(NULL, 0, "class %s dose not exists.", Z_STRVAL_P(pzval));
+            RETURN_FALSE;
+        }
+        zval boot_obj = {{0}};
+        zval **fptr;
+        object_init_ex(&boot_obj, ce);
+        if (!instanceof_function(Z_OBJCE(boot_obj), bootstrap_ce)) {
+            linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_P(pzval), bootstrap_ce->name);
+            continue;
+        }
+        zval method = {{0}};
+        ZVAL_STRING(&method, "bootstrap");
+        if (zend_hash_find(&(ce->function_table), Z_STR(method)) != NULL) {
+            zend_call_method_with_1_params(&boot_obj, ce, NULL, "bootstrap", NULL, getThis());
+        }
+        zval_ptr_dtor(&boot_obj);
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, run)
@@ -113,7 +161,7 @@ PHP_METHOD(linger_framework_application, __destruct)
 zend_function_entry application_methods[] = {
     PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(linger_framework_application, init, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, init, linger_framework_application_bootstrap_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)

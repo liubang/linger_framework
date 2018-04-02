@@ -21,14 +21,16 @@
 #endif
 
 #include "php.h"
-#include "php_ini.h"
 #include "php_linger_framework.h"
-#include "linger_router_rule.h"
 
 zend_class_entry *bootstrap_ce;
 
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_bootstrap_arginfo, 0, 0, 1)
+ZEND_ARG_OBJ_INFO(0, app, linger\\framework\\application, 0)
+ZEND_END_ARG_INFO()
+
 zend_function_entry linger_bootstrap_methods[] = {
-    PHP_ABSTRACT_ME(linger_framework_bootstrap, bootstrap, NULL)
+    PHP_ABSTRACT_ME(linger_framework_bootstrap, bootstrap, linger_framework_bootstrap_arginfo)
     PHP_FE_END
 };
 
@@ -36,7 +38,7 @@ LINGER_MINIT_FUNCTION(bootstrap)
 {
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Bootstrap", linger_bootstrap_methods);
-    bootstrap_ce = zend_register_internal_interface(&ce TSRMLS_CC);
+    bootstrap_ce = zend_register_internal_interface(&ce);
 
     return SUCCESS;
 }
