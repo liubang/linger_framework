@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ASTYLE_OPTS="--style=kr --indent=spaces=4"
-CPPCHECK_OPTS="-I. --error-exitcode=1 ."
+#CPPCHECK_OPTS="-I. --error-exitcode=1 ."
 
 RETURN=0
 ASTYLE=$(which astyle)
@@ -10,11 +10,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-CPPCHECK=$(which cppcheck)
-if [ $? -ne 0 ]; then
-    echo "[!] cppcheck not installed. Unable to perform static analysis." >&2
-    exit 1
-fi
+#CPPCHECK=$(which cppcheck)
+#if [ $? -ne 0 ]; then
+#    echo "[!] cppcheck not installed. Unable to perform static analysis." >&2
+#    exit 1
+#fi
 
 DIFF=$(which colordiff)
 if [ $? -ne 0 ]; then
@@ -44,12 +44,12 @@ if [ $RETURN -eq 1 ]; then
 fi
 
 # static analysis
-$CPPCHECK $CPPCHECK_OPTS >/dev/null
-if [ $? -ne 0 ]; then
-    RETURN=1
-    echo "" >&2
-    echo "Fail to pass static analysis." >&2
-    echo
-fi
+#$CPPCHECK $CPPCHECK_OPTS >/dev/null
+#if [ $? -ne 0 ]; then
+#    RETURN=1
+#    echo "" >&2
+#    echo "Fail to pass static analysis." >&2
+#    echo
+#fi
 
 exit $RETURN
