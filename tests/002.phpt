@@ -4,32 +4,69 @@ Check for linger_framework presence
 <?php if (!extension_loaded("linger_framework")) print "skip"; ?>
 --FILE--
 <?php 
-$config = new \linger\framework\Config([
-    'name' => 'liubang',
-    'age'  => 24
+$app = new \linger\framework\Application([
+	'app_path' => '/tmp',
+	'db' => [
+		'host' => 'localhost',
+		'name' => 'test',
+		'pass' => '123456'
+	]
 ]);
-
-print_r($config);
-
+echo "-----object------\n";
+var_dump($app->getConfig());
+$config = $app->getConfig();
+echo "-----array-------\n";
 var_dump($config->get());
-var_dump($config->get('name'));
-var_dump($config->get('age'));
+echo "-----foreach------\n";
+foreach ($config as $key => $val) {
+	echo $key, PHP_EOL;
+	var_dump($val);
+}
+
+var_dump($config['app_path']);
 ?>
 --EXPECT--
-Linger\Framework\Config Object
-(
-    [_config] => Array
-        (
-            [name] => liubang
-            [age] => 24
-        )
-
-)
-array(2) {
-  ["name"]=>
-  string(7) "liubang"
-  ["age"]=>
-  int(24)
+-----object------
+object(Linger\Framework\Config)#2 (1) {
+  ["_config":protected]=>
+  array(2) {
+    ["app_path"]=>
+    string(4) "/tmp"
+    ["db"]=>
+    array(3) {
+      ["host"]=>
+      string(9) "localhost"
+      ["name"]=>
+      string(4) "test"
+      ["pass"]=>
+      string(6) "123456"
+    }
+  }
 }
-string(7) "liubang"
-int(24)
+-----array-------
+array(2) {
+  ["app_path"]=>
+  string(4) "/tmp"
+  ["db"]=>
+  array(3) {
+    ["host"]=>
+    string(9) "localhost"
+    ["name"]=>
+    string(4) "test"
+    ["pass"]=>
+    string(6) "123456"
+  }
+}
+-----foreach------
+app_path
+string(4) "/tmp"
+db
+array(3) {
+  ["host"]=>
+  string(9) "localhost"
+  ["name"]=>
+  string(4) "test"
+  ["pass"]=>
+  string(6) "123456"
+}
+string(4) "/tmp"

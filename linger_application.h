@@ -19,8 +19,18 @@
 #ifndef LINGER_APPLICATION_H_
 #define LINGER_APPLICATION_H_
 
+#ifndef MAXPATHLEN
+# define MAXPATHLEN                        1024
+#endif /* ifndef SYMBOL */
+#define APPLICATION_PROPERTIES_APP        "_app"
+#define APPLICATION_PROPERTIES_CONFIG     "_config"
+#define APPLICATION_PROPERTIES_ROUTER     "_router"
+#define APPLICATION_PROPERTIES_REQUEST    "_request"
+#define APPLICATION_PROPERTIES_RESPONSE   "_response"
+#define APPLICATION_PROPERTIES_DISPATCHER "_dispatcher"
+
 extern zend_class_entry *application_ce;
 
-int linger_application_import(char *path, int len, int use_path TSRMLS_DC);
+//int linger_application_import(char *path, int len, int use_path TSRMLS_DC);
 
 #endif /* LINGER_APPLICATION_H_ */

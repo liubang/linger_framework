@@ -34,3 +34,5 @@ tests/*.exp
 tests/*.log
 tests/*.sh
 app
+*.ac
+*.loT

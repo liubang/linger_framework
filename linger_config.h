@@ -19,8 +19,11 @@
 #ifndef LINGER_CONFIG_H_
 #define LINGER_CONFIG_H_
 
+#define CONFIG_PROPERTIES_INSTANCE "_instance"
+#define CONFIG_PROPERTIES_CONFIG   "_config"
+
 extern zend_class_entry *config_ce;
 
-zval *linger_config_instance(zval *this, zval *config TSRMLS_DC);
+zval *linger_config_instance(zval *this, zval *config);
 
 #endif /* LINGER_CONFIG_H_ */
