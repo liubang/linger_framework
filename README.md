@@ -6,4 +6,6 @@
 
 **说明：**
 
+使用php5请切换到php5分支[https://github.com/iliubang/linger_framework/tree/php5](https://github.com/iliubang/linger_framework/tree/php5<Paste>)
+
 支持php7的版本正在开发中...
