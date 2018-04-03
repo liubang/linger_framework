@@ -29,7 +29,6 @@
 
 zend_class_entry *request_ce;
 
-
 zval *linger_request_instance(zval *this)
 {
     zval *instance = zend_read_static_property(request_ce, ZEND_STRL(REQUEST_PROPERTIES_INSTANCE), 1);
@@ -104,6 +103,42 @@ break:
     return this;
 }
 
+zval *linger_request_get_request_uri(zval *this)
+{
+    return zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_URI), 1);
+}
+
+zval *linger_request_get_request_method(zval *this)
+{
+    return zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1);
+}
+
+int linger_request_set_param(zval *this, const char *key, const char *val)
+{
+    zval *params = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1);
+    return add_assoc_string(params, key, val);
+}
+
+int linger_request_set_params(zval *this, zval *values)
+{
+    zval *params = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1);
+    if (values && IS_ARRAY = Z_TYPE_P(values)) {
+        return zend_hash_copy(Z_ARRVAL_P(params), Z_ARRVAL_P(values), (copy_ctor_func_t) zval_add_ref);
+    } else {
+        return FAILURE;
+    }
+}
+
+int linger_request_set_post(zval *this, zval *values)
+{
+    zval *post= zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_POST), 1);
+    if (values && IS_ARRAY = Z_TYPE_P(values)) {
+        return zend_hash_copy(Z_ARRVAL_P(post), Z_ARRVAL_P(values), (copy_ctor_func_t) zval_add_ref);
+    } else {
+        return FAILURE;
+    }
+}
+
 PHP_METHOD(linger_framework_request, __construct)
 {}
 
@@ -119,6 +154,33 @@ PHP_METHOD(linger_framework_request, getUri)
     RETURN_ZVAL(uri, 1, 0);
 }
 
+#define GET_D_F(htzv_ptr, strkey_ptr, zvd_ptr, zvfilter_ptr) \
+	do { \
+		if (!key) {\
+			RETURN_ZVAL(htzv_ptr, 1, 0); \
+		} else { \
+			zval *ret;	 \
+			if ((ret = zend_hash_find(Z_ARRVAL_P(htzv_ptr), strkey_ptr)) == NULL) { \
+				if (zvd_ptr) { \
+					RETURN_ZVAL(zvd_ptr, 1, 0); \
+				} else { \
+					RETURN_NULL(); \
+				} \
+			} else { \
+				zend_string *callable_name; \
+				zval retval = {{0}}; \
+				if (zvfilter_ptr && zend_is_callable(zvfilter_ptr, 0, &callable_name)) { \
+					zend_call_method(NULL, NULL, NULL, ZSTR_VAL(callable_name), ZSTR_LEN(callable_name), &retval, 1, ret, NULL); \
+					zend_string_release(callable_name); \
+					RETURN_ZVAL(&ret_val, 1, 0); \
+				} else { \
+					zend_string_release(callable_name); \
+					RETURN_ZVAL(ret, 1, 0); \
+				} \
+			} \
+		} \
+	} while (0)
+
 PHP_METHOD(linger_framework_request, getQuery)
 {
     zend_string *key;
@@ -132,7 +194,7 @@ PHP_METHOD(linger_framework_request, getQuery)
         RETURN_ZVAL(query, 1, 0);
     } else {
         zval *ret;
-        if ((ret = zend_hash_find(ht, key)) == NULL) {
+        if ((ret = zend_hash_find(Z_ARRVAL_P(query), key)) == NULL) {
             if (default_value) {
                 RETURN_ZVAL(default_value, 1, 0);
             } else {
@@ -152,6 +214,21 @@ PHP_METHOD(linger_framework_request, getQuery)
             }
         }
     }
+}
+
+PHP_METHOD(linger_framework_request, getParam)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getPost)
+{
+
+}
+
+PHP_METHOD(linger_framework_request, getFile)
+{
+
 }
 
 zend_function_entry request_methods[] = {

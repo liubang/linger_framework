@@ -33,7 +33,7 @@ extern zend_class_entry *request_ce;
 zval *linger_request_instance(zval *this);
 zval *linger_request_get_request_uri(zval *this);
 zval *linger_request_get_request_method(zval *this);
-void linger_request_set_param(zval *this, char *key, char *val);
+int linger_request_set_param(zval *this, const char *key, const char *val);
 int linger_request_set_params(zval *this, zval *values);
 int linger_request_set_post(zval *this, zval *values);
 
