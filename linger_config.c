@@ -55,7 +55,6 @@ ZEND_ARG_INFO(0, key)
 ZEND_ARG_INFO(0, val)
 ZEND_END_ARG_INFO()
 
-
 zval *linger_config_instance(zval *this, zval *config)
 {
     if (UNEXPECTED(!config || Z_TYPE_P(config) != IS_ARRAY)) {

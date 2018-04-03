@@ -19,13 +19,22 @@
 #ifndef LINGER_REQUEST_H_
 #define LINGER_REQUEST_H_
 
+#define REQUEST_PROPERTIES_INSTANCE     "_instance"
+#define REQUEST_PROPERTIES_METHOD       "_method"
+#define REQUEST_PROPERTIES_URI          "_uri"
+#define REQUEST_PROPERTIES_COOKIE       "_cookie"
+#define REQUEST_PROPERTIES_QUERY        "_query"
+#define REQUEST_PROPERTIES_PARAM        "_param"
+#define REQUEST_PROPERTIES_POST         "_post"
+#define REQUEST_PROPERTIES_FILES        "_files"
+
 extern zend_class_entry *request_ce;
 
-zval *linger_request_instance(zval *this, zval *uri TSRMLS_DC);
-zval *linger_request_get_request_uri(zval *this TSRMLS_DC);
-zval *linger_request_get_request_method(zval *this TSRMLS_DC);
-void linger_request_set_param(zval *this, char *key, char *val TSRMLS_DC);
-int linger_request_set_params(zval *this, zval *values TSRMLS_DC);
-int linger_request_set_post(zval *this, zval *values TSRMLS_DC);
+zval *linger_request_instance(zval *this);
+zval *linger_request_get_request_uri(zval *this);
+zval *linger_request_get_request_method(zval *this);
+void linger_request_set_param(zval *this, char *key, char *val);
+int linger_request_set_params(zval *this, zval *values);
+int linger_request_set_post(zval *this, zval *values);
 
 #endif /* LINGER_REQUEST_H_ */

@@ -30,8 +30,15 @@
 /* class entry */
 zend_class_entry *application_ce;
 
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_construct_arginfo, 0, 0, 1)
+ZEND_ARG_ARRAY_INFO(0, aconfig, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_bootstrap_arginfo, 0, 0, 1)
 ZEND_ARG_INFO(0, bootclasses)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 PHP_METHOD(linger_framework_application, __construct)
@@ -159,14 +166,14 @@ PHP_METHOD(linger_framework_application, __destruct)
 }
 
 zend_function_entry application_methods[] = {
-    PHP_ME(linger_framework_application, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_application, app, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(linger_framework_application, __construct, linger_framework_application_construct_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_application, app, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, init, linger_framework_application_bootstrap_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, run, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getConfig, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getRouter, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getDispatcher, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getRequest, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, run, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getConfig, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getRouter, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getDispatcher, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getRequest, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
