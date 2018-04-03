@@ -39,6 +39,5 @@ LINGER_MINIT_FUNCTION(bootstrap)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Bootstrap", linger_bootstrap_methods);
     bootstrap_ce = zend_register_internal_interface(&ce);
-
     return SUCCESS;
 }

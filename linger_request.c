@@ -43,6 +43,10 @@ ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_get_arginfo, 0, 0, 1)
 ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_method_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, method)
+ZEND_END_ARG_INFO()
+
 
 zval *linger_request_instance(zval *this)
 {
@@ -85,11 +89,11 @@ zval *linger_request_instance(zval *this)
         HashTable *ht = Z_ARRVAL_P(server);
 
 
-#define REQ_GET_URI(ht, str, str_len) \
-		i++; \
-		uri = zend_hash_str_find(ht, (char *)str, str_len);	 \
-		if (uri) \
-			if (IS_STRING == Z_TYPE_P(uri))  \
+#define REQ_GET_URI(ht, str, str_len)						\
+		i++;												\
+		uri = zend_hash_str_find(ht, (char *)str, str_len);	\
+		if (uri)											\
+			if (IS_STRING == Z_TYPE_P(uri))					\
 				goto handle;
 
         int i = 0;
@@ -305,6 +309,70 @@ PHP_METHOD(linger_framework_request, getFile)
     }
 }
 
+PHP_METHOD(linger_framework_request, isAjax)
+{
+    zend_bool jit_init = PG(auto_globals_jit);
+    if (jit_init) {
+        zend_string *server_str = zend_string_init("_SERVER", sizeof("_SERVER") - 1, 0);
+        zend_is_auto_global(server_str);
+        zend_string_release(server_str);
+    }
+    zval *server = &PG(http_globals)[TRACK_VARS_SERVER];
+    if (zend_hash_str_find(Z_ARRVAL_P(server), "HTTP_X_REQUEST_WITH", sizeof("HTTP_X_REQUEST_WITH") - 1) == NULL) {
+        RETURN_FALSE;
+    } else {
+        RETURN_TRUE;
+    }
+}
+
+PHP_METHOD(linger_framework_request, isPost)
+{
+    zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1, NULL);
+
+    if (EXPECTED(Z_TYPE_P(method) == IS_STRING)) {
+        if (!strncasecmp(Z_STRVAL_P(method), "POST", 4)) {
+            RETURN_TRUE;
+        }
+    }
+
+    RETURN_FALSE;
+}
+
+PHP_METHOD(linger_framework_request, isGet)
+{
+    zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1, NULL);
+
+    if (EXPECTED(Z_TYPE_P(method) == IS_STRING)) {
+        if (!strncasecmp(Z_STRVAL_P(method), "GET", 3)) {
+            RETURN_TRUE;
+        }
+    }
+
+    RETURN_FALSE;
+}
+
+PHP_METHOD(linger_framework_request, setMethod)
+{
+    zval *method;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS() TSRMLS_CC, "z", &method) == FAILURE) {
+        return;
+    }
+
+    if (Z_TYPE_P(method) == IS_STRING) {
+        char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(method), Z_STRLEN_P(method));
+        if (!strncmp(lower_method, "get", 3)
+                || !strncmp(lower_method, "post", 4)
+                || !strncmp(lower_method, "put", 3)
+                || !strncmp(lower_method, "delete", 6)) {
+            zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
+            linger_efree(lower_method);
+        }
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
 zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_request, getMethod, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
@@ -314,6 +382,10 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, getParam, linger_framework_request_get_default_filter_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getFile, linger_framework_request_get_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getCookie, linger_framework_request_get_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isAjax, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isPost, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isGet, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setMethod, linger_framework_request_set_method_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

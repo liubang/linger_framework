@@ -68,6 +68,7 @@ extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
 /* declare components */
 LINGER_MINIT_FUNCTION(application);
 LINGER_MINIT_FUNCTION(config);
+LINGER_MINIT_FUNCTION(bootstrap);
 LINGER_MINIT_FUNCTION(router);
 LINGER_MINIT_FUNCTION(controller);
 LINGER_MINIT_FUNCTION(request);
