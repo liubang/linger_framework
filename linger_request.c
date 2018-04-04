@@ -104,11 +104,11 @@ zval *linger_request_instance(zval *this)
         HashTable *ht = Z_ARRVAL_P(server);
 
 
-#define REQ_GET_URI(ht, str, str_len)						\
-		i++;												\
-		uri = zend_hash_str_find(ht, (char *)str, str_len);	\
-		if (uri)											\
-			if (IS_STRING == Z_TYPE_P(uri))					\
+#define REQ_GET_URI(ht, str, str_len)                       \
+		i++;                                                \
+		uri = zend_hash_str_find(ht, (char *)str, str_len); \
+		if (uri)                                            \
+			if (IS_STRING == Z_TYPE_P(uri))                 \
 				goto handle;
 
         int i = 0;
