@@ -19,10 +19,16 @@
 #ifndef LINGER_DISPATCHER_H_
 #define LINGER_DISPATCHER_H_
 
-zval *linger_dispatcher_instance(zval *this, zval *orequest, zval *router TSRMLS_DC);
-void *linger_dispatcher_prepare(zval *this TSRMLS_DC);
-void *linger_dispatcher_dispatch(zval *this TSRMLS_DC);
-void *linger_dispatcher_dispatch_ex(zval *this TSRMLS_DC);
+#define DISPATCHER_PROPERTIES_INSTANCE       "_instance"
+#define DISPATCHER_PROPERTIES_REQUEST        "_request"
+#define DISPATCHER_PROPERTIES_ROUTER         "_router"
+#define DISPATCHER_PROPERTIES_MODULE         "_module"
+#define DISPATCHER_PROPERTIES_CONTROLLER     "_controller"
+#define DISPATCHER_PROPERTIES_ACTION         "_action"
+
+zval *linger_dispatcher_instance(zval *this, zval *orequest, zval *router);
+void *linger_dispatcher_prepare(zval *this);
+void *linger_dispatcher_dispatch(zval *this);
 void linger_dispatcher_404(TSRMLS_D);
 
 #endif /* LINGER_DISPATCHER_H_ */
