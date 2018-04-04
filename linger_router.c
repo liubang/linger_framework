@@ -116,10 +116,10 @@ LINGER_GEN_METHOD(delete);
 zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, __construct,, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router, add, linger_framework_router_add_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, get,, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, put,, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, post,, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, delete,, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, get, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, put, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, post, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, delete, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
