@@ -47,6 +47,21 @@ ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_method_arginfo, 0, 0, 1)
 ZEND_ARG_INFO(0, method)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_uri_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, uri)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_param_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, param)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_post_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, post)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_request_set_query_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, query)
+ZEND_END_ARG_INFO()
 
 zval *linger_request_instance(zval *this)
 {
@@ -181,7 +196,7 @@ PHP_METHOD(linger_framework_request, getUri)
 
 #define GET_D_F(htzv_ptr, strkey_ptr, zvd_ptr, zvfilter_ptr) \
 	do { \
-		if (!key) {\
+		if (!strkey_ptr) {\
 			RETURN_ZVAL(htzv_ptr, 1, 0); \
 		} else { \
 			zval *ret;	 \
@@ -208,13 +223,17 @@ PHP_METHOD(linger_framework_request, getUri)
 
 PHP_METHOD(linger_framework_request, getQuery)
 {
-    zend_string *key;
-    zval *default_value, *filter;
+    zend_string *key = NULL;
+    zval *default_value = NULL, *filter = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|Szz", &key, &default_value, &filter) == FAILURE) {
         return;
     }
 
     zval *query = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_QUERY), 1, NULL);
+
+    GET_D_F(query, key, default_value, filter);
+
+    /*
     if (!key) {
         RETURN_ZVAL(query, 1, 0);
     } else {
@@ -239,12 +258,13 @@ PHP_METHOD(linger_framework_request, getQuery)
             }
         }
     }
+    */
 }
 
 PHP_METHOD(linger_framework_request, getParam)
 {
-    zend_string *key;
-    zval *default_value, *filter;
+    zend_string *key = NULL;
+    zval *default_value = NULL, *filter = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|Szz", &key, &default_value, &filter) == FAILURE) {
         return;
     }
@@ -256,8 +276,8 @@ PHP_METHOD(linger_framework_request, getParam)
 
 PHP_METHOD(linger_framework_request, getPost)
 {
-    zend_string *key;
-    zval *default_value, *filter;
+    zend_string *key = NULL;
+    zval *default_value = NULL, *filter = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|Szz", &key, &default_value, &filter) == FAILURE) {
         return;
     }
@@ -269,7 +289,7 @@ PHP_METHOD(linger_framework_request, getPost)
 
 PHP_METHOD(linger_framework_request, getCookie)
 {
-    zend_string *key;
+    zend_string *key = NULL;
     zval *cookie = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_COOKIE), 1, NULL);
 
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|S", &key) == FAILURE) {
@@ -290,7 +310,7 @@ PHP_METHOD(linger_framework_request, getCookie)
 
 PHP_METHOD(linger_framework_request, getFile)
 {
-    zend_string *key;
+    zend_string *key = NULL;
     zval *files = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_FILES), 1, NULL);
 
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|S", &key) == FAILURE) {
@@ -373,8 +393,78 @@ PHP_METHOD(linger_framework_request, setMethod)
     RETURN_ZVAL(getThis(), 1, 0);
 }
 
+PHP_METHOD(linger_framework_request, setUri)
+{
+    zval *uri;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &uri) == FAILURE) {
+        return;
+    }
+
+    if (uri && IS_STRING == Z_TYPE_P(uri)) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter must be string.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_request, setParam)
+{
+    zval *param;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &param) == FAILURE) {
+        return;
+    }
+
+    if (Z_TYPE_P(param) == IS_ARRAY) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_PARAM), param);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter must be an array.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_request, setPost)
+{
+    zval *post;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &post) == FAILURE) {
+        return;
+    }
+
+    if (Z_TYPE_P(post) == IS_ARRAY) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_POST), post);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter nust be an array.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
+PHP_METHOD(linger_framework_request, setQuery)
+{
+    zval *query;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &query) == FAILURE) {
+        return;
+    }
+
+    if (Z_TYPE_P(query) == IS_ARRAY) {
+        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_QUERY), query);
+    } else {
+        linger_throw_exception(NULL, 0, "parameter must be an array.");
+        return;
+    }
+
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
 zend_function_entry request_methods[] = {
-    PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_request, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_request, getMethod, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getUri, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, getQuery, linger_framework_request_get_default_filter_arginfo, ZEND_ACC_PUBLIC)
@@ -386,6 +476,10 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, isPost, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, isGet, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setMethod, linger_framework_request_set_method_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setUri, linger_framework_request_set_uri_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setParam, linger_framework_request_set_param_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setPost, linger_framework_request_set_post_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, setQuery, linger_framework_request_set_query_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -402,5 +496,6 @@ LINGER_MINIT_FUNCTION(request)
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_PARAM), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_POST), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_declare_property_null(request_ce, ZEND_STRL(REQUEST_PROPERTIES_FILES), ZEND_ACC_PROTECTED TSRMLS_CC);
+
     return SUCCESS;
 }
