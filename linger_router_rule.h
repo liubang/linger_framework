@@ -19,14 +19,19 @@
 #ifndef LINGER_ROUTER_RULE_H_
 #define LINGER_ROUTER_RULE_H_
 
+#define ROUTER_RULE_PROPERTIES_REQUEST_METHOD "_request_method"
+#define ROUTER_RULE_PROPERTIES_URI            "_uri"
+#define ROUTER_RULE_PROPERTIES_CLASS          "_class"
+#define ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
+
 extern zend_class_entry *router_rule_ce;
 
-zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method TSRMLS_DC);
-zval *linger_router_rule_get_request_method(zval *this TSRMLS_DC);
-zval *linger_router_rule_get_uri(zval *this TSRMLS_DC);
-zval *linger_router_rule_get_class(zval *this TSRMLS_DC);
-zval *linger_router_rule_get_class_method(zval *this TSRMLS_DC);
-zval *linger_router_rule_get_params(zval *this TSRMLS_DC);
-zval *linger_router_rule_set_params(zval *this, zval *params TSRMLS_DC);
+zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method);
+zval *linger_router_rule_get_request_method(zval *this);
+zval *linger_router_rule_get_uri(zval *this);
+zval *linger_router_rule_get_class(zval *this);
+zval *linger_router_rule_get_class_method(zval *this);
+zval *linger_router_rule_get_params(zval *this);
+zval *linger_router_rule_set_params(zval *this, zval *params);
 
 #endif /* LINGER_ROUTER_RULE_H_ */

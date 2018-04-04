@@ -44,27 +44,23 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(linger_framework_application, __construct)
 {
     zval *app,
-         *aconfig = NULL,
-    zconfig = {{0}},
-    zrouter = {{0}},
-    zrequest = {{0}},
-    zresponse = {{0}},
-    zdispatcher = {{0}};
+         *aconfig = NULL;
+    zval zconfig = {{0}};
 
     app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1);
 
     if (!ZVAL_IS_NULL(app)) {
         linger_throw_exception(NULL, 0, "can not reinstance application.");
-        RETURN_FALSE;
+        return;
     }
 
-    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &aconfig) != SUCCESS) {
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &aconfig) == FAILURE) {
         return;
     }
 
     if (!aconfig || Z_TYPE_P(aconfig) != IS_ARRAY) {
         linger_throw_exception(NULL, 0, "config must be an array.");
-        RETURN_FALSE;
+        return;
     }
 
     zval *self = getThis();
@@ -75,7 +71,23 @@ PHP_METHOD(linger_framework_application, __construct)
     zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), &zconfig);
     zval_ptr_dtor(&zconfig);
 
-    // TODO instance request, router, dispatcher
+    // init request
+    zval zrequest = {{0}};
+    (void)linger_request_instance(&zrequest);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), &zrequest);
+    zval_ptr_dtor(&zrequest);
+
+    // init router
+    zval zrouter = {{0}};
+    (void)linger_router_instance(&zrouter);
+
+    // init dispatcher
+    zval zdispatcher = {{0}};
+    (void)linger_dispatcher_instance(&zdispatcher, &zrouter);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), &zdispatcher);
+    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), &zrouter);
+    zval_ptr_dtor(&zrouter);
+    zval_ptr_dtor(&zdispatcher);
 }
 
 PHP_METHOD(linger_framework_application, init)

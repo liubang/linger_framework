@@ -19,10 +19,9 @@
 #ifndef LINGER_VIEW_H_
 #define LINGER_VIEW_H_
 
-zval *linger_view_instance(TSRMLS_D);
-int linger_view_assign(zval *this, char *key, zval *val TSRMLS_DC);
-zval *linger_view_getVars(zval *this TSRMLS_DC);
-int linger_view_render(zval *this, zval *tpl, zval *ret TSRMLS_DC);
-int linger_view_display(zval *this, zval *tpl, zval *ret TSRMLS_DC);
+#define VIEW_PROPERTIES_VARS   "_vars"
+#define VIEW_PROPERTIES_TPLDIR "_tpl_dir"
+
+void linger_view_instance(zval *this);
 
 #endif /* LINGER_VIEW_H_ */
