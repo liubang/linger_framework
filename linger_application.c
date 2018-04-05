@@ -104,7 +104,7 @@ PHP_METHOD(linger_framework_application, init)
         return;
     }
 
-    HashTable *hash = HASH_OF(bootclasses);
+    zend_array *hash = HASH_OF(bootclasses);
     HashPosition pos;
     for (zend_hash_internal_pointer_reset_ex(hash, &pos);
             zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS;

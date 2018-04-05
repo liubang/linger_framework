@@ -102,7 +102,7 @@ zval *linger_request_instance(zval *this)
         zend_string_release(server_str);
     }
     zval *server = &PG(http_globals)[TRACK_VARS_SERVER];
-    HashTable *ht = Z_ARRVAL_P(server);
+    zend_array *ht = Z_ARRVAL_P(server);
 
 
 #define REQ_GET_URI(ht, str, str_len)                       \

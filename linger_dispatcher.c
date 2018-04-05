@@ -134,7 +134,7 @@ end:
     } else {
         // PHPAPI char *php_strtoupper(char *s, size_t len)
         zend_string_release(Z_STR(controller));
-        ZVAL_STRINGL(&controller, php_strtoupper(Z_STRVAL(controller), Z_STRLEN(controller)), Z_STRLEN(controller));
+        ZVAL_STRINGL(&controller, php_strtoupper(Z_STRVAL(controller), Z_STRLEN(controller) + 1), Z_STRLEN(controller));
     }
 
     if (Z_ISUNDEF(action)) {
@@ -169,7 +169,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
     class_len = spprintf(&class, 0, "%s%s", controller, "Controller");
     class_lowercase = zend_str_tolower_dup(class, class_len);
 
-    zend_string *zs_class_lowercase = zend_string_init(class_lowercase, class_len, 0);
+    zend_string *zs_class_lowercase = zend_string_init(class_lowercase, class_len - 1, 0);
 
     if ((zce = zend_hash_find(EG(class_table), zs_class_lowercase)) == NULL)  {
         char *controller_path = NULL;
