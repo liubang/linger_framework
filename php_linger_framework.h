@@ -75,6 +75,39 @@ LINGER_MINIT_FUNCTION(request);
 LINGER_MINIT_FUNCTION(response);
 LINGER_MINIT_FUNCTION(exception);
 
+static int inline linger_framework_include_scripts(char *file, int len, zval *retval)
+{
+    zend_file_handle file_handle;
+    zend_op_array *op_array;
+
+    file_handle.filename = file;
+    file_handle.free_filename = 0;
+    file_handle.type = ZEND_HANDLE_FILENAME;
+    file_handle.opened_path = NULL;
+    file_handle.handle.fp = NULL;
+
+    op_array = zend_compile_file(&file_handle, ZEND_REQUIRE);
+
+    if (file_handle->opened_path) {
+        zend_hash_add_empty_element(&EG(included_files), file_handle->opened_path);
+    }
+    zend_destroy_file_handle(file_handle);
+
+    if (op_array) {
+        zend_execute(op_array, retval);
+        zend_exception_restore();
+        zend_try_exception_handler();
+        if (EG(exception)) {
+            zend_exception_error(EG(exception), E_ERROR);
+        }
+        destroy_op_array(op_array);
+        efree_size(op_array, sizeof(zend_op_array));
+
+        return SUCCESS;
+    }
+
+    return FAILURE;
+}
 
 #endif	/* PHP_LINGER_FRAMEWORK_H */
 
