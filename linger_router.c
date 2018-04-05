@@ -53,11 +53,12 @@ zval *linger_router_instance(zval *this)
     }
     if (Z_ISUNDEF_P(this)) {
         object_init_ex(this, router_ce);
-        zval router_rules = {{0}};
-        array_init(&router_rules);
-        zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
-        zval_ptr_dtor(&router_rules);
     }
+
+    zval router_rules = {{0}};
+    array_init(&router_rules);
+    zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
+    zval_ptr_dtor(&router_rules);
 
     return this;
 }

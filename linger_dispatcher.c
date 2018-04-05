@@ -43,7 +43,7 @@ ZEND_END_ARG_INFO()
 
 zend_class_entry *dispatcher_ce;
 
-zval *linger_dispatcher_instance(zval *this, zval *request, zval *router)
+zval *linger_dispatcher_instance(zval *this, zval *router)
 {
     zval *instance = zend_read_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), 1);
 
@@ -58,9 +58,12 @@ zval *linger_dispatcher_instance(zval *this, zval *request, zval *router)
 
     zend_update_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), instance);
 
-    if (EXPECTED(request && IS_OBJECT == Z_TYPE_P(request)
-                 && instanceof_function(Z_OBJCE_P(request), request_ce))) {
-        zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), request);
+    zval request = {{0}};
+    (void)linger_request_instance(&request);
+
+    if (EXPECTED(Z_TYPE(request) == IS_OBJECT)) {
+        zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), &request);
+        zval_ptr_dtor(&request);
     } else {
         linger_throw_exception(NULL, 0, "request must be a instance of linger\\framework\\Request.");
         zval_ptr_dtor(this);
@@ -166,7 +169,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
     class_len = spprintf(&class, 0, "%s%s", controller, "Controller");
     class_lowercase = zend_str_tolower_dup(class, class_len);
 
-    zend_string *zs_class_lowercase = zend_string_init(class_lowercase, class_len + 1, 0);
+    zend_string *zs_class_lowercase = zend_string_init(class_lowercase, class_len, 0);
 
     if ((zce = zend_hash_find(EG(class_table), zs_class_lowercase)) == NULL)  {
         char *controller_path = NULL;
@@ -175,7 +178,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
 
         linger_efree(directory);
 
-        if (linger_framework_include_scripts(controller_path, controller_path_len + 1, NULL) == SUCCESS) {
+        if (linger_framework_include_scripts(controller_path, controller_path_len, NULL) == SUCCESS) {
             linger_efree(controller_path);
             if ((zce = zend_hash_find(EG(class_table), zs_class_lowercase)) == NULL) {
                 linger_throw_exception(NULL, 0, "could not find class %s.", class);

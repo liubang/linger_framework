@@ -25,6 +25,8 @@
 #include "php_linger_framework.h"
 #include "linger_application.h"
 #include "linger_config.h"
+#include "linger_router.h"
+#include "linger_dispatcher.h"
 #include "linger_bootstrap.h"
 
 /* class entry */
@@ -72,10 +74,10 @@ PHP_METHOD(linger_framework_application, __construct)
     zval_ptr_dtor(&zconfig);
 
     // init request
-    zval zrequest = {{0}};
-    (void)linger_request_instance(&zrequest);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), &zrequest);
-    zval_ptr_dtor(&zrequest);
+    // zval zrequest = {{0}};
+    // (void)linger_request_instance(&zrequest);
+    // zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_REQUEST), &zrequest);
+    // zval_ptr_dtor(&zrequest);
 
     // init router
     zval zrouter = {{0}};
