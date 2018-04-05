@@ -22,6 +22,8 @@
 #define LINGER_ROUTER_PROPERTIES_INSTANCE        "_instance"
 #define LINGER_ROUTER_PROPERTIES_RULES           "_rules"
 
+extern zend_class_entry *router_ce;
+
 zval *linger_router_instance(zval *this);
 zval *linger_router_match(zval *this, zval *request);
 

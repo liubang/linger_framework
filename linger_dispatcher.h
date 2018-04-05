@@ -27,8 +27,7 @@
 #define DISPATCHER_PROPERTIES_ACTION         "_action"
 
 zval *linger_dispatcher_instance(zval *this, zval *orequest, zval *router);
-void *linger_dispatcher_prepare(zval *this);
-void *linger_dispatcher_dispatch(zval *this);
-void linger_dispatcher_404(TSRMLS_D);
+void linger_dispatcher_prepare(zval *this);
+void linger_dispatcher_dispatch(zval *this);
 
 #endif /* LINGER_DISPATCHER_H_ */

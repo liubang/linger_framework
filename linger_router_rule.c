@@ -24,6 +24,7 @@
 #include "php_ini.h"
 #include "php_linger_framework.h"
 #include "ext/standard/php_string.h"
+#include "linger_router_rule.h"
 
 zend_class_entry *router_rule_ce;
 
@@ -44,10 +45,10 @@ zval *linger_router_rule_instance(zval *this, zval *request_method,
         object_init_ex(this, router_rule_ce);
     }
 
-    char *trimed_uri = php_trim(Z_STRVAL_P(uri), Z_STRLEN_P(uri), "/", 1, NULL, 3);
+    zend_string *trimed_uri = php_trim(Z_STR(*uri), "/", 1, 3);
     char *format_uri = NULL;
-    int format_uri_len = spprintf(&format_uri, 0, "/%s/", trimed_uri);
-    linger_efree(trimed_uri);
+    int format_uri_len = spprintf(&format_uri, 0, "/%s/", ZSTR_VAL(trimed_uri));
+    zend_string_release(trimed_uri);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method);
     zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), format_uri);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);

@@ -25,10 +25,14 @@
 #include "ext/pcre/php_pcre.h"
 #include "ext/standard/php_string.h"
 #include "php_linger_framework.h"
+#include "linger_router.h"
 #include "linger_router_rule.h"
 #include "linger_request.h"
 
 zend_class_entry *router_ce;
+
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_void_arginfo, 0, 0, 0)
+ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_add_arginfo, 0, 0, 1)
 ZEND_ARG_OBJ_INFO(0, rule_item, Linger\\Framework\\RouterRule, 0)
@@ -42,7 +46,7 @@ ZEND_END_ARG_INFO()
 
 zval *linger_router_instance(zval *this)
 {
-    zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1, NULL);
+    zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
             instanceof_function(Z_OBJCE_P(instance), router_ce TSRMLS_CC)) {
         return instance;
@@ -51,11 +55,16 @@ zval *linger_router_instance(zval *this)
         object_init_ex(this, router_ce);
         zval router_rules = {{0}};
         array_init(&router_rules);
-        zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), router_rules);
+        zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
         zval_ptr_dtor(&router_rules);
     }
 
     return this;
+}
+
+zval *linger_router_match(zval *this, zval *request)
+{
+    return NULL;
 }
 
 PHP_METHOD(linger_framework_router, __construct)
@@ -63,13 +72,13 @@ PHP_METHOD(linger_framework_router, __construct)
 
 }
 
-static void linger_router_add_rule(zval *this, zval *rule)
+static void linger_router_add_rule(zval *this, zval *rule_item)
 {
     if (EXPECTED(IS_OBJECT == Z_TYPE_P(rule_item)
                  && instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce))) {
         zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
-        add_next_index_zval(rules, rule);
-        Z_TRY_ADDREF_P(rule);
+        add_next_index_zval(rules, rule_item);
+        Z_TRY_ADDREF_P(rule_item);
     } else {
         linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name);
     }
@@ -99,7 +108,7 @@ PHP_METHOD(linger_framework_router, add)
 			return; \
 		} \
 		zval req_method = {{0}}; \
-		ZVAL_STRING(&req_method, ##m); \
+		ZVAL_STRING(&req_method, #m); \
 		zval rule = {{0}}; \
 		(void)linger_router_rule_instance(&rule, &req_method, uri, class, method); \
 		zval_ptr_dtor(&req_method); \
@@ -114,7 +123,7 @@ LINGER_GEN_METHOD(post);
 LINGER_GEN_METHOD(delete);
 
 zend_function_entry router_methods[] = {
-    PHP_ME(linger_framework_router, __construct,, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router, add, linger_framework_router_add_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, get, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, put, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)

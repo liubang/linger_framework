@@ -72,8 +72,11 @@ LINGER_MINIT_FUNCTION(bootstrap);
 LINGER_MINIT_FUNCTION(router);
 LINGER_MINIT_FUNCTION(controller);
 LINGER_MINIT_FUNCTION(request);
+LINGER_MINIT_FUNCTION(dispatcher);
 LINGER_MINIT_FUNCTION(response);
 LINGER_MINIT_FUNCTION(exception);
+
+#include "Zend/zend_exceptions.h"
 
 static int inline linger_framework_include_scripts(char *file, int len, zval *retval)
 {
@@ -88,10 +91,10 @@ static int inline linger_framework_include_scripts(char *file, int len, zval *re
 
     op_array = zend_compile_file(&file_handle, ZEND_REQUIRE);
 
-    if (file_handle->opened_path) {
-        zend_hash_add_empty_element(&EG(included_files), file_handle->opened_path);
+    if (file_handle.opened_path) {
+        zend_hash_add_empty_element(&EG(included_files), file_handle.opened_path);
     }
-    zend_destroy_file_handle(file_handle);
+    zend_destroy_file_handle(&file_handle);
 
     if (op_array) {
         zend_execute(op_array, retval);
