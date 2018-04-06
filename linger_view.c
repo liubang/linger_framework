@@ -114,7 +114,7 @@ PHP_METHOD(linger_framework_view, __construct)
 }
 
 zend_function_entry view_methods[] = {
-    PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PROTECTED | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_view, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_view, setScriptPath, linger_framework_view_1_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_view, getScriptPath, linger_framework_view_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_view, display, linger_framework_view_1_arginfo, ZEND_ACC_PUBLIC)

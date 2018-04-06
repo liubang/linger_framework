@@ -57,6 +57,7 @@ PHP_MINIT_FUNCTION(linger_framework)
     LINGER_STARTUP(request);
     LINGER_STARTUP(dispatcher);
     LINGER_STARTUP(controller);
+    LINGER_STARTUP(view);
     LINGER_STARTUP(response);
 
     return SUCCESS;
