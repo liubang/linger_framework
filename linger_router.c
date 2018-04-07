@@ -126,8 +126,13 @@ zval *linger_router_match(zval *this, zval *request)
                     }
 
                     pce_regexp->refcount++;
+#if PHP_API_VERSION <= 20160303
+                    zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
+                                           Z_STRLEN_P(zv_uri), zs_empty, -1, 0, NULL);
+#else
                     zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
                                            Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
+#endif
                     pce_regexp->refcount--;
 
                     char *reg = NULL;
