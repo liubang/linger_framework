@@ -83,6 +83,8 @@ zval *linger_router_match(zval *this, zval *request)
 
     zend_string *preg1 = zend_string_init("/@(.*?):/", 8, 0);
     zend_string *zs_empty = zend_string_init("", 0, 0);
+    zval zv_empty = {{0}};
+    ZVAL_STRING(&zv_empty, "");
 
     int is_find = 0;
 
@@ -128,7 +130,7 @@ zval *linger_router_match(zval *this, zval *request)
                     pce_regexp->refcount++;
 #if PHP_API_VERSION <= 20160303
                     zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
-                                           Z_STRLEN_P(zv_uri), zs_empty, -1, 0, NULL);
+                                           Z_STRLEN_P(zv_uri), &zv_empty, -1, 0, NULL);
 #else
                     zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
                                            Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
@@ -197,6 +199,7 @@ zval *linger_router_match(zval *this, zval *request)
     ZEND_HASH_FOREACH_END();
 
     zend_string_release(zs_empty);
+    zval_ptr_dtor(&zv_empty);
 
     if (is_find == 1) {
         return router_rule;

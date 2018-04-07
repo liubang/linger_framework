@@ -150,7 +150,7 @@ zval *linger_request_get_request_method(zval *this)
     return zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1, NULL);
 }
 
-int linger_request_set_param(zval *this, const char *key, const char *val)
+int linger_request_set_param(zval *this, const char *key, char *val)
 {
     zval *params = zend_read_property(request_ce, this, ZEND_STRL(REQUEST_PROPERTIES_PARAM), 1, NULL);
     return add_assoc_string(params, key, val);
