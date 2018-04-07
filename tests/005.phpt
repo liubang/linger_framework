@@ -15,8 +15,10 @@ class TestController extends linger\framework\Controller {
 }
 
 $c = new TestController();
-var_dump($c);
-
-
 ?>
 --EXPECT--
+
+Fatal error: Uncaught Error: Call to private Linger\framework\Controller::__construct() from invalid context in /home/liubang/workspace/c/linger_framework/tests/005.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/liubang/workspace/c/linger_framework/tests/005.php on line 12
