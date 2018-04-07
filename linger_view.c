@@ -59,6 +59,11 @@ PHP_METHOD(linger_framework_view, setScriptPath)
         return;
     }
 
+    if (IS_STRING != Z_TYPE_P(tpl)) {
+        linger_throw_exception(NULL, 0, "the parameter must be string.");
+        return;
+    }
+
     zend_update_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), tpl);
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -73,12 +78,94 @@ PHP_METHOD(linger_framework_view, getScriptPath)
 
 PHP_METHOD(linger_framework_view, display)
 {
+    zval *tpl;
 
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &tpl) == FAILURE) {
+        return;
+    }
+
+    if (IS_STRING != Z_TYPE_P(tpl)) {
+        linger_throw_exception(NULL, 0, "the parameter must be string.");
+        return;
+    }
+
+    zval *vars = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_VARS), 1, NULL);
+
+    char *script = NULL;
+    int script_len = 0;
+
+    if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
+        script = Z_STRVAL_P(tpl);
+        script_len = Z_STRLEN_P(tpl);
+    } else {
+        zval *tpl_dir = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 1, NULL);
+        if (!tpl_dir || Z_TYPE_P(tpl_dir) != IS_STRING) {
+            if (LINGER_FRAMEWORK_G(view_directory)) {
+                script_len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+            } else {
+                linger_throw_exception(NULL, 0, "could not determine the view path.");
+                return;
+            }
+        } else {
+            script_len = spprintf(&script, 0, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+        }
+    }
+
+    zend_array *symbol_table = zend_rebuild_symbol_table();
+    extract_ref_overwrite(Z_ARRVAL_P(vars), symbol_table);
+
+    zval retval = {{0}};
+    linger_framework_include_scripts(script, script_len, &retval);
+    zval_ptr_dtor(&retval);
+
+    RETURN_TRUE;
 }
 
 PHP_METHOD(linger_framework_view, render)
 {
+    zval *tpl;
 
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &tpl) == FAILURE) {
+        return;
+    }
+
+    if (IS_STRING != Z_TYPE_P(tpl)) {
+        linger_throw_exception(NULL, 0, "the parameter must be string.");
+        return;
+    }
+
+    zval *vars = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_VARS), 1, NULL);
+
+    char *script = NULL;
+    int script_len = 0;
+
+    if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
+        script = Z_STRVAL_P(tpl);
+        script_len = Z_STRLEN_P(tpl);
+    } else {
+        zval *tpl_dir = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 1, NULL);
+        if (!tpl_dir || Z_TYPE_P(tpl_dir) != IS_STRING) {
+            if (LINGER_FRAMEWORK_G(view_directory)) {
+                script_len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+            } else {
+                linger_throw_exception(NULL, 0, "could not determine the view path.");
+                return;
+            }
+        } else {
+            script_len = spprintf(&script, 0, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+        }
+    }
+
+    zend_array *symbol_table = zend_rebuild_symbol_table();
+    extract_ref_overwrite(Z_ARRVAL_P(vars), symbol_table);
+
+    zval retval = {{0}};
+    php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
+    linger_framework_include_scripts(script, script_len, &retval);
+    zval_ptr_dtor(&retval);
+    php_output_get_contents(return_value);
+
+    return;
 }
 
 PHP_METHOD(linger_framework_view, getVars)

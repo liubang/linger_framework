@@ -80,7 +80,7 @@ LINGER_MINIT_FUNCTION(exception);
 
 #include "Zend/zend_exceptions.h"
 
-static int inline linger_framework_include_scripts(char *file, int len, zval *retval)
+static int zend_always_inline linger_framework_include_scripts(char *file, int len, zval *retval) /* {{{ */
 {
     zend_file_handle file_handle;
     zend_op_array *op_array;
@@ -113,6 +113,112 @@ static int inline linger_framework_include_scripts(char *file, int len, zval *re
 
     return FAILURE;
 }
+/* }}} */
+
+static zend_always_inline int php_valid_var_name(char *var_name, size_t var_name_len) /* {{{ */
+{
+#if 1
+    /* first 256 bits for first character, and second 256 bits for the next */
+    static const uint32_t charset[16] = {
+        /*  31      0   63     32   95     64   127    96 */
+        0x00000000, 0x00000000, 0x87fffffe, 0x07fffffe,
+        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+        /*  31      0   63     32   95     64   127    96 */
+        0x00000000, 0x03ff0000, 0x87fffffe, 0x07fffffe,
+        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
+    };
+#endif
+    size_t i;
+    uint32_t ch;
+
+    if (UNEXPECTED(!var_name_len)) {
+        return 0;
+    }
+
+    /* These are allowed as first char: [a-zA-Z_\x7f-\xff] */
+    ch = (uint32_t)((unsigned char *)var_name)[0];
+#if 1
+    if (UNEXPECTED(!(charset[ch >> 5] & (1 << (ch & 0x1f))))) {
+#else
+    if (var_name[0] != '_' &&
+            (ch < 65  /* A    */ || /* Z    */ ch > 90)  &&
+            (ch < 97  /* a    */ || /* z    */ ch > 122) &&
+            (ch < 127 /* 0x7f */ || /* 0xff */ ch > 255)
+       ) {
+#endif
+        return 0;
+    }
+
+    /* And these as the rest: [a-zA-Z0-9_\x7f-\xff] */
+    if (var_name_len > 1) {
+        i = 1;
+        do {
+            ch = (uint32_t)((unsigned char *)var_name)[i];
+#if 1
+            if (UNEXPECTED(!(charset[8 + (ch >> 5)] & (1 << (ch & 0x1f))))) {
+#else
+            if (var_name[i] != '_' &&
+                    (ch < 48  /* 0    */ || /* 9    */ ch > 57)  &&
+                    (ch < 65  /* A    */ || /* Z    */ ch > 90)  &&
+                    (ch < 97  /* a    */ || /* z    */ ch > 122) &&
+                    (ch < 127 /* 0x7f */ || /* 0xff */ ch > 255)
+               ) {
+#endif
+                return 0;
+            }
+        }
+        while (++i < var_name_len);
+    }
+    return 1;
+}
+/* }}} */
+
+static zend_long zend_always_inline extract_ref_overwrite(zend_array *arr, zend_array *symbol_table) /* {{{ */
+{
+    int exception_thrown = 0;
+    zend_long count = 0;
+    zend_string *var_name;
+    zval *entry, *orig_var;
+
+    ZEND_HASH_FOREACH_STR_KEY_VAL_IND(arr, var_name, entry) {
+        if (!var_name) {
+            continue;
+        }
+        if (!php_valid_var_name(ZSTR_VAL(var_name), ZSTR_LEN(var_name))) {
+            continue;
+        }
+        if (ZSTR_LEN(var_name) == sizeof("this")-1  && !strcmp(ZSTR_VAL(var_name), "this")) {
+            if (!exception_thrown) {
+                exception_thrown = 1;
+                zend_throw_error(NULL, "Cannot re-assign $this");
+            }
+            continue;
+        }
+        orig_var = zend_hash_find(symbol_table, var_name);
+        if (orig_var) {
+            if (Z_TYPE_P(orig_var) == IS_INDIRECT) {
+                orig_var = Z_INDIRECT_P(orig_var);
+            }
+            if (ZSTR_LEN(var_name) == sizeof("GLOBALS")-1 && !strcmp(ZSTR_VAL(var_name), "GLOBALS")) {
+                continue;
+            }
+            ZVAL_DEREF(entry);
+            if (Z_REFCOUNTED_P(entry)) Z_ADDREF_P(entry);
+            ZVAL_DEREF(orig_var);
+            zval_ptr_dtor(orig_var);
+            ZVAL_COPY_VALUE(orig_var, entry);
+        } else {
+            ZVAL_DEREF(entry);
+            if (Z_REFCOUNTED_P(entry)) Z_ADDREF_P(entry);
+            zend_hash_add_new(symbol_table, var_name, entry);
+        }
+        count++;
+    }
+    ZEND_HASH_FOREACH_END();
+
+    return count;
+}
+/* }}} */
 
 #endif	/* PHP_LINGER_FRAMEWORK_H */
 
