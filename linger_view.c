@@ -117,6 +117,7 @@ PHP_METHOD(linger_framework_view, display)
     zval retval = {{0}};
     linger_framework_include_scripts(script, script_len, &retval);
     zval_ptr_dtor(&retval);
+    linger_efree(script);
 
     RETURN_TRUE;
 }
@@ -163,6 +164,7 @@ PHP_METHOD(linger_framework_view, render)
     php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
     linger_framework_include_scripts(script, script_len, &retval);
     zval_ptr_dtor(&retval);
+    linger_efree(script);
     php_output_get_contents(return_value);
 
     return;
