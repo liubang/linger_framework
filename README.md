@@ -1,6 +1,6 @@
 # linger_framework
 
-[![Build Status](https://travis-ci.org/iliubang/linger_framework.svg?branch=master)](https://travis-ci.org/iliubang/linger_framework)
+[![Build Status](https://travis-ci.org/iliubang/linger_framework.svg?branch=php5)](https://travis-ci.org/iliubang/linger_framework)
 
 这是一个用c语言编写的PHP框架
 
