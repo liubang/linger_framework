@@ -221,7 +221,7 @@ static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *m
 		php_printf("<h1>404 Not Found</h1>"); \
 	} while (0)
 
-void linger_dispatcher_dispatch_ex(zval *this)
+void linger_dispatcher_dispatch(zval *this)
 {
     zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
     zval *router = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
@@ -230,6 +230,8 @@ void linger_dispatcher_dispatch_ex(zval *this)
     if ((router_rule = linger_router_match(router, request)) == NULL) {
         _404();
     }
+
+    linger_dispatcher_prepare(this);
 
     zval *class = linger_router_rule_get_class(router_rule);
     zval *class_method = linger_router_rule_get_class_method(router_rule);
@@ -283,9 +285,17 @@ PHP_METHOD(linger_framework_dispatcher, findRouter)
     }
 }
 
+PHP_METHOD(linger_framework_dispatcher, getRequest)
+{
+    zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
+
+    RETURN_ZVAL(request, 1, 0);
+}
+
 zend_function_entry dispatcher_methods[] = {
     PHP_ME(linger_framework_dispatcher, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_dispatcher, findRouter, linger_framework_dispatcher_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_dispatcher, getRequest, linger_framework_dispatcher_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

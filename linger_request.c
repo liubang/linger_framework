@@ -370,6 +370,19 @@ PHP_METHOD(linger_framework_request, isGet)
     RETURN_FALSE;
 }
 
+PHP_METHOD(linger_framework_request, isCli)
+{
+    zval *method = zend_read_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), 1, NULL);
+
+    if (EXPECTED(IS_STRING == Z_TYPE_P(method))) {
+        if (!strncasecmp(Z_STRVAL_P(method), "CLI", 3)) {
+            RETURN_TRUE;
+        }
+    }
+
+    RETURN_FALSE;
+}
+
 PHP_METHOD(linger_framework_request, setMethod)
 {
     zval *method;
@@ -474,6 +487,7 @@ zend_function_entry request_methods[] = {
     PHP_ME(linger_framework_request, isAjax, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, isPost, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, isGet, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_request, isCli, linger_framework_request_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setMethod, linger_framework_request_set_method_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setUri, linger_framework_request_set_uri_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_request, setParam, linger_framework_request_set_param_arginfo, ZEND_ACC_PUBLIC)
