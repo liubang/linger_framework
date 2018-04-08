@@ -135,10 +135,12 @@ zval *linger_router_match(zval *this, zval *request)
 
                     pce_regexp->refcount++;
 #if PHP_API_VERSION <= 20160303
-                    zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
-                                           Z_STRLEN_P(zv_uri), &zv_empty, -1, 0, NULL);
+                    //PHPAPI zend_string *php_pcre_replace_impl(pcre_cache_entry *pce, zend_string *subject_str,
+                    //   char *subject, int subject_len, zval *replace_val, int is_callable_replace, int limit, int *replace_count)
+                    zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
+                                           Z_STRLEN_P(zv_uri), &zv_empty, 0, -1, NULL);
 #else
-                    zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, zval_get_string(zv_uri), Z_STRVAL_P(zv_uri),
+                    zend_string *tmp_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
                                            Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
 #endif
                     pce_regexp->refcount--;
