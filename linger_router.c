@@ -24,6 +24,7 @@
 #include "php_ini.h"
 #include "ext/pcre/php_pcre.h"
 #include "ext/standard/php_string.h"
+#include "ext/standard/php_var.h"
 #include "php_linger_framework.h"
 #include "linger_router.h"
 #include "linger_router_rule.h"
@@ -145,9 +146,9 @@ zval *linger_router_match(zval *this, zval *request)
                     char *reg = NULL;
                     int reg_len = 0;
 
-                    reg_len = spprintf(&reg, 0, "#^%s$#", tmp_uri);
+                    reg_len = spprintf(&reg, 0, "#^%s$#", ZSTR_VAL(tmp_uri));
                     zend_string_release(tmp_uri);
-                    zend_string *zs_reg = zend_string_init(reg, reg_len - 1, 0);
+                    zend_string *zs_reg = zend_string_init(reg, reg_len, 0);
 
                     pcre_cache_entry *pce_regexp_p = NULL;
                     linger_efree(reg);
@@ -183,7 +184,11 @@ zval *linger_router_match(zval *this, zval *request)
                                 if (!map_value) {
                                     continue;
                                 }
-                                zend_hash_update(Z_ARRVAL(params_property), zval_get_string(p), map_value);
+                                zend_hash_update(Z_ARRVAL(params_property), Z_STR_P(p), map_value);
+                                Z_TRY_ADDREF_P(map_value);
+                            } else {
+                                zend_hash_update(Z_ARRVAL(params_property), Z_STR_P(p), map_value_arr);
+                                Z_TRY_ADDREF_P(map_value_arr);
                             }
                         }
                     }
@@ -244,29 +249,77 @@ PHP_METHOD(linger_framework_router, add)
     RETURN_ZVAL(self, 1, 0);
 }
 
-#define LINGER_GEN_METHOD(m) \
-	PHP_METHOD(linger_framework_router, m) \
-	{ \
-		zval *uri = NULL,\
-			*class = NULL, \
-			*method = NULL; \
-		if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) { \
-			return; \
-		} \
-		zval req_method = {{0}}; \
-		ZVAL_STRING(&req_method, #m); \
-		zval rule = {{0}}; \
-		(void)linger_router_rule_instance(&rule, &req_method, uri, class, method); \
-		zval_ptr_dtor(&req_method); \
-		zval *self = getThis(); \
-		linger_router_add_rule(self, &rule); \
-		RETURN_ZVAL(self, 1, 0); \
-	}
+PHP_METHOD(linger_framework_router, get)
+{
+    zval *uri = NULL,
+          *class = NULL,
+               *method = NULL;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
+        return;
+    }
+    zval req_method = {{0}};
+    ZVAL_STRING(&req_method, "get");
+    zval rule = {{0}};
+    (void)linger_router_rule_instance(&rule, &req_method, uri, class, method);
+    zval_ptr_dtor(&req_method);
+    zval *self = getThis();
+    linger_router_add_rule(self, &rule);
+    RETURN_ZVAL(self, 1, 0);
+}
 
-LINGER_GEN_METHOD(get)
-LINGER_GEN_METHOD(put)
-LINGER_GEN_METHOD(post)
-LINGER_GEN_METHOD(delete)
+PHP_METHOD(linger_framework_router, post)
+{
+    zval *uri = NULL,
+          *class = NULL,
+               *method = NULL;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
+        return;
+    }
+    zval req_method = {{0}};
+    ZVAL_STRING(&req_method, "post");
+    zval rule = {{0}};
+    (void)linger_router_rule_instance(&rule, &req_method, uri, class, method);
+    zval_ptr_dtor(&req_method);
+    zval *self = getThis();
+    linger_router_add_rule(self, &rule);
+    RETURN_ZVAL(self, 1, 0);
+}
+
+PHP_METHOD(linger_framework_router, put)
+{
+    zval *uri = NULL,
+          *class = NULL,
+               *method = NULL;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
+        return;
+    }
+    zval req_method = {{0}};
+    ZVAL_STRING(&req_method, "put");
+    zval rule = {{0}};
+    (void)linger_router_rule_instance(&rule, &req_method, uri, class, method);
+    zval_ptr_dtor(&req_method);
+    zval *self = getThis();
+    linger_router_add_rule(self, &rule);
+    RETURN_ZVAL(self, 1, 0);
+}
+
+PHP_METHOD(linger_framework_router, delete)
+{
+    zval *uri = NULL,
+          *class = NULL,
+               *method = NULL;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
+        return;
+    }
+    zval req_method = {{0}};
+    ZVAL_STRING(&req_method, "delete");
+    zval rule = {{0}};
+    (void)linger_router_rule_instance(&rule, &req_method, uri, class, method);
+    zval_ptr_dtor(&req_method);
+    zval *self = getThis();
+    linger_router_add_rule(self, &rule);
+    RETURN_ZVAL(self, 1, 0);
+}
 
 zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
