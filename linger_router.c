@@ -81,7 +81,7 @@ zval *linger_router_match(zval *this, zval *request)
           *zv_uri = NULL,
            *router_rule = NULL;
 
-    zend_string *preg1 = zend_string_init("/@(.*?):/", 8, 0);
+    zend_string *preg1 = zend_string_init("/@(.*?):/", 9, 0);
     zend_string *zs_empty = zend_string_init("", 0, 0);
     zval zv_empty = {{0}};
     ZVAL_STRING(&zv_empty, "");
@@ -118,7 +118,12 @@ zval *linger_router_match(zval *this, zval *request)
                 if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
                     zval_ptr_dtor(&map);
                     zval_ptr_dtor(&matches);
-                    continue;
+                    if (!strcmp(Z_STRVAL_P(curr_request_uri), Z_STRVAL_P(zv_uri))) {
+                        is_find = 1;
+                        break;
+                    } else {
+                        continue;
+                    }
                 } else {
                     zval *params_map = NULL;
                     if ((params_map = zend_hash_index_find(Z_ARRVAL(map), 1)) == NULL) {

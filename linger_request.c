@@ -415,7 +415,11 @@ PHP_METHOD(linger_framework_request, setUri)
     }
 
     if (uri && IS_STRING == Z_TYPE_P(uri)) {
-        zend_update_property(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), uri);
+        zend_string *trimed_uri = php_trim(Z_STR(*uri), "/", 1, 3);
+        char *format_uri = NULL;
+        int format_uri_len = spprintf(&format_uri, 0, "/%s", ZSTR_VAL(trimed_uri));
+        zend_string_release(trimed_uri);
+        zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), format_uri);
     } else {
         linger_throw_exception(NULL, 0, "parameter must be string.");
         return;

@@ -45,15 +45,26 @@ zval *linger_router_rule_instance(zval *this, zval *request_method,
         object_init_ex(this, router_rule_ce);
     }
 
+    char *lower_method = zend_str_tolower_dup(Z_STRVAL_P(request_method), Z_STRLEN_P(request_method));
+    if (!strncmp(lower_method, "get", 3)
+            || !strncmp(lower_method, "post", 4)
+            || !strncmp(lower_method, "put", 3)
+            || !strncmp(lower_method, "delete", 6)) {
+        zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), lower_method);
+    } else {
+        linger_throw_exception(NULL, 0, "invalid http request.");
+        linger_efree(lower_method);
+        return NULL;
+    }
     zend_string *trimed_uri = php_trim(Z_STR(*uri), "/", 1, 3);
     char *format_uri = NULL;
-    int format_uri_len = spprintf(&format_uri, 0, "/%s/", ZSTR_VAL(trimed_uri));
+    int format_uri_len = spprintf(&format_uri, 0, "/%s", ZSTR_VAL(trimed_uri));
     zend_string_release(trimed_uri);
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), request_method);
     zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), format_uri);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
     linger_efree(format_uri);
+    linger_efree(lower_method);
 
     return this;
 }

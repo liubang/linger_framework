@@ -254,8 +254,7 @@ void linger_dispatcher_dispatch(zval *this)
         char *class_method_lower = zend_str_tolower_dup(Z_STRVAL_P(class_method), Z_STRLEN_P(class_method));
         zend_string *zs_class_method = zend_string_init(class_method_lower, Z_STRLEN_P(class_method), 0);
         if (zend_hash_exists(&((ce)->function_table), zs_class_method)) {
-            // #define zend_call_method_with_0_params(obj, obj_ce, fn_proxy, function_name, retval)
-            zend_call_method_with_0_params(&controller_obj, ce, 0, class_method_lower, NULL);
+            zend_call_method(&controller_obj, ce, NULL, class_method_lower, Z_STRLEN_P(class_method), NULL, 0, NULL, NULL);
         } else {
             linger_throw_exception(NULL, 0, "the method %s of controller %s is not exists.", Z_STRVAL_P(class_method),
                                    Z_STRVAL_P(class));
