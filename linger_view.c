@@ -93,6 +93,7 @@ PHP_METHOD(linger_framework_view, display)
 
     char *script = NULL;
     int script_len = 0;
+    int flag = 0;
 
     if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
         script = Z_STRVAL_P(tpl);
@@ -102,6 +103,7 @@ PHP_METHOD(linger_framework_view, display)
         if (!tpl_dir || Z_TYPE_P(tpl_dir) != IS_STRING) {
             if (LINGER_FRAMEWORK_G(view_directory)) {
                 script_len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+                flag = 1;
             } else {
                 linger_throw_exception(NULL, 0, "could not determine the view path.");
                 return;
@@ -117,7 +119,10 @@ PHP_METHOD(linger_framework_view, display)
     zval retval = {{0}};
     linger_framework_include_scripts(script, script_len, &retval);
     zval_ptr_dtor(&retval);
-    linger_efree(script);
+
+    if (flag) {
+        linger_efree(script);
+    }
 
     RETURN_TRUE;
 }
@@ -139,6 +144,7 @@ PHP_METHOD(linger_framework_view, render)
 
     char *script = NULL;
     int script_len = 0;
+    int flag = 0;
 
     if (IS_ABSOLUTE_PATH(Z_STRVAL_P(tpl), Z_STRLEN_P(tpl))) {
         script = Z_STRVAL_P(tpl);
@@ -148,6 +154,7 @@ PHP_METHOD(linger_framework_view, render)
         if (!tpl_dir || Z_TYPE_P(tpl_dir) != IS_STRING) {
             if (LINGER_FRAMEWORK_G(view_directory)) {
                 script_len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
+                flag = 1;
             } else {
                 linger_throw_exception(NULL, 0, "could not determine the view path.");
                 return;
@@ -164,7 +171,10 @@ PHP_METHOD(linger_framework_view, render)
     php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
     linger_framework_include_scripts(script, script_len, &retval);
     zval_ptr_dtor(&retval);
-    linger_efree(script);
+
+    if (flag) {
+        linger_efree(script);
+    }
     php_output_get_contents(return_value);
 
     return;
