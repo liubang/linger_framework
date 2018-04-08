@@ -258,10 +258,10 @@ PHP_METHOD(linger_framework_router, add)
 		RETURN_ZVAL(self, 1, 0); \
 	}
 
-LINGER_GEN_METHOD(get);
-LINGER_GEN_METHOD(put);
-LINGER_GEN_METHOD(post);
-LINGER_GEN_METHOD(delete);
+LINGER_GEN_METHOD(get)
+LINGER_GEN_METHOD(put)
+LINGER_GEN_METHOD(post)
+LINGER_GEN_METHOD(delete)
 
 zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)

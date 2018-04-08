@@ -115,9 +115,9 @@ zval *linger_request_instance(zval *this)
     int i = 0;
     zval *uri;
 
-    REQ_GET_URI(ht, "PATH_INFO", sizeof("PATH_INFO") - 1);
-    REQ_GET_URI(ht, "REQUEST_URI", sizeof("REQUEST_URI") - 1);
-    REQ_GET_URI(ht, "ORIG_PATH_INFO", sizeof("ORIG_PATH_INFO") - 1);
+    REQ_GET_URI(ht, "PATH_INFO", sizeof("PATH_INFO") - 1)
+    REQ_GET_URI(ht, "REQUEST_URI", sizeof("REQUEST_URI") - 1)
+    REQ_GET_URI(ht, "ORIG_PATH_INFO", sizeof("ORIG_PATH_INFO") - 1)
 
 handle:
     if (uri) {
@@ -179,7 +179,9 @@ int linger_request_set_post(zval *this, zval *values)
 }
 
 PHP_METHOD(linger_framework_request, __construct)
-{}
+{
+
+}
 
 PHP_METHOD(linger_framework_request, getMethod)
 {

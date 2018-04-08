@@ -229,6 +229,7 @@ void linger_dispatcher_dispatch(zval *this)
 
     if ((router_rule = linger_router_match(router, request)) == NULL) {
         _404();
+        return;
     }
 
     linger_dispatcher_prepare(this);
