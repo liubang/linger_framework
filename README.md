@@ -1,4 +1,4 @@
-# php_linger_framework_extension
+# linger_framework
 
 [![Build Status](https://travis-ci.org/iliubang/linger_framework.svg?branch=master)](https://travis-ci.org/iliubang/linger_framework)
 
