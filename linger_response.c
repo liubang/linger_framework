@@ -50,7 +50,7 @@ zval *linger_response_instance(zval *this)
     zval *instance = zend_read_static_property(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_INSTANCE), 1);
 
     if (instance && IS_OBJECT == Z_TYPE_P(instance) &&
-            instance_of_function(Z_OBJCE_P(instance), response_ce)) {
+            instanceof_function(Z_OBJCE_P(instance), response_ce)) {
         this = instance;
         return instance;
     }
