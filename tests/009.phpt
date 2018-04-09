@@ -54,9 +54,6 @@ $app->run();
 <header>
 this is header
 </header>
-<header>
-this is header
-</header>
 <h1>hello world</h1>
 <ul>
 <li>liubang - it.liubang@gmail.com </li>

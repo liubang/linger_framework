@@ -169,17 +169,31 @@ PHP_METHOD(linger_framework_view, render)
     extract_ref_overwrite(Z_ARRVAL_P(vars), symbol_table);
 
     zval retval = {{0}};
-    php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
+
+    if (FAILURE == php_output_start_user(NULL, 0, PHP_OUTPUT_HANDLER_STDFLAGS)) {
+        php_error_docref("ref.outcontrol", E_NOTICE, "failed to create buffer");
+    }
+
     linger_framework_include_scripts(script, script_len, &retval);
     zval_ptr_dtor(&retval);
 
     if (flag) {
         linger_efree(script);
     }
-    php_output_get_contents(return_value);
-    php_output_discard();
 
-    return;
+    if(!OG(active)) {
+        return;
+    }
+
+    if (FAILURE == php_output_get_contents(return_value)) {
+        php_error_docref("ref.outcontrol", E_NOTICE, "failed to delete buffer. No buffer to delete");
+        return;
+    }
+
+    if (SUCCESS != php_output_discard()) {
+        php_error_docref("ref.outcontrol", E_NOTICE, "failed to delete buffer of %s (%d)", ZSTR_VAL(OG(active)->name), OG(active)->level);
+        return;
+    }
 }
 
 PHP_METHOD(linger_framework_view, getVars)
