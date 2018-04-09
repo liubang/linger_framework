@@ -21,7 +21,7 @@
 #endif
 
 #include "php.h"
-#include "main/SAPI.h"
+#include "SAPI.h"
 #include "php_linger_framework.h"
 #include "Zend/zend_interfaces.h"
 #include "ext/standard/url.h"

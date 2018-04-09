@@ -42,6 +42,7 @@ extern zend_class_entry *bootstrap_ce;
 #include "TSRM.h"
 #endif
 
+
 ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
 zend_bool display_errors;
 zend_bool throw_exception;
