@@ -24,6 +24,7 @@
 #include "php_ini.h"
 #include "linger_view.h"
 #include "php_linger_framework.h"
+#include "ext/standard/php_var.h"
 
 zend_class_entry *view_ce;
 
@@ -176,6 +177,7 @@ PHP_METHOD(linger_framework_view, render)
         linger_efree(script);
     }
     php_output_get_contents(return_value);
+    php_output_discard();
 
     return;
 }

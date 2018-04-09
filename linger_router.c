@@ -97,7 +97,7 @@ zval *linger_router_match(zval *this, zval *request)
 
         zv_request_method = linger_router_rule_get_request_method(router_rule);
         if (EXPECTED(zv_request_method && IS_STRING == Z_TYPE_P(zv_request_method))) {
-            if (strncmp(Z_STRVAL_P(curr_request_method), Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
+            if (strncasecmp(Z_STRVAL_P(curr_request_method), Z_STRVAL_P(zv_request_method), Z_STRLEN_P(zv_request_method))) {
                 continue;
             }
 
