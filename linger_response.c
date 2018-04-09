@@ -51,7 +51,6 @@ zval *linger_response_instance(zval *this)
 
     if (instance && IS_OBJECT == Z_TYPE_P(instance) &&
             instanceof_function(Z_OBJCE_P(instance), response_ce)) {
-        this = instance;
         return instance;
     }
 
@@ -73,6 +72,8 @@ zval *linger_response_instance(zval *this)
     ZVAL_STRING(&body, "");
     zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), &body);
     zval_ptr_dtor(&body);
+
+    zend_update_static_property(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_INSTANCE), this);
 
     return this;
 }

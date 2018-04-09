@@ -47,15 +47,15 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request)
 
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request);
 
-    zval view = {{0}};
-    linger_view_instance(&view);
-    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), &view);
-    zval_ptr_dtor(&view);
-
     zval response = {{0}};
     (void)linger_response_instance(&response);
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), &response);
     zval_ptr_dtor(&response);
+
+    zval view = {{0}};
+    linger_view_instance(&view);
+    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), &view);
+    zval_ptr_dtor(&view);
 
     zend_string *init = zend_string_init("_init", sizeof("_init") - 1, 0);
     if (zend_hash_exists(&(ce->function_table), init)) {

@@ -23,6 +23,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "linger_view.h"
+#include "linger_response.h"
 #include "php_linger_framework.h"
 #include "ext/standard/php_var.h"
 
@@ -77,6 +78,7 @@ PHP_METHOD(linger_framework_view, getScriptPath)
     RETURN_ZVAL(tpl, 1, 0);
 }
 
+/*
 PHP_METHOD(linger_framework_view, display)
 {
     zval *tpl;
@@ -127,21 +129,16 @@ PHP_METHOD(linger_framework_view, display)
 
     RETURN_TRUE;
 }
+*/
 
-PHP_METHOD(linger_framework_view, render)
+static int linger_ob_get_content(zval *this, zval *tpl, zval *return_value)
 {
-    zval *tpl;
-
-    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &tpl) == FAILURE) {
-        return;
-    }
-
     if (IS_STRING != Z_TYPE_P(tpl)) {
         linger_throw_exception(NULL, 0, "the parameter must be string.");
-        return;
+        return FAILURE;
     }
 
-    zval *vars = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_VARS), 1, NULL);
+    zval *vars = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_VARS), 1, NULL);
 
     char *script = NULL;
     int script_len = 0;
@@ -151,14 +148,14 @@ PHP_METHOD(linger_framework_view, render)
         script = Z_STRVAL_P(tpl);
         script_len = Z_STRLEN_P(tpl);
     } else {
-        zval *tpl_dir = zend_read_property(view_ce, getThis(), ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 1, NULL);
+        zval *tpl_dir = zend_read_property(view_ce, this, ZEND_STRL(VIEW_PROPERTIES_TPLDIR), 1, NULL);
         if (!tpl_dir || Z_TYPE_P(tpl_dir) != IS_STRING) {
             if (LINGER_FRAMEWORK_G(view_directory)) {
                 script_len = spprintf(&script, 0, "%s%c%s", LINGER_FRAMEWORK_G(view_directory), '/', Z_STRVAL_P(tpl));
                 flag = 1;
             } else {
                 linger_throw_exception(NULL, 0, "could not determine the view path.");
-                return;
+                return FAILURE;
             }
         } else {
             script_len = spprintf(&script, 0, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
@@ -182,18 +179,57 @@ PHP_METHOD(linger_framework_view, render)
     }
 
     if(!OG(active)) {
-        return;
+        return FAILURE;
     }
 
     if (FAILURE == php_output_get_contents(return_value)) {
         php_error_docref("ref.outcontrol", E_NOTICE, "failed to delete buffer. No buffer to delete");
-        return;
+        return FAILURE;
     }
 
     if (SUCCESS != php_output_discard()) {
         php_error_docref("ref.outcontrol", E_NOTICE, "failed to delete buffer of %s (%d)", ZSTR_VAL(OG(active)->name), OG(active)->level);
+        return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+PHP_METHOD(linger_framework_view, display)
+{
+    zval *tpl;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &tpl) == FAILURE) {
         return;
     }
+
+    zval ret = {{0}};
+
+    if (SUCCESS == linger_ob_get_content(getThis(), tpl, &ret)) {
+        zval *response = linger_response_instance(NULL);
+        zend_string *key = zend_string_init("Content-Type", 12, 0);
+        zval val = {{0}}, status = {{0}};
+        ZVAL_STRING(&val, "text/html");
+        ZVAL_LONG(&status, 200);
+        linger_response_set_header(response, key, &val);
+        linger_response_set_body(response, &ret);
+        linger_response_set_status(response, &status);
+        linger_response_send(response);
+        zval_ptr_dtor(&ret);
+    } else {
+        RETURN_NULL();
+    }
+}
+
+PHP_METHOD(linger_framework_view, render)
+{
+    zval *tpl;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &tpl) == FAILURE) {
+        return;
+    }
+
+    linger_ob_get_content(getThis(), tpl, return_value);
 }
 
 PHP_METHOD(linger_framework_view, getVars)
