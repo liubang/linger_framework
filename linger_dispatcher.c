@@ -82,135 +82,6 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
     return this;
 }
 
-void linger_dispatcher_prepare(zval *this)
-{
-    if (!this)
-        return;
-
-    zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
-
-    if (UNEXPECTED(!request || IS_OBJECT != Z_TYPE_P(request)))
-        return;
-
-    zval *uri = linger_request_get_request_uri(request);
-
-    char *copy = estrdup(Z_STRVAL_P(uri));
-    char *mvc;
-    zval module = {{0}},
-    controller = {{0}},
-    action = {{0}};
-    char *ptrptr;
-
-#define STRTOK(s, d, v)   \
-	do { \
-		mvc = php_strtok_r(s, d, &ptrptr); \
-		if (mvc) { \
-			ZVAL_STRING(v, mvc); \
-		} else {\
-			goto end; \
-		} \
-	} while(0)
-
-    STRTOK(copy, "/", &module);
-    STRTOK(NULL, "/", &controller);
-    STRTOK(NULL, "/", &action);
-
-    if (NULL != copy) {
-        char *key;
-        char *val;
-        while ((key = php_strtok_r(NULL, "/", &ptrptr))
-                && (val = php_strtok_r(NULL, "/", &ptrptr))) {
-            linger_request_set_param(request, key, val);
-        }
-    }
-
-end:
-    if (Z_ISUNDEF(module)) {
-        ZVAL_STRING(&module, "index");
-    }
-
-    if (Z_ISUNDEF(controller)) {
-        ZVAL_STRING(&controller, "index");
-    } else {
-        // PHPAPI char *php_strtoupper(char *s, size_t len)
-        zend_string_release(Z_STR(controller));
-        ZVAL_STRINGL(&controller, php_strtoupper(Z_STRVAL(controller), Z_STRLEN(controller) + 1), Z_STRLEN(controller));
-    }
-
-    if (Z_ISUNDEF(action)) {
-        ZVAL_STRING(&action, "index");
-    }
-
-    zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), &module);
-    zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), &controller);
-    zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), &action);
-    zval_ptr_dtor(&module);
-    zval_ptr_dtor(&controller);
-    zval_ptr_dtor(&action);
-    linger_efree(copy);
-}
-
-static zend_class_entry *linger_dispatcher_get_controller(char *app_dir, char *module, char *controller)
-{
-    char *directory = NULL;
-    int directory_len = 0;
-
-    directory_len = spprintf(&directory, 0, "%s%c%s%c%s%c%s", app_dir, DEFAULT_SLASH, LINGER_FRAMEWORK_MODULE_DIR_NAME,
-                             DEFAULT_SLASH, module, DEFAULT_SLASH, LINGER_FRAMEWORK_CONTROLLER_DIR_NAME);
-
-    if (!directory_len)
-        return NULL;
-
-    char *class = NULL;
-    char *class_lowercase = NULL;
-    int class_len = 0;
-    zval *zce = NULL;
-
-    class_len = spprintf(&class, 0, "%s%s", controller, "Controller");
-    class_lowercase = zend_str_tolower_dup(class, class_len);
-
-    zend_string *zs_class_lowercase = zend_string_init(class_lowercase, class_len, 0);
-
-    if ((zce = zend_hash_find(EG(class_table), zs_class_lowercase)) == NULL)  {
-        char *controller_path = NULL;
-        int controller_path_len = 0;
-        controller_path_len = spprintf(&controller_path, 0, "%s%c%s%s", directory, DEFAULT_SLASH, controller, ".php");
-
-        linger_efree(directory);
-
-        if (linger_framework_include_scripts(controller_path, controller_path_len, NULL) == SUCCESS) {
-            linger_efree(controller_path);
-            if ((zce = zend_hash_find(EG(class_table), zs_class_lowercase)) == NULL) {
-                linger_throw_exception(NULL, 0, "could not find class %s.", class);
-                linger_efree(class);
-                linger_efree(class_lowercase);
-                zend_string_release(zs_class_lowercase);
-                return NULL;
-            }
-        } else {
-            linger_throw_exception(NULL, 0, "failed opening script %s.", controller_path);
-            linger_efree(class);
-            linger_efree(class_lowercase);
-            linger_efree(controller_path);
-            zend_string_release(zs_class_lowercase);
-            return NULL;
-        }
-    }
-
-    linger_efree(LINGER_FRAMEWORK_G(view_directory));
-    char *view_directory = NULL;
-    (void)spprintf(&view_directory, 0, "%s%c%s%c%s%c%s", app_dir, DEFAULT_SLASH, LINGER_FRAMEWORK_MODULE_DIR_NAME,
-                   DEFAULT_SLASH, module, DEFAULT_SLASH, LINGER_FRAMEWORK_VIEW_DIR_NAME);
-    LINGER_FRAMEWORK_G(view_directory) = view_directory;
-
-    zend_string_release(zs_class_lowercase);
-    linger_efree(class);
-    linger_efree(class_lowercase);
-    linger_efree(directory);
-
-    return Z_CE_P(zce);
-}
-
 #define _404() \
 	do { \
 		sapi_header_line ctr = { \
@@ -232,8 +103,6 @@ void linger_dispatcher_dispatch(zval *this)
         return;
     }
 
-    linger_dispatcher_prepare(this);
-
     zval *class = linger_router_rule_get_class(router_rule);
     zval *class_method = linger_router_rule_get_class_method(router_rule);
 
@@ -241,7 +110,7 @@ void linger_dispatcher_dispatch(zval *this)
         // ZEND_API zend_class_entry *zend_lookup_class(zend_string *name);
         zend_class_entry *ce;
         if ((ce = zend_lookup_class(Z_STR(*class))) == NULL) {
-            linger_throw_exception(NULL, 0, "class %s does not exists.", Z_STRVAL_P(class));
+            linger_throw_exception(NULL, 0, "class %s is not exists.", Z_STRVAL_P(class));
             return;
         }
 
@@ -256,7 +125,7 @@ void linger_dispatcher_dispatch(zval *this)
         if (zend_hash_exists(&((ce)->function_table), zs_class_method)) {
             zend_call_method(&controller_obj, ce, NULL, class_method_lower, Z_STRLEN_P(class_method), NULL, 0, NULL, NULL);
         } else {
-            linger_throw_exception(NULL, 0, "the method %s of controller %s is not exists.", Z_STRVAL_P(class_method),
+            linger_throw_exception(NULL, 0, "the method %s of %s is not exists.", Z_STRVAL_P(class_method),
                                    Z_STRVAL_P(class));
         }
 
