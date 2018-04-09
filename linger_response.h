@@ -19,6 +19,17 @@
 #ifndef LINGER_RESPONSE_H_
 #define LINGER_RESPONSE_H_
 
+#define RESPONSE_PROPERTIES_INSTANCE "_instance"
+#define RESPONSE_PROPERTIES_STATUS "_status"
+#define RESPONSE_PROPERTIES_HEADER "_header"
+#define RESPONSE_PROPERTIES_BODY "_body"
 
+extern zend_class_entry *response_ce;
+
+zval *linger_response_instance(zval *this);
+void linger_response_send(zval *this);
+int linger_response_set_body(zval *this, zval *body);
+int linger_response_set_header(zval *this, zend_string *key, zval *val);
+int linger_response_set_status(zval *this, zval *status);
 
 #endif /* LINGER_RESPONSE_H_ */

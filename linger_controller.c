@@ -24,6 +24,7 @@
 #include "Zend/zend_interfaces.h"
 #include "php_linger_framework.h"
 #include "linger_request.h"
+#include "linger_response.h"
 #include "linger_controller.h"
 #include "linger_view.h"
 
@@ -44,12 +45,17 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request)
         return FAILURE;
     }
 
+    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request);
+
     zval view = {{0}};
     linger_view_instance(&view);
-
-    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request);
     zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), &view);
     zval_ptr_dtor(&view);
+
+    zval response = {{0}};
+    (void)linger_response_instance(&response);
+    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), &response);
+    zval_ptr_dtor(&response);
 
     zend_string *init = zend_string_init("_init", sizeof("_init") - 1, 0);
     if (zend_hash_exists(&(ce->function_table), init)) {
@@ -76,6 +82,12 @@ PHP_METHOD(linger_framework_controller, getRequest)
     RETURN_ZVAL(request, 1, 0);
 }
 
+PHP_METHOD(linger_framework_controller, getResponse)
+{
+    zval *response= zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), 1, NULL);
+    RETURN_ZVAL(response, 1, 0);
+}
+
 PHP_METHOD(linger_framework_controller, getView)
 {
     zval *view = zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), 1, NULL);
@@ -86,6 +98,7 @@ zend_function_entry controller_methods[] = {
     PHP_ME(linger_framework_controller, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_controller, _init, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
     PHP_ME(linger_framework_controller, getRequest, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, getResponse, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
     PHP_ME(linger_framework_controller, getView, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
