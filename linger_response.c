@@ -21,13 +21,10 @@
 #endif
 
 #include "php.h"
-#include "php_ini.h"
-#include "ext/standard/info.h"
-#include "ext/standard/head.h"
 #include "php_linger_framework.h"
 #include "linger_response.h"
+#include "php_output.h"
 #include "SAPI.h"
-#include "fastcgi.h"
 
 zend_class_entry *response_ce;
 
@@ -105,16 +102,6 @@ void linger_response_send(zval *this)
     }
 
     PHPWRITE(Z_STRVAL_P(body), Z_STRLEN_P(body));
-
-    if (strcmp(sapi_module.name, "fpm-fcgi") == 0) {
-        fcgi_request *request = (fcgi_request*) SG(server_context);
-        if (!fcgi_is_closed(request)) {
-            php_output_end_all();
-            php_header();
-            fcgi_end(request);
-            fcgi_close(request, 0, 0);
-        }
-    }
 }
 
 static int check_response_status(int status)
