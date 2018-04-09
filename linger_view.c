@@ -216,8 +216,9 @@ PHP_METHOD(linger_framework_view, display)
         linger_response_set_status(response, &status);
         linger_response_send(response);
         zval_ptr_dtor(&ret);
+        RETURN_TRUE;
     } else {
-        RETURN_NULL();
+        RETURN_FALSE;
     }
 }
 
