@@ -56,14 +56,23 @@ zval *linger_router_rule_instance(zval *this, zval *request_method,
         linger_efree(lower_method);
         return NULL;
     }
+
+    if (UNEXPECTED(IS_STRING != Z_TYPE_P(uri) || IS_STRING != Z_TYPE_P(request_method)
+                   || IS_STRING != Z_TYPE_P(class) || IS_STRING != Z_TYPE_P(class_method))) {
+        linger_throw_exception(NULL, 0, "parameters error.");
+        linger_efree(lower_method);
+        return NULL;
+    }
+    /*
     zend_string *trimed_uri = php_trim(Z_STR(*uri), "/", 1, 3);
     char *format_uri = NULL;
     int format_uri_len = spprintf(&format_uri, 0, "/%s", ZSTR_VAL(trimed_uri));
     zend_string_release(trimed_uri);
-    zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), format_uri);
+    */
+    zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), Z_STRVAL_P(uri));
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
-    linger_efree(format_uri);
+    //linger_efree(format_uri);
     linger_efree(lower_method);
 
     return this;
