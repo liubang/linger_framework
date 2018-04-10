@@ -226,7 +226,8 @@ PHP_METHOD(linger_framework_response, json)
 
     zval *this = getThis();
     smart_str buf = {0};
-    if (FAILURE == php_json_encode(&buf, obj, 0)) {
+    php_json_encode(&buf, obj, 0);
+    if (JSON_G(error_code) != PHP_JSON_ERROR_NONE) {
         smart_str_free(&buf);
     } else {
         zend_string *key = zend_string_init("Content-Type", 12, 0);
