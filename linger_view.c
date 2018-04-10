@@ -21,7 +21,6 @@
 #endif
 
 #include "php.h"
-#include "php_ini.h"
 #include "linger_view.h"
 #include "linger_response.h"
 #include "php_linger_framework.h"

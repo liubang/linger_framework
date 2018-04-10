@@ -41,6 +41,14 @@ if test "$PHP_LINGER_FRAMEWORK" != "no"; then
   dnl   -L$LINGER_FRAMEWORK_DIR/$PHP_LIBDIR -lm
   dnl ])
   dnl
+  if test "$PHP_JSON" != "no"; then
+    AC_DEFINE(ENABLE_JSON,1,[enable json])
+    ifdef([PHP_ADD_EXTENSION_DEP],
+    [
+		PHP_ADD_EXTENSION_DEP(linger_framework, json, true)
+    ])
+  fi
+
   PHP_SUBST(LINGER_FRAMEWORK_SHARED_LIBADD)
 
   PHP_NEW_EXTENSION(linger_framework, 

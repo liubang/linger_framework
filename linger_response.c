@@ -26,6 +26,9 @@
 #include "php_output.h"
 #include "SAPI.h"
 
+#include "zend_smart_str.h"
+#include "ext/json/php_json.h"
+
 zend_class_entry *response_ce;
 
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_void_arginfo, 0, 0, 0)
@@ -214,12 +217,42 @@ PHP_METHOD(linger_framework_response, send)
     linger_response_send(getThis());
 }
 
+PHP_METHOD(linger_framework_response, json)
+{
+    zval *obj;
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &obj) == FAILURE) {
+        return;
+    }
+
+    zval *this = getThis();
+    smart_str buf = {0};
+    if (FAILURE == php_json_encode(&buf, obj, 0)) {
+        smart_str_free(&buf);
+    } else {
+        zend_string *key = zend_string_init("Content-Type", 12, 0);
+        zval val = {{0}};
+        ZVAL_STRING(&val, "application/json;charset=utf-8");
+        linger_response_set_header(this, key, &val);
+        zval body = {{0}};
+
+        smart_str_0(&buf); /* copy? */
+        if (buf.s) {
+            ZVAL_STRINGL(&body, (buf.s)->val, (buf.s)->len);
+        }
+
+        linger_response_set_body(this, &body);
+    }
+
+    RETURN_ZVAL(this, 1, 0);
+}
+
 zend_function_entry response_methods[] = {
     PHP_ME(linger_framework_response, __construct, linger_framework_response_void_arginfo, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_response, status, linger_framework_response_status_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, header, linger_framework_response_header_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, body, linger_framework_response_body_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, send, linger_framework_response_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, json, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
