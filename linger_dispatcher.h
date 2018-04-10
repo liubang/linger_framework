@@ -22,9 +22,6 @@
 #define DISPATCHER_PROPERTIES_INSTANCE       "_instance"
 #define DISPATCHER_PROPERTIES_REQUEST        "_request"
 #define DISPATCHER_PROPERTIES_ROUTER         "_router"
-#define DISPATCHER_PROPERTIES_MODULE         "_module"
-#define DISPATCHER_PROPERTIES_CONTROLLER     "_controller"
-#define DISPATCHER_PROPERTIES_ACTION         "_action"
 
 zval *linger_dispatcher_instance(zval *this, zval *router);
 void linger_dispatcher_prepare(zval *this);

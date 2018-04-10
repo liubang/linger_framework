@@ -34,10 +34,6 @@
 #include "linger_router.h"
 #include "linger_router_rule.h"
 
-#define LINGER_FRAMEWORK_MODULE_DIR_NAME        "module"
-#define LINGER_FRAMEWORK_CONTROLLER_DIR_NAME    "controller"
-#define LINGER_FRAMEWORK_VIEW_DIR_NAME          "view"
-
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_dispatcher_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
@@ -175,9 +171,6 @@ LINGER_MINIT_FUNCTION(dispatcher)
     dispatcher_ce = zend_register_internal_class_ex(&ce, NULL);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_MODULE), ZEND_ACC_PRIVATE);
     zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_CONTROLLER), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_ACTION), ZEND_ACC_PRIVATE);
     return SUCCESS;
 }
