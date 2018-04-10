@@ -32,4 +32,15 @@ int linger_response_set_body(zval *this, zval *body);
 int linger_response_set_header(zval *this, zend_string *key, zval *val);
 int linger_response_set_status(zval *this, zval *status);
 
+#include "SAPI.h"
+
+#define _404() \
+	do { \
+		sapi_header_line ctr = { \
+			.line = "HTTP/1.1 404 Not Found", \
+			.line_len = 22, \
+			.response_code = 404}; \
+		sapi_header_op(SAPI_HEADER_REPLACE, &ctr TSRMLS_CC); \
+	} while (0)
+
 #endif /* LINGER_RESPONSE_H_ */

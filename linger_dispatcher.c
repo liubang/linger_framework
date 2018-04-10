@@ -25,14 +25,15 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 #include "Zend/zend_interfaces.h"
-#include "php_linger_framework.h"
 #include "SAPI.h"
 
+#include "php_linger_framework.h"
 #include "linger_dispatcher.h"
 #include "linger_controller.h"
 #include "linger_request.h"
 #include "linger_router.h"
 #include "linger_router_rule.h"
+#include "linger_response.h"
 
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_dispatcher_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
@@ -77,16 +78,6 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
 
     return this;
 }
-
-#define _404() \
-	do { \
-		sapi_header_line ctr = { \
-			.line = "HTTP/1.1 404 Not Found", \
-			.line_len = 22, \
-			.response_code = 404}; \
-		sapi_header_op(SAPI_HEADER_REPLACE, &ctr TSRMLS_CC); \
-		php_printf("<h1>404 Not Found</h1>"); \
-	} while (0)
 
 void linger_dispatcher_dispatch(zval *this)
 {
