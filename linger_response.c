@@ -26,6 +26,7 @@
 #include "php_output.h"
 #include "SAPI.h"
 
+#include "Zend/zend_interfaces.h"
 #include "zend_smart_str.h"
 #include "ext/json/php_json.h"
 
@@ -105,6 +106,10 @@ void linger_response_send(zval *this)
     }
 
     PHPWRITE(Z_STRVAL_P(body), Z_STRLEN_P(body));
+
+    if (strcmp(sapi_module.name, "fpm-fcgi") == 0) {
+        zend_call_method_with_0_params(NULL, NULL, NULL, "fastcgi_finish_request", NULL);
+    }
 }
 
 static int check_response_status(int status)
