@@ -239,15 +239,17 @@ PHP_METHOD(linger_framework_response, json)
         zval val = {{0}};
         ZVAL_STRING(&val, "application/json;charset=utf-8");
         linger_response_set_header(this, key, &val);
+        zend_string_release(key);
         zval body = {{0}};
-
         smart_str_0(&buf); /* copy? */
         if (buf.s) {
             ZVAL_STRINGL(&body, (buf.s)->val, (buf.s)->len);
         }
 
         linger_response_set_body(this, &body);
+        zval_ptr_dtor(&body);
     }
+    smart_str_free(&buf);
 
     RETURN_ZVAL(this, 1, 0);
 }

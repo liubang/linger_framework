@@ -400,8 +400,8 @@ PHP_METHOD(linger_framework_request, setMethod)
                 || !strncmp(lower_method, "put", 3)
                 || !strncmp(lower_method, "delete", 6)) {
             zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_METHOD), lower_method TSRMLS_CC);
-            linger_efree(lower_method);
         }
+        linger_efree(lower_method);
     }
 
     RETURN_ZVAL(getThis(), 1, 0);
@@ -420,6 +420,7 @@ PHP_METHOD(linger_framework_request, setUri)
         int format_uri_len = spprintf(&format_uri, 0, "/%s", ZSTR_VAL(trimed_uri));
         zend_string_release(trimed_uri);
         zend_update_property_string(request_ce, getThis(), ZEND_STRL(REQUEST_PROPERTIES_URI), format_uri);
+        linger_efree(format_uri);
     } else {
         linger_throw_exception(NULL, 0, "parameter must be string.");
         return;

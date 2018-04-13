@@ -100,6 +100,8 @@ PHP_METHOD(linger_framework_application, init)
 
     zend_array *hash = HASH_OF(bootclasses);
     HashPosition pos;
+    zval method = {{0}};
+    ZVAL_STRING(&method, "bootstrap");
     for (zend_hash_internal_pointer_reset_ex(hash, &pos);
             zend_hash_has_more_elements_ex(hash, &pos) == SUCCESS;
             zend_hash_move_forward_ex(hash, &pos)) {
@@ -122,14 +124,13 @@ PHP_METHOD(linger_framework_application, init)
             linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_P(pzval), bootstrap_ce->name);
             continue;
         }
-        zval method = {{0}};
-        ZVAL_STRING(&method, "bootstrap");
         if (zend_hash_find(&(ce->function_table), Z_STR(method)) != NULL) {
             zend_call_method_with_1_params(&boot_obj, ce, NULL, "bootstrap", NULL, getThis());
         }
         zval_ptr_dtor(&boot_obj);
     }
 
+    zval_ptr_dtor(&method);
     RETURN_ZVAL(getThis(), 1, 0);
 }
 

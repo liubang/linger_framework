@@ -155,10 +155,12 @@ zval *linger_router_match(zval *this, zval *request)
                     pcre_cache_entry *pce_regexp_p = NULL;
                     linger_efree(reg);
                     if ((pce_regexp_p = pcre_get_compiled_regex_cache(zs_reg)) == NULL) {
+                        zend_string_release(zs_reg);
                         zval_ptr_dtor(&map);
                         zval_ptr_dtor(&matches);
                         continue;
                     }
+                    zend_string_release(zs_reg);
 
                     zval params = {{0}};
                     pce_regexp_p->refcount++;
@@ -211,6 +213,7 @@ zval *linger_router_match(zval *this, zval *request)
     ZEND_HASH_FOREACH_END();
 
     zend_string_release(zs_empty);
+    zend_string_release(preg1);
     zval_ptr_dtor(&zv_empty);
 
     if (is_find == 1) {
@@ -266,6 +269,7 @@ PHP_METHOD(linger_framework_router, get)
     zval_ptr_dtor(&req_method);
     zval *self = getThis();
     linger_router_add_rule(self, &rule);
+    zval_ptr_dtor(&rule);
     RETURN_ZVAL(self, 1, 0);
 }
 
@@ -284,6 +288,7 @@ PHP_METHOD(linger_framework_router, post)
     zval_ptr_dtor(&req_method);
     zval *self = getThis();
     linger_router_add_rule(self, &rule);
+    zval_ptr_dtor(&rule);
     RETURN_ZVAL(self, 1, 0);
 }
 
@@ -302,6 +307,7 @@ PHP_METHOD(linger_framework_router, put)
     zval_ptr_dtor(&req_method);
     zval *self = getThis();
     linger_router_add_rule(self, &rule);
+    zval_ptr_dtor(&rule);
     RETURN_ZVAL(self, 1, 0);
 }
 
@@ -320,6 +326,7 @@ PHP_METHOD(linger_framework_router, delete)
     zval_ptr_dtor(&req_method);
     zval *self = getThis();
     linger_router_add_rule(self, &rule);
+    zval_ptr_dtor(&rule);
     RETURN_ZVAL(self, 1, 0);
 }
 

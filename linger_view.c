@@ -158,6 +158,7 @@ static int linger_ob_get_content(zval *this, zval *tpl, zval *return_value)
             }
         } else {
             script_len = spprintf(&script, 0, "%s%c%s", Z_STRVAL_P(tpl_dir), '/', Z_STRVAL_P(tpl));
+            flag = 1;
         }
     }
 
@@ -214,6 +215,7 @@ PHP_METHOD(linger_framework_view, display)
         linger_response_set_body(response, &ret);
         linger_response_set_status(response, &status);
         linger_response_send(response);
+        zend_string_release(key);
         zval_ptr_dtor(&ret);
         RETURN_TRUE;
     } else {

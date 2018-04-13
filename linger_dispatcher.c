@@ -104,8 +104,10 @@ void linger_dispatcher_dispatch(zval *this)
         zval controller_obj = {{0}};
         zval **fptr;
         object_init_ex(&controller_obj, ce);
-        if (linger_controller_construct(ce, &controller_obj, request) == FAILURE)
+        if (linger_controller_construct(ce, &controller_obj, request) == FAILURE) {
+            zval_ptr_dtor(&controller_obj);
             return;
+        }
 
         char *class_method_lower = zend_str_tolower_dup(Z_STRVAL_P(class_method), Z_STRLEN_P(class_method));
         zend_string *zs_class_method = zend_string_init(class_method_lower, Z_STRLEN_P(class_method), 0);
