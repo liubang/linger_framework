@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/iliubang/linger_framework.svg?branch=master)](https://travis-ci.org/iliubang/linger_framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/release/iliubang/linger_framework.svg)](https://github.com/iliubang/linger_framework/releases)
+
 
 这是一个用c语言编写的PHP框架
 
