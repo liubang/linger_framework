@@ -423,6 +423,7 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
                         int tmp_char_len;
                         tmp_char_len = spprintf(&tmp_char, 0, "%s%s", ZSTR_VAL(compiled_uri), ZSTR_VAL(zs_repeat));
                         ZVAL_STRING(&zv_compiled_uri, tmp_char);
+                        linger_efree(tmp_char);
                         zend_string_release(zs_repeat);
                     } else {
                         ZVAL_STRING(&zv_compiled_uri, ZSTR_VAL(compiled_uri));
