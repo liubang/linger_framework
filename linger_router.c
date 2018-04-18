@@ -363,8 +363,8 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
 
         pcre_cache_entry *pce_regexp;
         zval matches = {{0}},
-            map = {{0}};
-        zval zv_compiled_uri = {{0}};
+             map = {{0}},
+             zv_compiled_uri = {{0}};
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
             pce_regexp->refcount++;
@@ -432,7 +432,6 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
             array_init(&inter_arr); 
             inter_arr_p = &inter_arr;
             add_index_zval(rules, Z_LVAL_P(curr_chunk), &inter_arr);
-            Z_TRY_ADDREF_P(inter_arr_p);
         }
         add_index_zval(inter_arr_p, Z_LVAL_P(max_index), rule_item);
         Z_TRY_ADDREF_P(rule_item);
@@ -479,8 +478,8 @@ PHP_METHOD(linger_framework_router, add)
 PHP_METHOD(linger_framework_router, get)
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -498,8 +497,8 @@ PHP_METHOD(linger_framework_router, get)
 PHP_METHOD(linger_framework_router, post)
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -517,8 +516,8 @@ PHP_METHOD(linger_framework_router, post)
 PHP_METHOD(linger_framework_router, put)
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -536,8 +535,8 @@ PHP_METHOD(linger_framework_router, put)
 PHP_METHOD(linger_framework_router, delete)
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }

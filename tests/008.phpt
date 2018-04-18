@@ -29,6 +29,7 @@ $router = $app->getRouter()
 
 $req = $app->getDispatcher()
 	->getRequest()
+	->setParam(['p' => '1234'])
 	->setUri('/home/123')
 	->setMethod('GET');
 
