@@ -21,6 +21,8 @@
 
 #define ROUTER_RULE_PROPERTIES_REQUEST_METHOD "_request_method"
 #define ROUTER_RULE_PROPERTIES_URI            "_uri"
+#define ROUTER_RULE_PROPERTIES_COMPILED_URI   "_compiled_uri"
+#define ROUTER_RULE_PROPERTIES_PARAMS_MAP     "_params_map"
 #define ROUTER_RULE_PROPERTIES_CLASS          "_class"
 #define ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
 
@@ -31,7 +33,9 @@ zval *linger_router_rule_get_request_method(zval *this);
 zval *linger_router_rule_get_uri(zval *this);
 zval *linger_router_rule_get_class(zval *this);
 zval *linger_router_rule_get_class_method(zval *this);
-zval *linger_router_rule_get_params(zval *this);
-zval *linger_router_rule_set_params(zval *this, zval *params);
+int linger_router_rule_set_compiled_uri(zval *this, zval *compiled_uri);
+zval *linger_router_rule_get_compiled_uri(zval *this);
+int linger_router_rule_set_params_map(zval *this, zval *params_map);
+zval *linger_router_rule_get_params_map(zval *this);
 
 #endif /* LINGER_ROUTER_RULE_H_ */

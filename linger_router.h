@@ -21,10 +21,15 @@
 
 #define LINGER_ROUTER_PROPERTIES_INSTANCE        "_instance"
 #define LINGER_ROUTER_PROPERTIES_RULES           "_rules"
+#define LINGER_ROUTER_PROPERTIES_MAX_INDEX       "_max_index"
+#define LINGER_ROUTER_PROPERTIES_CURR_CHUNK      "_curr_chunk"
+#define LINGER_ROUTER_PROPERTIES_CURR_NUM        "_curr_num"
+#define LINGER_ROUTER_PROPERTIES_CHUNK_SIZE      "_chunk_size"
 
 extern zend_class_entry *router_ce;
 
 zval *linger_router_instance(zval *this);
 zval *linger_router_match(zval *this, zval *request);
+zval *linger_router_match_ex(zval *this, zval *request);
 
 #endif /* LINGER_ROUTER_H_ */
