@@ -165,7 +165,7 @@ zval *linger_router_match(zval *this, zval *request)
                     zval params = {{0}};
                     pce_regexp_p->refcount++;
                     php_pcre_match_impl(pce_regexp_p, Z_STRVAL_P(curr_request_uri), (int)Z_STRLEN_P(curr_request_uri),
-                                        &matches, &params, 1, 0, 0, 0);
+                                        &matches, &params, 0, 0, 0, 0);
                     pce_regexp_p->refcount--;
 
                     if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
