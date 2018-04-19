@@ -85,7 +85,7 @@ void linger_dispatcher_dispatch(zval *this)
     zval *router = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
     zval *router_rule;
 
-    if ((router_rule = linger_router_match_ex(router, request)) == NULL) {
+    if ((router_rule = linger_router_match(router, request)) == NULL) {
         _404();
         return;
     }
@@ -135,7 +135,7 @@ PHP_METHOD(linger_framework_dispatcher, findRouter)
 {
     zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
     zval *router = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
-    zval *router_rule = linger_router_match_ex(router, request);
+    zval *router_rule = linger_router_match(router, request);
     if (NULL != router_rule) {
         RETURN_ZVAL(router_rule, 1, 0);
     } else {
