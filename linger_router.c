@@ -31,6 +31,7 @@
 #include "linger_request.h"
 
 #define PREG_STR "~(?:@(.*?):)~x"
+#define CHUNK_PREG_LEN 1024
 
 zend_class_entry *router_ce;
 
@@ -255,13 +256,22 @@ zval *linger_router_match_ex(zval *this, zval *request)
         return NULL;
     }
 
+    int inc = 1;
     zval *chunk;
     zval *matched_rule;
-    int is_find = 0;
+    int is_find;
+    int max_preg_len;
+
+start:
+
+    max_preg_len = CHUNK_PREG_LEN * inc;
+    is_find = 0;
+
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(rules), chunk) {
         zval *rule;
-        char *preg = NULL;
-        int preg_len = 0;
+        char *preg = emalloc(sizeof(char) * max_preg_len);
+        memcpy(preg, "~^(?", 4);
+        int preg_len = 4;
         if (UNEXPECTED(IS_ARRAY != Z_TYPE_P(chunk))) {
             continue;
         }
@@ -272,21 +282,24 @@ zval *linger_router_match_ex(zval *this, zval *request)
                 continue;
             }
             if (!strncasecmp(Z_STRVAL_P(curr_request_method), Z_STRVAL_P(request_method), Z_STRLEN_P(curr_request_method))) {
-                char *tmp_preg; 
-                preg_len = spprintf(&tmp_preg, 0, "%s|%s", preg ? preg : "", Z_STRVAL_P(compiled_uri));
-                linger_efree(preg);
-                preg = tmp_preg; 
+                if (preg_len > max_preg_len) {
+                    linger_efree(preg);
+                    inc++;
+                    goto start;
+                }
+                memcpy(preg + preg_len, "|", 1);
+                memcpy(preg + preg_len + 1, Z_STRVAL_P(compiled_uri), Z_STRLEN_P(compiled_uri));
+                preg_len += (1 + Z_STRLEN_P(compiled_uri));
             }
         } ZEND_HASH_FOREACH_END();
         if (preg_len == 0) {
             linger_efree(preg);
             continue;
         }
-        char *preg_str;
-        int preg_str_len = spprintf(&preg_str, 0, "~^(?%s)$~x", preg);
-        zend_string *zs_preg = zend_string_init(preg_str, preg_str_len, 0);
+        memcpy(preg + preg_len, ")$~x\0", 5);
+        preg_len += 4;
+        zend_string *zs_preg = zend_string_init(preg, preg_len, 0);
         linger_efree(preg);
-        linger_efree(preg_str);
         pcre_cache_entry *pce_regexp_p = NULL;
         if ((pce_regexp_p = pcre_get_compiled_regex_cache(zs_preg)) == NULL) {
             zend_string_release(zs_preg);
@@ -419,9 +432,9 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
                         }
                         ZSTR_VAL(zs_repeat)[zs_repeat_len] = '\0';
                         
-                        char *tmp_char;
-                        int tmp_char_len;
-                        tmp_char_len = spprintf(&tmp_char, 0, "%s%s", ZSTR_VAL(compiled_uri), ZSTR_VAL(zs_repeat));
+                        char *tmp_char = emalloc(sizeof(char) * (ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri) + 1));
+                        memcpy(tmp_char, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
+                        memcpy(tmp_char + ZSTR_LEN(compiled_uri), ZSTR_VAL(zs_repeat), ZSTR_LEN(zs_repeat) + 1);
                         ZVAL_STRING(&zv_compiled_uri, tmp_char);
                         linger_efree(tmp_char);
                         zend_string_release(zs_repeat);
