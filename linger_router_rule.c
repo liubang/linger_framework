@@ -70,6 +70,7 @@ zval *linger_router_rule_instance(zval *this, zval *request_method,
     zend_string_release(trimed_uri);
     */
     zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), Z_STRVAL_P(uri));
+    zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), Z_STRVAL_P(uri));
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
     //linger_efree(format_uri);
@@ -104,6 +105,42 @@ zval *linger_router_rule_get_class_method(zval *this)
     if (!this)
         return NULL;
     return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
+}
+
+int linger_router_rule_set_compiled_uri(zval *this, zval *compiled_uri)
+{
+    if (!this || IS_STRING != Z_TYPE_P(compiled_uri)) 
+        return FAILURE;
+
+    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), compiled_uri);
+
+    return SUCCESS;
+}
+
+zval *linger_router_rule_get_compiled_uri(zval *this)
+{
+    if (!this)
+        return NULL;
+
+    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), 1, NULL);
+}
+
+int linger_router_rule_set_params_map(zval *this, zval *params_map)
+{
+    if (!this || IS_ARRAY != Z_TYPE_P(params_map))
+        return FAILURE;
+
+    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), params_map);
+
+    return SUCCESS;
+}
+
+zval *linger_router_rule_get_params_map(zval *this)
+{
+    if (!this)
+        return NULL;
+
+    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), 1, NULL);
 }
 
 PHP_METHOD(linger_framework_router_rule, __construct)
@@ -159,8 +196,11 @@ LINGER_MINIT_FUNCTION(router_rule)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\RouterRule", router_rule_methods);
     router_rule_ce = zend_register_internal_class_ex(&ce, NULL);
+    router_rule_ce->ce_flags |= ZEND_ACC_FINAL;
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_rule_ce, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), ZEND_ACC_PRIVATE);
     return SUCCESS;
