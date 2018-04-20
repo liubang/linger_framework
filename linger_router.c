@@ -210,6 +210,11 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
         Z_LVAL_P(curr_num)++;
 
         zval *zv_uri = linger_router_rule_get_uri(rule_item);
+        zval *inter_arr_p;
+
+        if (NULL == strchr(Z_STRVAL_P(zv_uri), '@')) {
+            goto ed;          
+        }
 
         zend_string *preg_str = zend_string_init(ZEND_STRL(PREG_STR), 0);
         zend_string *zs_empty = zend_string_init("", 0, 0);
@@ -285,21 +290,23 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
             }    
         }
 
-        zval *inter_arr_p;
-        if ((inter_arr_p = zend_hash_index_find(Z_ARRVAL_P(rules), Z_LVAL_P(curr_chunk))) == NULL) {
-            zval inter_arr = {{0}};
-            array_init(&inter_arr); 
-            add_index_zval(&inter_arr, Z_LVAL_P(max_index), rule_item);
-            add_index_zval(rules, Z_LVAL_P(curr_chunk), &inter_arr);
-        } else {
-            add_index_zval(inter_arr_p, Z_LVAL_P(max_index), rule_item);
-        }
-
-        Z_LVAL_P(max_index)++;
-
         zval_ptr_dtor(&zv_empty);
         zend_string_release(zs_empty);
         zend_string_release(preg_str);
+
+ed:
+
+        if ((inter_arr_p = zend_hash_index_find(Z_ARRVAL_P(rules), Z_LVAL_P(curr_chunk))) == NULL) {
+            zval inter_arr = {{0}};
+            array_init(&inter_arr); 
+            add_index_zval(rules, Z_LVAL_P(curr_chunk), &inter_arr);
+            inter_arr_p = &inter_arr;
+        } 
+
+        add_index_zval(inter_arr_p, Z_LVAL_P(max_index), rule_item);
+
+        Z_LVAL_P(max_index)++;
+
     } else {
         linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name);
     }
