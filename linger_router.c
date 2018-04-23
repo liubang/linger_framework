@@ -74,7 +74,7 @@ typedef struct _router_obj {
 
 zend_object_handlers linger_router_obj_handlers;
 
-static zend_object *linger_create_router_obj(zend_class_entry *ce)
+static zend_object *linger_create_router_obj(zend_class_entry *ce) /* {{{ */
 {
     router_obj *internal;
     metadata *md = emalloc(sizeof(metadata));
@@ -90,17 +90,17 @@ static zend_object *linger_create_router_obj(zend_class_entry *ce)
     internal->std.handlers = &linger_router_obj_handlers;
 
     return &internal->std;
-}
+} /* }}} */
 
-static void linger_free_router_obj(zend_object *object)
+static void linger_free_router_obj(zend_object *object) /* {{{ */
 {
     router_obj *internal = (router_obj *)((char *)object - XtOffsetOf(router_obj, std));
 
     zend_object_std_dtor(&internal->std);
     linger_efree(internal->md);
-}
+} /* }}} */
 
-zval *linger_router_instance(zval *this)
+zval *linger_router_instance(zval *this) /* {{{ */
 {
     zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
@@ -116,17 +116,12 @@ zval *linger_router_instance(zval *this)
     zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
     zval_ptr_dtor(&router_rules);
 
-    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), (zend_long)1);
-    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), (zend_long)0);
-    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), (zend_long)1);
     zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), (zend_long)10);
 
     return this;
-}
+} /* }}} */
 
-/* {{{ linger_router_match
- */
-zval *linger_router_match(zval *this, zval *request)
+zval *linger_router_match(zval *this, zval *request) /* {{{ */
 {
     zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
 
@@ -234,12 +229,9 @@ start:
         return NULL;
     }
 }
-/* }}}
- */
+/* }}} */
 
-/* {{{ linger_router_add_rule
- */
-static void linger_router_add_rule(zval *this, zval *rule_item)
+static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
 {
     if (EXPECTED(IS_OBJECT == Z_TYPE_P(rule_item)
                  && instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce))) {
@@ -358,20 +350,15 @@ ed:
         linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name);
     }
 }
-/* }}}
- */
+/* }}} */
 
-
-/* {{{ __construct
- */
-PHP_METHOD(linger_framework_router, __construct)
+PHP_METHOD(linger_framework_router, __construct) /* {{{ */
 {
 
 }
-/* }}}
- */
+/* }}} */
 
-PHP_METHOD(linger_framework_router, setChunkSize)
+PHP_METHOD(linger_framework_router, setChunkSize) /* {{{ */
 {
     zend_long chunkSize;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "l", &chunkSize) == FAILURE) {
@@ -383,8 +370,9 @@ PHP_METHOD(linger_framework_router, setChunkSize)
 
     RETURN_ZVAL(this, 1, 0);
 }
+/* }}} */
 
-PHP_METHOD(linger_framework_router, add)
+PHP_METHOD(linger_framework_router, add) /* {{{ */ 
 {
     zval *rule_item;
 
@@ -398,8 +386,9 @@ PHP_METHOD(linger_framework_router, add)
 
     RETURN_ZVAL(self, 1, 0);
 }
+/* }}} */
 
-PHP_METHOD(linger_framework_router, get)
+PHP_METHOD(linger_framework_router, get) /* {{{ */
 {
     zval *uri = NULL,
          *class = NULL,
@@ -416,8 +405,9 @@ PHP_METHOD(linger_framework_router, get)
     linger_router_add_rule(self, &rule);
     RETURN_ZVAL(self, 1, 0);
 }
+/* }}} */
 
-PHP_METHOD(linger_framework_router, post)
+PHP_METHOD(linger_framework_router, post) /* {{{ */
 {
     zval *uri = NULL,
          *class = NULL,
@@ -434,8 +424,9 @@ PHP_METHOD(linger_framework_router, post)
     linger_router_add_rule(self, &rule);
     RETURN_ZVAL(self, 1, 0);
 }
+/* }}} */
 
-PHP_METHOD(linger_framework_router, put)
+PHP_METHOD(linger_framework_router, put) /* {{{ */
 {
     zval *uri = NULL,
          *class = NULL,
@@ -452,8 +443,9 @@ PHP_METHOD(linger_framework_router, put)
     linger_router_add_rule(self, &rule);
     RETURN_ZVAL(self, 1, 0);
 }
+/* }}} */
 
-PHP_METHOD(linger_framework_router, delete)
+PHP_METHOD(linger_framework_router, delete) /* {{{ */
 {
     zval *uri = NULL,
          *class = NULL,
@@ -470,6 +462,14 @@ PHP_METHOD(linger_framework_router, delete)
     linger_router_add_rule(self, &rule);
     RETURN_ZVAL(self, 1, 0);
 }
+/* }}} */
+
+PHP_METHOD(linger_framework_router, dump) /* {{{ */ 
+{
+    metadata *md = Z_GET_MD(getThis()); 
+    php_printf("md:{curr_chunk:%d,curr_num:%d,max_index:%d}\n", md->curr_chunk, md->curr_num, md->max_index);
+}
+/* }}} */
 
 zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
@@ -479,6 +479,7 @@ zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, post, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, delete, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, setChunkSize, linger_framework_router_set_chunk_size_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, dump, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -495,9 +496,6 @@ LINGER_MINIT_FUNCTION(router)
 
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), ZEND_ACC_PRIVATE | ZEND_ACC_STATIC);
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), ZEND_ACC_PRIVATE);
-    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), ZEND_ACC_PRIVATE);
-    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), ZEND_ACC_PRIVATE);
-    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), ZEND_ACC_PRIVATE);
 
     return SUCCESS;

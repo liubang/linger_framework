@@ -29,6 +29,7 @@ for ($i = 0; $i < 100; ++$i) {
 }
 
 $router->get('/home/@name:([a-z]+)/@age:(\d+)/@id:(\d+)', TestController::class, 'index');
+$router->dump();
 
 $req = $app->getDispatcher()
 	->getRequest()
@@ -39,6 +40,7 @@ $app->run();
 
 ?>
 --EXPECT--
+md:{curr_chunk:40,curr_num:3,max_index:5}
 Array
 (
     [name] => liubang
