@@ -52,6 +52,54 @@ ZEND_ARG_INFO(0, class)
 ZEND_ARG_INFO(0, method)
 ZEND_END_ARG_INFO()
 
+typedef struct _metadata {
+    zend_long curr_chunk;
+    zend_long curr_num;
+    zend_long max_index;
+} metadata;
+
+typedef struct _router_obj {
+    metadata *md;
+    zend_object std;
+} router_obj;
+
+#define Z_GET_ROUTER_OBJ(zv) \
+    (router_obj *)((char *)Z_OBJ_P((zv)) - XtOffsetOf(router_obj, std))
+
+#define ROUTER_OBJ_GET_MD(ro) \
+    (ro)->md
+
+#define Z_GET_MD(zv) \
+    ROUTER_OBJ_GET_MD(Z_GET_ROUTER_OBJ(zv))
+
+zend_object_handlers linger_router_obj_handlers;
+
+static zend_object *linger_create_router_obj(zend_class_entry *ce)
+{
+    router_obj *internal;
+    metadata *md = emalloc(sizeof(metadata));
+    md->curr_chunk = 0;
+    md->curr_num = 1;
+    md->max_index = 1;
+
+    internal = ecalloc(1, sizeof(router_obj) + zend_object_properties_size(ce));
+    internal->md = md;
+
+    zend_object_std_init(&internal->std, ce);
+    object_properties_init(&internal->std, ce);
+    internal->std.handlers = &linger_router_obj_handlers;
+
+    return &internal->std;
+}
+
+static void linger_free_router_obj(zend_object *object)
+{
+    router_obj *internal = (router_obj *)((char *)object - XtOffsetOf(router_obj, std));
+
+    zend_object_std_dtor(&internal->std);
+    linger_efree(internal->md);
+}
+
 zval *linger_router_instance(zval *this)
 {
     zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1);
@@ -68,9 +116,9 @@ zval *linger_router_instance(zval *this)
     zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
     zval_ptr_dtor(&router_rules);
 
-    zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), (zend_long)1);
-    zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), (zend_long)0);
-    zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), (zend_long)1);
+    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), (zend_long)1);
+    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), (zend_long)0);
+    //zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), (zend_long)1);
     zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), (zend_long)10);
 
     return this;
@@ -196,18 +244,17 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
     if (EXPECTED(IS_OBJECT == Z_TYPE_P(rule_item)
                  && instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce))) {
         zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
-        zval *curr_num = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), 1, NULL);
-        zval *max_index = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), 1 , NULL);
-        zval *curr_chunk = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), 1, NULL);
         zval *chunk_size = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), 1, NULL);
 
-        if (Z_LVAL_P(curr_num) > Z_LVAL_P(chunk_size)) {
-            ZVAL_LONG(max_index, 1);
-            ZVAL_LONG(curr_num, 1);
-            Z_LVAL_P(curr_chunk)++;
+        metadata *md = Z_GET_MD(this);
+
+        if (md->curr_num > Z_LVAL_P(chunk_size)) {
+            md->max_index = 1;
+            md->curr_num = 1;
+            md->curr_chunk++;
         }
 
-        Z_LVAL_P(curr_num)++;
+        md->curr_num++;
 
         zval *zv_uri = linger_router_rule_get_uri(rule_item);
         zval *inter_arr_p;
@@ -241,7 +288,7 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
                 } else {
                     linger_router_rule_set_params_map(rule_item, params_map);
                     zend_long cnt = zend_array_count(Z_ARRVAL_P(params_map)) + 1;
-                    Z_LVAL_P(max_index) = Z_LVAL_P(max_index) > cnt ? Z_LVAL_P(max_index) : cnt;
+                    md->max_index = md->max_index > cnt ? md->max_index : cnt;
                      
                     pce_regexp->refcount++;
 #if PHP_API_VERSION <= 20160303
@@ -253,7 +300,7 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
 #endif
                     pce_regexp->refcount--;
 
-                    zend_long rep = Z_LVAL_P(max_index) - cnt;
+                    zend_long rep = md->max_index - cnt;
                     if (rep > 0) {
                         zend_string *zs_repeat = zend_string_safe_alloc(2, rep, 0, 0);
                         size_t zs_repeat_len = 2 * rep;
@@ -296,16 +343,16 @@ static void linger_router_add_rule(zval *this, zval *rule_item)
 
 ed:
 
-        if ((inter_arr_p = zend_hash_index_find(Z_ARRVAL_P(rules), Z_LVAL_P(curr_chunk))) == NULL) {
+        if ((inter_arr_p = zend_hash_index_find(Z_ARRVAL_P(rules), md->curr_chunk)) == NULL) {
             zval inter_arr = {{0}};
             array_init(&inter_arr); 
-            add_index_zval(rules, Z_LVAL_P(curr_chunk), &inter_arr);
+            add_index_zval(rules, md->curr_chunk, &inter_arr);
             inter_arr_p = &inter_arr;
         } 
 
-        add_index_zval(inter_arr_p, Z_LVAL_P(max_index), rule_item);
+        add_index_zval(inter_arr_p, md->max_index, rule_item);
 
-        Z_LVAL_P(max_index)++;
+        md->max_index++;
 
     } else {
         linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name);
@@ -314,10 +361,15 @@ ed:
 /* }}}
  */
 
+
+/* {{{ __construct
+ */
 PHP_METHOD(linger_framework_router, __construct)
 {
 
 }
+/* }}}
+ */
 
 PHP_METHOD(linger_framework_router, setChunkSize)
 {
@@ -435,11 +487,17 @@ LINGER_MINIT_FUNCTION(router)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Router", router_methods);
     router_ce = zend_register_internal_class_ex(&ce, NULL);
+    router_ce->create_object = linger_create_router_obj;
+    memcpy(&linger_router_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    linger_router_obj_handlers.offset = XtOffsetOf(router_obj, std);
+    linger_router_obj_handlers.dtor_obj = zend_objects_destroy_object;
+    linger_router_obj_handlers.free_obj = linger_free_router_obj;
+
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), ZEND_ACC_PRIVATE | ZEND_ACC_STATIC);
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), ZEND_ACC_PRIVATE);
+    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_MAX_INDEX), ZEND_ACC_PRIVATE);
+    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_CHUNK), ZEND_ACC_PRIVATE);
+    //zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CURR_NUM), ZEND_ACC_PRIVATE);
     zend_declare_property_null(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), ZEND_ACC_PRIVATE);
 
     return SUCCESS;
