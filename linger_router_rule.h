@@ -28,13 +28,28 @@
 
 extern zend_class_entry *router_rule_ce;
 
+typedef struct _router_rule_obj {
+    zend_string *zs_uri;
+    zend_object std;
+} router_rule_obj;
+
+#define Z_GET_ROUTER_RULE_OBJ(zv) \
+    (router_rule_obj *)((char *)Z_OBJ_P((zv)) - XtOffsetOf(router_rule_obj, std))
+
+#define ROUTER_RULE_OBJ_GET_ZS_URI(obj) \
+    (obj)->zs_uri
+
+#define Z_GET_ZS_URI(zv) \
+    ROUTER_RULE_OBJ_GET_ZS_URI(Z_GET_ROUTER_RULE_OBJ(zv))
+
+
 zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, zval *class, zval *class_method);
 zval *linger_router_rule_get_request_method(zval *this);
 zval *linger_router_rule_get_uri(zval *this);
 zval *linger_router_rule_get_class(zval *this);
 zval *linger_router_rule_get_class_method(zval *this);
-int linger_router_rule_set_compiled_uri(zval *this, zval *compiled_uri);
-zval *linger_router_rule_get_compiled_uri(zval *this);
+int linger_router_rule_set_compiled_uri(zval *this, zend_string *compiled_uri);
+zend_string *linger_router_rule_get_compiled_uri(zval *this);
 int linger_router_rule_set_params_map(zval *this, zval *params_map);
 zval *linger_router_rule_get_params_map(zval *this);
 

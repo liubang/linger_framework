@@ -155,10 +155,11 @@ start:
             continue;
         }
         ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(chunk), rule) {
-            zval *compiled_uri = linger_router_rule_get_compiled_uri(rule);            
+            zend_string *compiled_uri = linger_router_rule_get_compiled_uri(rule);            
             zval *request_method = linger_router_rule_get_request_method(rule);
-            if (UNEXPECTED(IS_STRING != Z_TYPE_P(compiled_uri))) {
-                continue;
+            if (!compiled_uri) {
+                zval *request_uri = linger_router_rule_get_uri(rule); 
+                compiled_uri = Z_STR_P(request_uri);
             }
             if (!strncasecmp(Z_STRVAL_P(curr_request_method), Z_STRVAL_P(request_method), Z_STRLEN_P(curr_request_method))) {
                 if (preg_len > max_preg_len) {
@@ -167,8 +168,8 @@ start:
                     goto start;
                 }
                 memcpy(preg + preg_len, "|", 1);
-                memcpy(preg + preg_len + 1, Z_STRVAL_P(compiled_uri), Z_STRLEN_P(compiled_uri));
-                preg_len += (1 + Z_STRLEN_P(compiled_uri));
+                memcpy(preg + preg_len + 1, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
+                preg_len += (1 + ZSTR_LEN(compiled_uri));
             }
         } ZEND_HASH_FOREACH_END();
         if (preg_len == 0) {
@@ -262,8 +263,8 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
 
         pcre_cache_entry *pce_regexp;
         zval matches = {{0}},
-             map = {{0}},
-             zv_compiled_uri = {{0}};
+             map = {{0}};
+             //zv_compiled_uri = {{0}};
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
             pce_regexp->refcount++;
@@ -312,16 +313,19 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
                         char *tmp_char = emalloc(sizeof(char) * (ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri) + 1));
                         memcpy(tmp_char, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
                         memcpy(tmp_char + ZSTR_LEN(compiled_uri), ZSTR_VAL(zs_repeat), ZSTR_LEN(zs_repeat) + 1);
-                        ZVAL_STRING(&zv_compiled_uri, tmp_char);
+                        //ZVAL_STRING(&zv_compiled_uri, tmp_char);
+                        (void)linger_router_rule_set_compiled_uri(rule_item, zend_string_init(tmp_char, ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri), 0));
                         linger_efree(tmp_char);
                         zend_string_release(zs_repeat);
+                        zend_string_release(compiled_uri);
                     } else {
-                        ZVAL_STRING(&zv_compiled_uri, ZSTR_VAL(compiled_uri));
+                        //ZVAL_STRING(&zv_compiled_uri, ZSTR_VAL(compiled_uri));
+                        (void)linger_router_rule_set_compiled_uri(rule_item, compiled_uri);
                     }
                       
-                    (void)linger_router_rule_set_compiled_uri(rule_item, &zv_compiled_uri);
-                    zval_ptr_dtor(&zv_compiled_uri);
-                    zend_string_release(compiled_uri);
+                    //(void)linger_router_rule_set_compiled_uri(rule_item, &zv_compiled_uri);
+                    //zval_ptr_dtor(&zv_compiled_uri);
+                    //zend_string_release(compiled_uri);
                     
                     zval_ptr_dtor(&map);
                     zval_ptr_dtor(&matches);

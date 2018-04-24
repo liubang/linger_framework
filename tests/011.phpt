@@ -32,13 +32,11 @@ $app->run();
 
 ?>
 --EXPECT--
-object(Linger\Framework\RouterRule)#6 (6) {
+object(Linger\Framework\RouterRule)#6 (5) {
   ["_request_method":"Linger\Framework\RouterRule":private]=>
   string(3) "get"
   ["_uri":"Linger\Framework\RouterRule":private]=>
   string(18) "/home/@id:([0-9]+)"
-  ["_compiled_uri":"Linger\Framework\RouterRule":private]=>
-  string(14) "/home/([0-9]+)"
   ["_params_map":"Linger\Framework\RouterRule":private]=>
   array(1) {
     [0]=>
