@@ -264,7 +264,6 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
         pcre_cache_entry *pce_regexp;
         zval matches = {{0}},
              map = {{0}};
-             //zv_compiled_uri = {{0}};
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
             pce_regexp->refcount++;
@@ -313,20 +312,14 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
                         char *tmp_char = emalloc(sizeof(char) * (ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri) + 1));
                         memcpy(tmp_char, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
                         memcpy(tmp_char + ZSTR_LEN(compiled_uri), ZSTR_VAL(zs_repeat), ZSTR_LEN(zs_repeat) + 1);
-                        //ZVAL_STRING(&zv_compiled_uri, tmp_char);
                         (void)linger_router_rule_set_compiled_uri(rule_item, zend_string_init(tmp_char, ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri), 0));
                         linger_efree(tmp_char);
                         zend_string_release(zs_repeat);
                         zend_string_release(compiled_uri);
                     } else {
-                        //ZVAL_STRING(&zv_compiled_uri, ZSTR_VAL(compiled_uri));
                         (void)linger_router_rule_set_compiled_uri(rule_item, compiled_uri);
                     }
                       
-                    //(void)linger_router_rule_set_compiled_uri(rule_item, &zv_compiled_uri);
-                    //zval_ptr_dtor(&zv_compiled_uri);
-                    //zend_string_release(compiled_uri);
-                    
                     zval_ptr_dtor(&map);
                     zval_ptr_dtor(&matches);
                 }
@@ -475,7 +468,7 @@ PHP_METHOD(linger_framework_router, dump) /* {{{ */
 }
 /* }}} */
 
-zend_function_entry router_methods[] = {
+zend_function_entry router_methods[] = { /* {{{ */
     PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router, add, linger_framework_router_add_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, get, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
@@ -486,8 +479,9 @@ zend_function_entry router_methods[] = {
     PHP_ME(linger_framework_router, dump, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
+/* }}} */
 
-LINGER_MINIT_FUNCTION(router)
+LINGER_MINIT_FUNCTION(router) /* {{{ */
 {
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Router", router_methods);
@@ -504,3 +498,4 @@ LINGER_MINIT_FUNCTION(router)
 
     return SUCCESS;
 }
+/* }}} */

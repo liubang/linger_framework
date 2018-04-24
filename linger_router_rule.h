@@ -21,7 +21,6 @@
 
 #define ROUTER_RULE_PROPERTIES_REQUEST_METHOD "_request_method"
 #define ROUTER_RULE_PROPERTIES_URI            "_uri"
-#define ROUTER_RULE_PROPERTIES_COMPILED_URI   "_compiled_uri"
 #define ROUTER_RULE_PROPERTIES_PARAMS_MAP     "_params_map"
 #define ROUTER_RULE_PROPERTIES_CLASS          "_class"
 #define ROUTER_RULE_PROPERTIES_CLASS_METHOD   "_class_method"
