@@ -91,7 +91,6 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
     }
 
     zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), Z_STRVAL_P(uri));
-    //zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), Z_STRVAL_P(uri));
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
     zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
     linger_efree(lower_method);
@@ -128,8 +127,9 @@ zval *linger_router_rule_get_class(zval *this) /* {{{ */
 
 zval *linger_router_rule_get_class_method(zval *this) /* {{{ */ 
 {
-    if (!this)
+    if (UNEXPECTED(!this))
         return NULL;
+
     return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
 }
 /* }}} */
@@ -146,7 +146,6 @@ int linger_router_rule_set_compiled_uri(zval *this, zend_string *compiled_uri) /
     }
 
     Z_GET_ZS_URI(this) = compiled_uri;
-    //zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), compiled_uri);
 
     return SUCCESS;
 }
@@ -154,11 +153,10 @@ int linger_router_rule_set_compiled_uri(zval *this, zend_string *compiled_uri) /
 
 zend_string *linger_router_rule_get_compiled_uri(zval *this) /* {{{ */
 {
-    if (!this)
+    if (UNEXPECTED(!this))
         return NULL;
 
     return Z_GET_ZS_URI(this);
-    //return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_COMPILED_URI), 1, NULL);
 }
 /* }}} */
 

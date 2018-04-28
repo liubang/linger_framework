@@ -155,7 +155,7 @@ start:
             continue;
         }
         ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(chunk), rule) {
-            zend_string *compiled_uri = linger_router_rule_get_compiled_uri(rule);            
+            zend_string *compiled_uri = Z_GET_ZS_URI(rule);
             zval *request_method = linger_router_rule_get_request_method(rule);
             if (!compiled_uri) {
                 zval *request_uri = linger_router_rule_get_uri(rule); 
