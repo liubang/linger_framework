@@ -5,7 +5,7 @@ Check for linger_framework presence
 --FILE--
 <?php 
 $app = new linger\framework\Application([
-	'app_path' => '/tmp',
+	'app_directory' => '/tmp',
 ]);
 
 $request = new linger\framework\Request();

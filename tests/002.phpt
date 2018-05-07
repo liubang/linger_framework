@@ -5,7 +5,7 @@ Check for linger_framework presence
 --FILE--
 <?php 
 $app = new \linger\framework\Application([
-	'app_path' => '/tmp',
+	'app_directory' => '/tmp',
 	'db' => [
 		'host' => 'localhost',
 		'name' => 'test',
@@ -23,14 +23,14 @@ foreach ($config as $key => $val) {
 	var_dump($val);
 }
 
-var_dump($config['app_path']);
+var_dump($config['app_directory']);
 ?>
 --EXPECT--
 -----object------
 object(Linger\Framework\Config)#2 (1) {
   ["_config":protected]=>
   array(2) {
-    ["app_path"]=>
+    ["app_directory"]=>
     string(4) "/tmp"
     ["db"]=>
     array(3) {
@@ -45,7 +45,7 @@ object(Linger\Framework\Config)#2 (1) {
 }
 -----array-------
 array(2) {
-  ["app_path"]=>
+  ["app_directory"]=>
   string(4) "/tmp"
   ["db"]=>
   array(3) {
@@ -58,7 +58,7 @@ array(2) {
   }
 }
 -----foreach------
-app_path
+app_directory
 string(4) "/tmp"
 db
 array(3) {

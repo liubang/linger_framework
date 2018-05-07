@@ -44,8 +44,8 @@ extern zend_class_entry *bootstrap_ce;
 
 
 ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
-zend_bool display_errors;
 zend_bool throw_exception;
+zend_bool display_errors;
 char *view_directory;
 char *app_directory;
 ZEND_END_MODULE_GLOBALS(linger_framework)
@@ -62,9 +62,9 @@ extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
 #define LINGER_STARTUP(module)		  ZEND_MODULE_STARTUP_N(linger_framework_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
 #define linger_efree(ptr)	if (ptr) efree(ptr)
-#define linger_php_error(level, fmt_str, ...)	if (LINGER_FRAMEWORK_G(display_errors)) php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__)
+#define linger_php_error(level, fmt_str, ...)	do { if (LINGER_FRAMEWORK_G(display_errors)) { php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__); } } while(0)
 #define linger_php_fatal_error(level, fmt_str, ...)  php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__)
-#define linger_throw_exception(e, level, fmt_str, ...) zend_throw_exception_ex(e, level TSRMLS_CC, fmt_str, ##__VA_ARGS__)
+#define linger_throw_exception(e, level, fmt_str, ...) do { if (LINGER_FRAMEWORK_G(throw_exception)) { zend_throw_exception_ex(e, level TSRMLS_CC, fmt_str, ##__VA_ARGS__); } } while(0)
 
 /* declare components */
 LINGER_MINIT_FUNCTION(application);

@@ -8,7 +8,7 @@ Check for linger_framework presence
 define('APP_PATH', realpath(__DIR__) . '/');
 
 $app = new linger\framework\Application([
-	'app_path' => '/tmp',
+	'app_directory' => '/tmp',
 ]);
 
 class TestController extends linger\framework\Controller {

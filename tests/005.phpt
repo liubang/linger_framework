@@ -5,7 +5,7 @@ Check for linger_framework presence
 --FILE--
 <?php 
 $app = new linger\framework\Application([
-	'app_path' => '/tmp',
+	'app_directory' => '/tmp',
 ]);
 
 class TestController extends linger\framework\Controller {

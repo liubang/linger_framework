@@ -46,8 +46,8 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(linger_framework_application, __construct)
 {
     zval *app,
-         *aconfig = NULL;
-    zval zconfig = {{0}};
+         *aconfig = NULL,
+         zconfig = {{0}};
 
     app = zend_read_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), 1);
 
@@ -64,6 +64,16 @@ PHP_METHOD(linger_framework_application, __construct)
         linger_throw_exception(NULL, 0, "config must be an array.");
         return;
     }
+
+    zend_string *zs_app_directory = zend_string_init("app_directory", 13, 0);
+
+    if (zend_hash_find(Z_ARRVAL_P(aconfig), zs_app_directory) == NULL) {
+        linger_throw_exception(NULL, 0, "must set app_directory in config.");
+        zend_string_release(zs_app_directory);
+        return;
+    }
+
+    zend_string_release(zs_app_directory);
 
     zval *self = getThis();
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self);
