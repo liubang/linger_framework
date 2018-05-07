@@ -43,6 +43,48 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
+PHP_METHOD(linger_framework_application, autoload)
+{
+    zend_string *class_name;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "S", &class_name) == FAILURE) {
+        return;
+    }
+
+    char class_path[1024]; 
+    char c;
+
+    int i = 0,
+        j = 0;
+
+    while ((c = *(LINGER_FRAMEWORK_G(app_directory) + i)) != '\0') {
+        class_path[i] = c;
+        i++;
+    }
+
+    class_path[i] = DEFAULT_SLASH;
+    i++;
+
+    while((c = *(ZSTR_VAL(class_name) + j)) != '\0') {
+        if (c == '\\')
+            c = DEFAULT_SLASH;
+
+        class_path[i + j] = c;
+        j++;
+    }
+
+    class_path[i + j] = '.';
+    class_path[i + j + 1] = 'p';
+    class_path[i + j + 2] = 'h';
+    class_path[i + j + 3] = 'p';
+    class_path[i + j + 4] = '\0';
+
+    if (linger_framework_include_scripts(class_path, i + j, NULL) != SUCCESS) {
+        linger_throw_exception(NULL, 0, "the file %s is not exists.", class_path);
+        return;
+    }
+}
+
 PHP_METHOD(linger_framework_application, __construct)
 {
     zval *app,
@@ -67,13 +109,24 @@ PHP_METHOD(linger_framework_application, __construct)
 
     zend_string *zs_app_directory = zend_string_init("app_directory", 13, 0);
 
-    if (zend_hash_find(Z_ARRVAL_P(aconfig), zs_app_directory) == NULL) {
+    zval *zv_app_directory = NULL;
+    if ((zv_app_directory = zend_hash_find(Z_ARRVAL_P(aconfig), zs_app_directory)) == NULL) {
         linger_throw_exception(NULL, 0, "must set app_directory in config.");
         zend_string_release(zs_app_directory);
         return;
     }
-
     zend_string_release(zs_app_directory);
+
+    if (*(Z_STRVAL_P(zv_app_directory) + Z_STRLEN_P(zv_app_directory) - 1) == DEFAULT_SLASH) {
+        LINGER_FRAMEWORK_G(app_directory) = estrndup(Z_STRVAL_P(zv_app_directory), Z_STRLEN_P(zv_app_directory) - 1);
+    } else {
+        LINGER_FRAMEWORK_G(app_directory) = estrndup(Z_STRVAL_P(zv_app_directory), Z_STRLEN_P(zv_app_directory));
+    }
+
+    zval zv_autoload = {{0}};
+    ZVAL_STRING(&zv_autoload, "\\linger\\framework\\Application::autoload");
+    zend_call_method_with_1_params(NULL, NULL, NULL, "spl_autoload_register", NULL, &zv_autoload);
+    zval_ptr_dtor(&zv_autoload);
 
     zval *self = getThis();
     zend_update_static_property(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), self);
@@ -180,6 +233,7 @@ PHP_METHOD(linger_framework_application, __destruct)
 }
 
 zend_function_entry application_methods[] = {
+    PHP_ME(linger_framework_application, autoload, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, __construct, linger_framework_application_construct_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_application, app, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(linger_framework_application, init, linger_framework_application_bootstrap_arginfo, ZEND_ACC_PUBLIC)
