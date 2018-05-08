@@ -73,6 +73,11 @@ PHP_METHOD(linger_framework_application, autoload)
         j++;
     }
 
+    if (i + j + 4 > 1023) {
+        linger_throw_exception(NULL, 0, "the class_path %s is too long.", class_path);
+        return;
+    }
+
     class_path[i + j] = '.';
     class_path[i + j + 1] = 'p';
     class_path[i + j + 2] = 'h';
