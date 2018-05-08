@@ -158,7 +158,7 @@ start:
             zend_string *compiled_uri = Z_GET_ZS_URI(rule);
             zval *request_method = linger_router_rule_get_request_method(rule);
             if (!compiled_uri) {
-                zval *request_uri = linger_router_rule_get_uri(rule); 
+                zval *request_uri = linger_router_rule_get_uri(rule);
                 compiled_uri = Z_STR_P(request_uri);
             }
             if (!strncasecmp(Z_STRVAL_P(curr_request_method), Z_STRVAL_P(request_method), Z_STRLEN_P(curr_request_method))) {
@@ -171,7 +171,8 @@ start:
                 memcpy(preg + preg_len + 1, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
                 preg_len += (1 + ZSTR_LEN(compiled_uri));
             }
-        } ZEND_HASH_FOREACH_END();
+        }
+        ZEND_HASH_FOREACH_END();
         if (preg_len == 0) {
             linger_efree(preg);
             continue;
@@ -190,7 +191,7 @@ start:
         zval matches = {{0}};
         pce_regexp_p->refcount++;
         php_pcre_match_impl(pce_regexp_p, Z_STRVAL_P(curr_request_uri), (int)Z_STRLEN_P(curr_request_uri),
-                                    &matches, &params, 0, 0, 0, 0);
+                            &matches, &params, 0, 0, 0, 0);
         pce_regexp_p->refcount--;
 
         if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
@@ -209,21 +210,23 @@ start:
             zval format_params = {{0}};
             array_init(&format_params);
             zval *param_name;
-            zend_ulong i; 
+            zend_ulong i;
             ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL_P(params_map), i, param_name) {
-                zval *param_val = zend_hash_index_find(Z_ARRVAL(params), i + 1); 
+                zval *param_val = zend_hash_index_find(Z_ARRVAL(params), i + 1);
                 add_assoc_zval_ex(&format_params, Z_STRVAL_P(param_name), Z_STRLEN_P(param_name), param_val);
                 Z_TRY_ADDREF_P(param_val);
-            } ZEND_HASH_FOREACH_END();
+            }
+            ZEND_HASH_FOREACH_END();
             linger_request_set_params(request, &format_params);
             zval_ptr_dtor(&format_params);
-        } 
+        }
         zval_ptr_dtor(&params);
         zval_ptr_dtor(&matches);
         is_find = 1;
         break;
-    } ZEND_HASH_FOREACH_END();
-    
+    }
+    ZEND_HASH_FOREACH_END();
+
     if (is_find) {
         return matched_rule;
     } else {
@@ -252,9 +255,11 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
         zval *zv_uri = linger_router_rule_get_uri(rule_item);
         zval *inter_arr_p;
 
+        /*
         if (NULL == strchr(Z_STRVAL_P(zv_uri), '@')) {
-            goto ed;          
+            goto ed;
         }
+        */
 
         zend_string *preg_str = zend_string_init(ZEND_STRL(PREG_STR), 0);
         zend_string *zs_empty = zend_string_init("", 0, 0);
@@ -263,67 +268,67 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
 
         pcre_cache_entry *pce_regexp;
         zval matches = {{0}},
-             map = {{0}};
+        map = {{0}};
+        zend_long cnt = 1;
+        zend_string *compiled_uri = NULL;
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
             pce_regexp->refcount++;
             php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), (int)Z_STRLEN_P(zv_uri), &matches, &map, 1, 0, 0, 0);
             pce_regexp->refcount--;
             if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
-                zval_ptr_dtor(&map);
-                zval_ptr_dtor(&matches);
+                compiled_uri = zend_string_init(Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), 0);
             } else {
                 zval *params_map = NULL;
                 if ((params_map = zend_hash_index_find(Z_ARRVAL(map), 1)) == NULL) {
-                    zval_ptr_dtor(&map);
-                    zval_ptr_dtor(&matches);
+                    compiled_uri = zend_string_init(Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), 0);
                 } else {
                     linger_router_rule_set_params_map(rule_item, params_map);
-                    zend_long cnt = zend_array_count(Z_ARRVAL_P(params_map)) + 1;
+                    cnt = zend_array_count(Z_ARRVAL_P(params_map)) + 1;
                     md->max_index = md->max_index > cnt ? md->max_index : cnt;
-                     
+
                     pce_regexp->refcount++;
 #if PHP_API_VERSION <= 20160303
-                    zend_string *compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
-                                           Z_STRLEN_P(zv_uri), &zv_empty, 0, -1, NULL);
+                    compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
+                                                         Z_STRLEN_P(zv_uri), &zv_empty, 0, -1, NULL);
 #else
-                    zend_string *compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
-                                           Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
+                    compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
+                                                         Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
 #endif
                     pce_regexp->refcount--;
 
-                    zend_long rep = md->max_index - cnt;
-                    if (rep > 0) {
-                        zend_string *zs_repeat = zend_string_safe_alloc(2, rep, 0, 0);
-                        size_t zs_repeat_len = 2 * rep;
-                        char *s, *e, *ee;
-                        ptrdiff_t l=0; 
-                        memcpy(ZSTR_VAL(zs_repeat), "()", 2);
-                        s = ZSTR_VAL(zs_repeat);
-                        e = ZSTR_VAL(zs_repeat) + 2;
-                        ee = ZSTR_VAL(zs_repeat) + zs_repeat_len; 
-                        while (e < ee) { 
-                            l = (e-s) < (ee-e) ? (e-s) : (ee-e);
-                            memmove(e, s, l);
-                            e += l;
-                        }
-                        ZSTR_VAL(zs_repeat)[zs_repeat_len] = '\0';
-                        
-                        char *tmp_char = emalloc(sizeof(char) * (ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri) + 1));
-                        memcpy(tmp_char, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
-                        memcpy(tmp_char + ZSTR_LEN(compiled_uri), ZSTR_VAL(zs_repeat), ZSTR_LEN(zs_repeat) + 1);
-                        (void)linger_router_rule_set_compiled_uri(rule_item, zend_string_init(tmp_char, ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri), 0));
-                        linger_efree(tmp_char);
-                        zend_string_release(zs_repeat);
-                        zend_string_release(compiled_uri);
-                    } else {
-                        (void)linger_router_rule_set_compiled_uri(rule_item, compiled_uri);
-                    }
-                      
-                    zval_ptr_dtor(&map);
-                    zval_ptr_dtor(&matches);
                 }
-            }    
+            }
+            zend_long rep = md->max_index - cnt;
+            if (rep > 0) {
+                zend_string *zs_repeat = zend_string_safe_alloc(2, rep, 0, 0);
+                size_t zs_repeat_len = 2 * rep;
+                char *s, *e, *ee;
+                ptrdiff_t l=0;
+                memcpy(ZSTR_VAL(zs_repeat), "()", 2);
+                s = ZSTR_VAL(zs_repeat);
+                e = ZSTR_VAL(zs_repeat) + 2;
+                ee = ZSTR_VAL(zs_repeat) + zs_repeat_len;
+                while (e < ee) {
+                    l = (e-s) < (ee-e) ? (e-s) : (ee-e);
+                    memmove(e, s, l);
+                    e += l;
+                }
+                ZSTR_VAL(zs_repeat)[zs_repeat_len] = '\0';
+
+                char *tmp_char = emalloc(sizeof(char) * (ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri) + 1));
+                memcpy(tmp_char, ZSTR_VAL(compiled_uri), ZSTR_LEN(compiled_uri));
+                memcpy(tmp_char + ZSTR_LEN(compiled_uri), ZSTR_VAL(zs_repeat), ZSTR_LEN(zs_repeat) + 1);
+                (void)linger_router_rule_set_compiled_uri(rule_item, zend_string_init(tmp_char, ZSTR_LEN(zs_repeat) + ZSTR_LEN(compiled_uri), 0));
+                linger_efree(tmp_char);
+                zend_string_release(zs_repeat);
+                zend_string_release(compiled_uri);
+            } else {
+                (void)linger_router_rule_set_compiled_uri(rule_item, compiled_uri);
+            }
+
+            zval_ptr_dtor(&map);
+            zval_ptr_dtor(&matches);
         }
 
         zval_ptr_dtor(&zv_empty);
@@ -334,10 +339,10 @@ ed:
 
         if ((inter_arr_p = zend_hash_index_find(Z_ARRVAL_P(rules), md->curr_chunk)) == NULL) {
             zval inter_arr = {{0}};
-            array_init(&inter_arr); 
+            array_init(&inter_arr);
             add_index_zval(rules, md->curr_chunk, &inter_arr);
             inter_arr_p = &inter_arr;
-        } 
+        }
 
         add_index_zval(inter_arr_p, md->max_index, rule_item);
 
@@ -369,7 +374,7 @@ PHP_METHOD(linger_framework_router, setChunkSize) /* {{{ */
 }
 /* }}} */
 
-PHP_METHOD(linger_framework_router, add) /* {{{ */ 
+PHP_METHOD(linger_framework_router, add) /* {{{ */
 {
     zval *rule_item;
 
@@ -388,8 +393,8 @@ PHP_METHOD(linger_framework_router, add) /* {{{ */
 PHP_METHOD(linger_framework_router, get) /* {{{ */
 {
     zval *uri = NULL,
-         *class = NULL,
-         *method = NULL;
+          *class = NULL,
+               *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -407,8 +412,8 @@ PHP_METHOD(linger_framework_router, get) /* {{{ */
 PHP_METHOD(linger_framework_router, post) /* {{{ */
 {
     zval *uri = NULL,
-         *class = NULL,
-         *method = NULL;
+          *class = NULL,
+               *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -426,8 +431,8 @@ PHP_METHOD(linger_framework_router, post) /* {{{ */
 PHP_METHOD(linger_framework_router, put) /* {{{ */
 {
     zval *uri = NULL,
-         *class = NULL,
-         *method = NULL;
+          *class = NULL,
+               *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -445,8 +450,8 @@ PHP_METHOD(linger_framework_router, put) /* {{{ */
 PHP_METHOD(linger_framework_router, delete) /* {{{ */
 {
     zval *uri = NULL,
-         *class = NULL,
-         *method = NULL;
+          *class = NULL,
+               *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -461,9 +466,17 @@ PHP_METHOD(linger_framework_router, delete) /* {{{ */
 }
 /* }}} */
 
-PHP_METHOD(linger_framework_router, dump) /* {{{ */ 
+PHP_METHOD(linger_framework_router, getRules) /* {{{ */
 {
-    metadata *md = Z_GET_MD(getThis()); 
+    zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
+
+    RETURN_ZVAL(rules, 1, 0);
+}
+/* }}} */
+
+PHP_METHOD(linger_framework_router, dump) /* {{{ */
+{
+    metadata *md = Z_GET_MD(getThis());
     php_printf("md:{curr_chunk:%d,curr_num:%d,max_index:%d}\n", md->curr_chunk, md->curr_num, md->max_index);
 }
 /* }}} */
@@ -476,6 +489,7 @@ zend_function_entry router_methods[] = { /* {{{ */
     PHP_ME(linger_framework_router, post, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, delete, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, setChunkSize, linger_framework_router_set_chunk_size_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, getRules, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router, dump, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };

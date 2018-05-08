@@ -224,12 +224,23 @@ PHP_METHOD(linger_framework_router_rule, getClassMethod) /* {{{ */
 }
 /* }}} */
 
+PHP_METHOD(linger_framework_router_rule, dump) /* {{{ */
+{
+    zend_string *compiled_uri = Z_GET_ZS_URI(getThis());
+    if (NULL != compiled_uri) {
+        php_printf("compiled_uri: %s\n", ZSTR_VAL(compiled_uri));
+    } else {
+        php_printf("compiled_uri: NULL\n");
+    }
+} /* }}} */
+
 zend_function_entry router_rule_methods[] = { /* {{{ */ 
     PHP_ME(linger_framework_router_rule, __construct, linger_framework_router_rule_4_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_router_rule, getRequestMethod, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getUri, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getClass, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_router_rule, getClassMethod, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, dump, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 /* }}} */
