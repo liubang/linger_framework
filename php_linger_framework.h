@@ -28,7 +28,7 @@ extern zend_class_entry *router_rule_ce;
 extern zend_class_entry *bootstrap_ce;
 #define phpext_linger_framework_ptr &linger_framework_module_entry
 
-#define PHP_LINGER_FRAMEWORK_VERSION "2.1-dev"
+#define PHP_LINGER_FRAMEWORK_VERSION "2.1"
 
 #ifdef PHP_WIN32
 #	define PHP_LINGER_FRAMEWORK_API __declspec(dllexport)
