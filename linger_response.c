@@ -32,6 +32,7 @@
 
 zend_class_entry *response_ce;
 
+/* {{{ ZEND_ARG */
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
@@ -47,8 +48,17 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_body_arginfo, 0, 0, 0)
 ZEND_ARG_INFO(0, body)
 ZEND_END_ARG_INFO()
+    
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_json_arginfo, 0, 0, 0)
+ZEND_ARG_INFO(0, obj)
+ZEND_END_ARG_INFO()
 
-zval *linger_response_instance(zval *this)
+ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_redirect_arginfo, 0, 0, 0)
+ZEND_ARG_INFO(0, url)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+zval *linger_response_instance(zval *this) /* {{{ */
 {
     zval *instance = zend_read_static_property(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_INSTANCE), 1);
 
@@ -79,9 +89,9 @@ zval *linger_response_instance(zval *this)
     zend_update_static_property(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_INSTANCE), this);
 
     return this;
-}
+} /* }}} */
 
-void linger_response_send(zval *this)
+void linger_response_send(zval *this) /* {{{ */
 {
     zval *headers = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
     zval *body = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), 1, NULL);
@@ -110,9 +120,9 @@ void linger_response_send(zval *this)
     if (strcmp(sapi_module.name, "fpm-fcgi") == 0) {
         zend_call_method_with_0_params(NULL, NULL, NULL, "fastcgi_finish_request", NULL);
     }
-}
+} /* }}} */
 
-static int check_response_status(int status)
+static int check_response_status(int status) /* {{{ */
 {
     return (status == 100 || status == 101 || status == 200 || status == 201
             || status == 202 || status == 203 || status == 204 || status == 205
@@ -124,9 +134,9 @@ static int check_response_status(int status)
             || status == 413 || status == 414 || status == 415 || status == 500
             || status == 501 || status == 502 || status == 503 || status == 504
             || status == 505);
-}
+} /* }}} */
 
-int linger_response_set_status(zval *this, zval *status)
+int linger_response_set_status(zval *this, zval *status) /* {{{ */ 
 {
     if (status && IS_LONG == Z_TYPE_P(status)) {
         int l_status = (int)Z_LVAL_P(status);
@@ -141,21 +151,21 @@ int linger_response_set_status(zval *this, zval *status)
         linger_throw_exception(NULL, 0, "the response status code must be integer.");
         return FAILURE;
     }
-}
+} /* }}} */
 
-int linger_response_set_header(zval *this, zend_string *key, zval *val)
+int linger_response_set_header(zval *this, zend_string *key, zval *val) /* {{{ */ 
 {
     if (val && IS_STRING == Z_TYPE_P(val)) {
         zval *headers = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
         zend_hash_add(Z_ARRVAL_P(headers), key, val);
         return SUCCESS;
     } else {
-        linger_throw_exception(NULL, 0, "the parameter 2 must be string.");
+        linger_throw_exception(NULL, 0, "the parameters must be string.");
         return FAILURE;
     }
-}
+} /* }}} */
 
-int linger_response_set_body(zval *this, zval *body)
+int linger_response_set_body(zval *this, zval *body) /* {{{ */ 
 {
     if (body && IS_STRING == Z_TYPE_P(body)) {
         zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), body);
@@ -164,14 +174,14 @@ int linger_response_set_body(zval *this, zval *body)
         linger_throw_exception(NULL, 0, "the response body must be string.");
         return FAILURE;
     }
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, __construct)
+PHP_METHOD(linger_framework_response, __construct) /* {{{ */
 {
 
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, status)
+PHP_METHOD(linger_framework_response, status) /* {{{ */
 {
     zval *status = NULL;
 
@@ -184,9 +194,9 @@ PHP_METHOD(linger_framework_response, status)
     if (linger_response_set_status(this, status) == SUCCESS) {
         RETURN_ZVAL(this, 1, 0);
     }
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, header)
+PHP_METHOD(linger_framework_response, header) /* {{{ */
 {
     zend_string *key = NULL;
     zval *val = NULL;
@@ -200,9 +210,9 @@ PHP_METHOD(linger_framework_response, header)
     if (linger_response_set_header(this, key, val) == SUCCESS) {
         RETURN_ZVAL(this, 1, 0);
     }
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, body)
+PHP_METHOD(linger_framework_response, body) /* {{{ */
 {
     zval *body;
 
@@ -215,14 +225,14 @@ PHP_METHOD(linger_framework_response, body)
     if (linger_response_set_body(this, body) == SUCCESS) {
         RETURN_ZVAL(this, 1, 0);
     }
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, send)
+PHP_METHOD(linger_framework_response, send) /* {{{ */
 {
     linger_response_send(getThis());
-}
+} /* }}} */
 
-PHP_METHOD(linger_framework_response, json)
+PHP_METHOD(linger_framework_response, json) /* {{{ */
 {
     zval *obj;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &obj) == FAILURE) {
@@ -252,19 +262,35 @@ PHP_METHOD(linger_framework_response, json)
     smart_str_free(&buf);
 
     RETURN_ZVAL(this, 1, 0);
-}
+} /* }}} */
 
-zend_function_entry response_methods[] = {
+PHP_METHOD(linger_framework_response, redirect) /* {{{ */
+{
+    zval *url;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &val) == FAILURE) {
+        return;
+    }
+    
+    zval *this = getThis();
+    zend_string *key = zend_string_init("Location", 8, 0);
+    linger_response_set_header(this, key, url);
+    zend_string_release(key);
+    linger_response_send(this);
+} /* }}} */
+
+zend_function_entry response_methods[] = { /* {{{ */
     PHP_ME(linger_framework_response, __construct, linger_framework_response_void_arginfo, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
     PHP_ME(linger_framework_response, status, linger_framework_response_status_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, header, linger_framework_response_header_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, body, linger_framework_response_body_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(linger_framework_response, send, linger_framework_response_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, json, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, json, linger_framework_response_json_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, redirect, linger_framework_response_redirect_arginfo, ZEND_ACC_PUBLIC)
     PHP_FE_END
-};
+}; /* }}} */
 
-LINGER_MINIT_FUNCTION(response)
+LINGER_MINIT_FUNCTION(response) /* {{{ */
 {
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Response", response_methods);
@@ -275,4 +301,4 @@ LINGER_MINIT_FUNCTION(response)
     zend_declare_property_null(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_BODY), ZEND_ACC_PROTECTED);
 
     return SUCCESS;
-}
+} /* }}} */
