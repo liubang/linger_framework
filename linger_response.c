@@ -268,7 +268,7 @@ PHP_METHOD(linger_framework_response, redirect) /* {{{ */
 {
     zval *url;
 
-    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &val) == FAILURE) {
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "z", &url) == FAILURE) {
         return;
     }
     
