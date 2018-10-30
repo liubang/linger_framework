@@ -112,8 +112,8 @@ PHP_METHOD(linger_framework_application, __construct)
         return;
     }
 
+    // app_directory
     zend_string *zs_app_directory = zend_string_init("app_directory", 13, 0);
-
     zval *zv_app_directory = NULL;
     if ((zv_app_directory = zend_hash_find(Z_ARRVAL_P(aconfig), zs_app_directory)) == NULL) {
         linger_throw_exception(NULL, 0, "must set app_directory in config.");
@@ -127,6 +127,18 @@ PHP_METHOD(linger_framework_application, __construct)
     } else {
         LINGER_FRAMEWORK_G(app_directory) = estrndup(Z_STRVAL_P(zv_app_directory), Z_STRLEN_P(zv_app_directory));
     }
+
+    // view_directory
+    zend_string *zs_view_directory = zend_string_init("view_directory", 14, 0);
+    zval *zv_view_directory = NULL;
+    if ((zv_view_directory = zend_hash_find(Z_ARRVAL_P(aconfig), zs_view_directory)) != NULL) {
+        if (*(Z_STRVAL_P(zv_view_directory) + Z_STRLEN_P(zv_view_directory) - 1) == DEFAULT_SLASH) {
+            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRVAL_P(zv_view_directory) - 1);
+        } else {
+            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRVAL_P(zv_view_directory));
+        }
+    }
+    zend_string_release(zs_view_directory);
 
     zval zv_autoload = {{0}};
     ZVAL_STRING(&zv_autoload, "\\linger\\framework\\Application::autoload");
