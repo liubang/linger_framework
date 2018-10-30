@@ -133,9 +133,9 @@ PHP_METHOD(linger_framework_application, __construct)
     zval *zv_view_directory = NULL;
     if ((zv_view_directory = zend_hash_find(Z_ARRVAL_P(aconfig), zs_view_directory)) != NULL) {
         if (*(Z_STRVAL_P(zv_view_directory) + Z_STRLEN_P(zv_view_directory) - 1) == DEFAULT_SLASH) {
-            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRVAL_P(zv_view_directory) - 1);
+            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRLEN_P(zv_view_directory) - 1);
         } else {
-            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRVAL_P(zv_view_directory));
+            LINGER_FRAMEWORK_G(view_directory) = estrndup(Z_STRVAL_P(zv_view_directory), Z_STRLEN_P(zv_view_directory));
         }
     }
     zend_string_release(zs_view_directory);
