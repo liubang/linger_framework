@@ -393,8 +393,8 @@ PHP_METHOD(linger_framework_router, add) /* {{{ */
 PHP_METHOD(linger_framework_router, get) /* {{{ */
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -412,8 +412,8 @@ PHP_METHOD(linger_framework_router, get) /* {{{ */
 PHP_METHOD(linger_framework_router, post) /* {{{ */
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -431,8 +431,8 @@ PHP_METHOD(linger_framework_router, post) /* {{{ */
 PHP_METHOD(linger_framework_router, put) /* {{{ */
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
@@ -450,8 +450,8 @@ PHP_METHOD(linger_framework_router, put) /* {{{ */
 PHP_METHOD(linger_framework_router, delete) /* {{{ */
 {
     zval *uri = NULL,
-          *class = NULL,
-               *method = NULL;
+         *class = NULL,
+         *method = NULL;
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "zzz", &uri, &class, &method) == FAILURE) {
         return;
     }
