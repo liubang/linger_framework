@@ -13,3 +13,5 @@
 
 使用示例代码：[https://github.com/iliubang/linger_framework_example](https://github.com/iliubang/linger_framework_example)
 
+**IDE helper** [https://github.com/iliubang/linger_framework_idehelper](https://github.com/iliubang/linger_framework_idehelper)
+
