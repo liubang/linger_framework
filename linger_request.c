@@ -125,7 +125,12 @@ handle:
             if (!strncasecmp(Z_STRVAL_P(uri), "http", sizeof("http") - 1)) {
                 php_url *url_info = php_url_parse(Z_STRVAL_P(uri));
                 if (url_info && url_info->path) {
+#if PHP_API_VERSION >= 20180731
+                    ZVAL_STR(uri, url_info->path);
+                    GC_ADDREF(url_info->path);
+#else
                     ZVAL_STRINGL(uri, url_info->path, strlen(url_info->path));
+#endif
                 }
                 php_url_free(url_info);
             } else {
