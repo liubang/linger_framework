@@ -52,6 +52,21 @@ ZEND_ARG_INFO(0, class)
 ZEND_ARG_INFO(0, method)
 ZEND_END_ARG_INFO()
 
+#if PHP_API_VERSION < 20180731
+void php_pcre_pce_incref(pcre_cache_entry *pce) 
+{
+	assert(NULL != pce);
+	pce->refcount++;
+}
+
+void php_pcre_pce_decref(pcre_cache_entry *pce)
+{
+	assert(NULL != pce);
+	assert(0 != pce->refcount);
+	pce->refcount--;
+}
+#endif
+
 typedef struct _metadata {
     zend_long curr_chunk;
     zend_long curr_num;
@@ -189,10 +204,10 @@ start:
         zend_string_release(zs_preg);
         zval params = {{0}};
         zval matches = {{0}};
-        pce_regexp_p->refcount++;
+        php_pcre_pce_incref(pce_regexp_p);
         php_pcre_match_impl(pce_regexp_p, Z_STRVAL_P(curr_request_uri), (int)Z_STRLEN_P(curr_request_uri),
                             &matches, &params, 0, 0, 0, 0);
-        pce_regexp_p->refcount--;
+        php_pcre_pce_decref(pce_regexp_p);
 
         if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
             zval_ptr_dtor(&matches);
@@ -273,9 +288,9 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
         zend_string *compiled_uri = NULL;
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
-            pce_regexp->refcount++;
+            php_pcre_pce_incref(pce_regexp);
             php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), (int)Z_STRLEN_P(zv_uri), &matches, &map, 1, 0, 0, 0);
-            pce_regexp->refcount--;
+            php_pcre_pce_decref(pce_regexp);
             if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
                 compiled_uri = zend_string_init(Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), 0);
             } else {
@@ -287,7 +302,7 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
                     cnt = zend_array_count(Z_ARRVAL_P(params_map)) + 1;
                     md->max_index = md->max_index > cnt ? md->max_index : cnt;
 
-                    pce_regexp->refcount++;
+                    php_pcre_pce_incref(pce_regexp);
 #if PHP_API_VERSION <= 20160303
                     compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
                                                          Z_STRLEN_P(zv_uri), &zv_empty, 0, -1, NULL);
@@ -295,7 +310,7 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
                     compiled_uri = php_pcre_replace_impl(pce_regexp, Z_STR_P(zv_uri), Z_STRVAL_P(zv_uri),
                                                          Z_STRLEN_P(zv_uri), zs_empty, -1, NULL);
 #endif
-                    pce_regexp->refcount--;
+                    php_pcre_pce_decref(pce_regexp);
 
                 }
             }
