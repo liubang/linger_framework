@@ -1,0 +1,10 @@
+-I/usr/local/include
+-I/usr/local/Cellar/llvm/8.0.0/lib/clang/8.0.0/include
+-I/System/Library/Frameworks
+-I/Library/Frameworks
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php/main
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php/TSRM
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php/Zend
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php/ext
+-I/Users/liubang/.phpbrew/php/php-7.3.1/include/php/ext/date/lib
