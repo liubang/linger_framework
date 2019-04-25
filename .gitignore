@@ -36,3 +36,4 @@ tests/*.sh
 *.ac
 *.loT
 .ccls-cache
+.ccls
