@@ -4,12 +4,25 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/liubang/linger_framework/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/liubang/linger_framework.svg)](https://github.com/liubang/linger_framework/releases)
 
-这是一个用 c 语言编写的 PHP 框架
+PHP framework written in c and built as a PHP extension.
 
-**说明：**
+## Requirement
 
-使用 php5 请切换到 php5 分支[https://github.com/liubang/linger_framework/tree/php5](https://github.com/liubang/linger_framework/tree/php5)
+- php5.2+ ([php5 branch](https://github.com/liubang/linger_framework/tree/php5))
+- php7.0+
 
-使用示例代码：[https://github.com/liubang/linger_framework_example](https://github.com/liubang/linger_framework_example)
+## Compile in Linux
 
-**IDE helper** [https://github.com/liubang/linger_framework_idehelper](https://github.com/liubang/linger_framework_idehelper)
+```shell
+/path/to/phpize
+./configure --with-php-config=/path/to/php-config
+make && make install
+```
+
+## Example
+
+[https://github.com/liubang/linger_framework_example](https://github.com/liubang/linger_framework_example)
+
+## IDE Helper
+
+[https://github.com/liubang/linger_framework_idehelper](https://github.com/liubang/linger_framework_idehelper)
