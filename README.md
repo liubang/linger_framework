@@ -1,8 +1,8 @@
 # linger_framework
 
-[![Build Status](https://travis-ci.org/liubang/linger_framework.svg?branch=master)](https://travis-ci.org/liubang/linger_framework)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/liubang/linger_framework/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/liubang/linger_framework.svg)](https://github.com/liubang/linger_framework/releases)
+![Travis (.org) branch](https://img.shields.io/travis/liubang/linger_framework/master?style=for-the-badge)
+![License: MIT](https://img.shields.io/github/license/liubang/linger_framework?style=for-the-badge)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/liubang/linger_framework?style=for-the-badge)
 
 PHP framework written in c and built as a PHP extension.
 
