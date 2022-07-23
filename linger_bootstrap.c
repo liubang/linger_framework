@@ -23,14 +23,16 @@
 #include "php.h"
 #include "php_linger_framework.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_bootstrap_arginfo.h"
+#else
+#include "linger_bootstrap_legacy_arginfo.h"
+#endif
+
 zend_class_entry *bootstrap_ce;
 
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_bootstrap_arginfo, 0, 0, 1)
-ZEND_ARG_OBJ_INFO(0, app, linger\\framework\\application, 0)
-ZEND_END_ARG_INFO()
-
 zend_function_entry linger_bootstrap_methods[] = {
-    PHP_ABSTRACT_ME(linger_framework_bootstrap, bootstrap, linger_framework_bootstrap_arginfo)
+    PHP_ABSTRACT_ME(linger_framework_bootstrap, bootstrap, arginfo_class_Linger_Framework_Bootstrap_bootstrap)
     PHP_FE_END
 };
 

@@ -1,6 +1,6 @@
 # linger_framework
 
-![Travis (.org) branch](https://img.shields.io/travis/liubang/linger_framework/master?style=flat-square)
+![Build Status](https://github.com/liubang/linger_framework/workflows/integrate/badge.svg?branch=master)
 ![License: MIT](https://img.shields.io/github/license/liubang/linger_framework?style=flat-square)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/liubang/linger_framework?style=flat-square)
 

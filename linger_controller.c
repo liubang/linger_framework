@@ -28,10 +28,13 @@
 #include "linger_controller.h"
 #include "linger_view.h"
 
-zend_class_entry *controller_ce;
+#if PHP_MAJOR_VERSION > 7
+#include "linger_controller_arginfo.h"
+#else
+#include "linger_controller_legacy_arginfo.h"
+#endif
 
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_controller_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
+zend_class_entry *controller_ce;
 
 int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request)
 {
@@ -45,21 +48,21 @@ int linger_controller_construct(zend_class_entry *ce, zval *this, zval *request)
         return FAILURE;
     }
 
-    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request);
+    zend_update_property(controller_ce, Z_OBJ_P(this), ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), request);
 
     zval response = {{0}};
     (void)linger_response_instance(&response);
-    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), &response);
+    zend_update_property(controller_ce, Z_OBJ_P(this), ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), &response);
     zval_ptr_dtor(&response);
 
     zval view = {{0}};
     linger_view_instance(&view);
-    zend_update_property(controller_ce, this, ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), &view);
+    zend_update_property(controller_ce, Z_OBJ_P(this), ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), &view);
     zval_ptr_dtor(&view);
 
     zend_string *init = zend_string_init("_init", sizeof("_init") - 1, 0);
     if (zend_hash_exists(&(ce->function_table), init)) {
-        zend_call_method_with_0_params(this, ce, NULL, "_init", NULL);
+        zend_call_method_with_0_params(Z_OBJ_P(this), ce, NULL, "_init", NULL);
     }
     zend_string_release(init);
 
@@ -78,28 +81,28 @@ PHP_METHOD(linger_framework_controller, _init)
 
 PHP_METHOD(linger_framework_controller, getRequest)
 {
-    zval *request = zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), 1, NULL);
+    zval *request = zend_read_property(controller_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONTROLLER_PROPERTIES_REQUEST), 1, NULL);
     RETURN_ZVAL(request, 1, 0);
 }
 
 PHP_METHOD(linger_framework_controller, getResponse)
 {
-    zval *response= zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), 1, NULL);
+    zval *response= zend_read_property(controller_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONTROLLER_PROPERTIES_RESPONSE), 1, NULL);
     RETURN_ZVAL(response, 1, 0);
 }
 
 PHP_METHOD(linger_framework_controller, getView)
 {
-    zval *view = zend_read_property(controller_ce, getThis(), ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), 1, NULL);
+    zval *view = zend_read_property(controller_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONTROLLER_PROPERTIES_VIEW), 1, NULL);
     RETURN_ZVAL(view, 1, 0);
 }
 
 zend_function_entry controller_methods[] = {
-    PHP_ME(linger_framework_controller, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_controller, _init, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
-    PHP_ME(linger_framework_controller, getRequest, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
-    PHP_ME(linger_framework_controller, getResponse, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
-    PHP_ME(linger_framework_controller, getView, linger_framework_controller_void_arginfo, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, __construct,arginfo_class_Linger_Framework_Controller___construct, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_controller, _init, arginfo_class_Linger_Framework_Controller__init, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, getRequest, arginfo_class_Linger_Framework_Controller_getRequest, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, getResponse, arginfo_class_Linger_Framework_Controller_getResponse, ZEND_ACC_PROTECTED)
+    PHP_ME(linger_framework_controller, getView, arginfo_class_Linger_Framework_Controller_getView, ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
 

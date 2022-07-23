@@ -13,7 +13,7 @@ $app = new linger\framework\Application([
 
 class TestController extends linger\framework\Controller {
 
-	public function _init() {
+	public function _init(): void {
 		$this->getView()->setScriptPath(APP_PATH . 'html');	
 	}
 

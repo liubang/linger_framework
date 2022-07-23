@@ -42,6 +42,10 @@ extern zend_class_entry *bootstrap_ce;
 #include "TSRM.h"
 #endif
 
+#ifndef ZEND_ACC_CTOR
+#define ZEND_ACC_CTOR 0x0
+#define ZEND_ACC_DTOR 0x0
+#endif
 
 ZEND_BEGIN_MODULE_GLOBALS(linger_framework)
 zend_bool throw_exception;
@@ -62,9 +66,9 @@ extern ZEND_DECLARE_MODULE_GLOBALS(linger_framework);
 #define LINGER_STARTUP(module)		  ZEND_MODULE_STARTUP_N(linger_framework_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
 #define linger_efree(ptr)	if (ptr) efree(ptr)
-#define linger_php_error(level, fmt_str, ...)	do { if (LINGER_FRAMEWORK_G(display_errors)) { php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__); } } while(0)
-#define linger_php_fatal_error(level, fmt_str, ...)  php_error_docref(NULL TSRMLS_CC, level, fmt_str, ##__VA_ARGS__)
-#define linger_throw_exception(e, level, fmt_str, ...) do { if (LINGER_FRAMEWORK_G(throw_exception)) { zend_throw_exception_ex(e, level TSRMLS_CC, fmt_str, ##__VA_ARGS__); } } while(0)
+#define linger_php_error(level, fmt_str, ...)	do { if (LINGER_FRAMEWORK_G(display_errors)) { php_error_docref(NULL, level, fmt_str, ##__VA_ARGS__); } } while(0)
+#define linger_php_fatal_error(level, fmt_str, ...)  php_error_docref(NULL, level, fmt_str, ##__VA_ARGS__)
+#define linger_throw_exception(e, level, fmt_str, ...) do { if (LINGER_FRAMEWORK_G(throw_exception)) { zend_throw_exception_ex(e, level, fmt_str, ##__VA_ARGS__); } } while(0)
 
 /* declare components */
 LINGER_MINIT_FUNCTION(application);
@@ -86,11 +90,15 @@ static int zend_always_inline linger_framework_include_scripts(char *file, int l
     zend_file_handle file_handle;
     zend_op_array *op_array;
 
+#if PHP_VERSION_ID < 70400
     file_handle.filename = file;
     file_handle.free_filename = 0;
     file_handle.type = ZEND_HANDLE_FILENAME;
     file_handle.opened_path = NULL;
     file_handle.handle.fp = NULL;
+#else
+	zend_stream_init_filename(&file_handle, file);
+#endif
 
     op_array = zend_compile_file(&file_handle, ZEND_REQUIRE);
 

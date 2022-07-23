@@ -30,27 +30,16 @@
 #include "linger_router_rule.h"
 #include "linger_request.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_router_arginfo.h"
+#else
+#include "linger_router_legacy_arginfo.h"
+#endif
+
 #define PREG_STR "~(?:@(.*?):)~x"
 #define CHUNK_PREG_LEN 1024
 
 zend_class_entry *router_ce;
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_set_chunk_size_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, chunkSize)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_add_arginfo, 0, 0, 1)
-ZEND_ARG_OBJ_INFO(0, rule_item, Linger\\Framework\\RouterRule, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_3_arginfo, 0, 0, 3)
-ZEND_ARG_INFO(0, uri)
-ZEND_ARG_INFO(0, class)
-ZEND_ARG_INFO(0, method)
-ZEND_END_ARG_INFO()
 
 #if PHP_API_VERSION < 20180731
 void php_pcre_pce_incref(pcre_cache_entry *pce) 
@@ -119,7 +108,7 @@ zval *linger_router_instance(zval *this) /* {{{ */
 {
     zval *instance = zend_read_static_property(router_ce, ZEND_STRL(LINGER_ROUTER_PROPERTIES_INSTANCE), 1);
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(instance), router_ce TSRMLS_CC)) {
+            instanceof_function(Z_OBJCE_P(instance), router_ce)) {
         return instance;
     }
     if (Z_ISUNDEF_P(this)) {
@@ -128,17 +117,17 @@ zval *linger_router_instance(zval *this) /* {{{ */
 
     zval router_rules = {{0}};
     array_init(&router_rules);
-    zend_update_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
+    zend_update_property(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), &router_rules);
     zval_ptr_dtor(&router_rules);
 
-    zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), (zend_long)10);
+    zend_update_property_long(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), (zend_long)10);
 
     return this;
 } /* }}} */
 
 zval *linger_router_match(zval *this, zval *request) /* {{{ */
 {
-    zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
+    zval *rules = zend_read_property(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
 
     if (UNEXPECTED(IS_ARRAY != Z_TYPE_P(rules))) {
         return NULL;
@@ -205,8 +194,16 @@ start:
         zval params = {{0}};
         zval matches = {{0}};
         php_pcre_pce_incref(pce_regexp_p);
+#if PHP_VERSION_ID < 70400
         php_pcre_match_impl(pce_regexp_p, Z_STRVAL_P(curr_request_uri), (int)Z_STRLEN_P(curr_request_uri),
                             &matches, &params, 0, 0, 0, 0);
+#else
+        {
+            zend_string *tmp = zend_string_init(Z_STRVAL_P(curr_request_uri), (int)Z_STRLEN_P(curr_request_uri), 0);
+            php_pcre_match_impl(pce_regexp_p, tmp, &matches, &params, 0, 0, 0, 0);
+            zend_string_release(tmp);
+        }
+#endif
         php_pcre_pce_decref(pce_regexp_p);
 
         if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
@@ -254,8 +251,8 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
 {
     if (EXPECTED(IS_OBJECT == Z_TYPE_P(rule_item)
                  && instanceof_function(Z_OBJCE_P(rule_item), router_rule_ce))) {
-        zval *rules = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
-        zval *chunk_size = zend_read_property(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), 1, NULL);
+        zval *rules = zend_read_property(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
+        zval *chunk_size = zend_read_property(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), 1, NULL);
 
         metadata *md = Z_GET_MD(this);
 
@@ -289,7 +286,15 @@ static void linger_router_add_rule(zval *this, zval *rule_item) /* {{{ */
 
         if ((pce_regexp = pcre_get_compiled_regex_cache(preg_str)) != NULL) {
             php_pcre_pce_incref(pce_regexp);
+#if PHP_VERSION_ID < 70400
             php_pcre_match_impl(pce_regexp, Z_STRVAL_P(zv_uri), (int)Z_STRLEN_P(zv_uri), &matches, &map, 1, 0, 0, 0);
+#else
+            {
+                zend_string *tmp = zend_string_init(Z_STRVAL_P(zv_uri), (int)Z_STRLEN_P(zv_uri), 0);
+                php_pcre_match_impl(pce_regexp, tmp, &matches, &map, 1, 0, 0, 0);
+                zend_string_release(tmp);
+            }
+#endif
             php_pcre_pce_decref(pce_regexp);
             if (IS_FALSE == Z_TYPE(matches) || (IS_LONG == Z_TYPE(matches) && Z_LVAL(matches) == 0)) {
                 compiled_uri = zend_string_init(Z_STRVAL_P(zv_uri), Z_STRLEN_P(zv_uri), 0);
@@ -364,7 +369,7 @@ ed:
         md->max_index++;
 
     } else {
-        linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name);
+        linger_throw_exception(NULL, 0, "parameter must be a instance of class %s.", router_rule_ce->name->val);
     }
 }
 /* }}} */
@@ -383,7 +388,7 @@ PHP_METHOD(linger_framework_router, setChunkSize) /* {{{ */
     }
 
     zval *this = getThis();
-    zend_update_property_long(router_ce, this, ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), chunkSize);
+    zend_update_property_long(router_ce, Z_OBJ_P(this), ZEND_STRL(LINGER_ROUTER_PROPERTIES_CHUNK_SIZE), chunkSize);
 
     RETURN_ZVAL(this, 1, 0);
 }
@@ -483,7 +488,7 @@ PHP_METHOD(linger_framework_router, delete) /* {{{ */
 
 PHP_METHOD(linger_framework_router, getRules) /* {{{ */
 {
-    zval *rules = zend_read_property(router_ce, getThis(), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
+    zval *rules = zend_read_property(router_ce, Z_OBJ_P(getThis()), ZEND_STRL(LINGER_ROUTER_PROPERTIES_RULES), 1, NULL);
 
     RETURN_ZVAL(rules, 1, 0);
 }
@@ -492,20 +497,20 @@ PHP_METHOD(linger_framework_router, getRules) /* {{{ */
 PHP_METHOD(linger_framework_router, dump) /* {{{ */
 {
     metadata *md = Z_GET_MD(getThis());
-    php_printf("md:{curr_chunk:%d,curr_num:%d,max_index:%d}\n", md->curr_chunk, md->curr_num, md->max_index);
+    php_printf("md:{curr_chunk:%ld,curr_num:%ld,max_index:%ld}\n", md->curr_chunk, md->curr_num, md->max_index);
 }
 /* }}} */
 
 zend_function_entry router_methods[] = { /* {{{ */
-    PHP_ME(linger_framework_router, __construct,linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_router, add, linger_framework_router_add_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, get, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, put, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, post, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, delete, linger_framework_router_3_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, setChunkSize, linger_framework_router_set_chunk_size_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, getRules, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router, dump, linger_framework_router_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, __construct, arginfo_class_Linger_Framework_Router___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_router, add, arginfo_class_Linger_Framework_Router_add, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, get, arginfo_class_Linger_Framework_Router_get, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, put, arginfo_class_Linger_Framework_Router_put, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, post, arginfo_class_Linger_Framework_Router_post, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, delete, arginfo_class_Linger_Framework_Router_delete, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, setChunkSize, arginfo_class_Linger_Framework_Router_setChunkSize, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, getRules, arginfo_class_Linger_Framework_Router_getRules, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router, dump, arginfo_class_Linger_Framework_Router_dump, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 /* }}} */

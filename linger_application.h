@@ -30,6 +30,4 @@
 
 extern zend_class_entry *application_ce;
 
-//int linger_application_import(char *path, int len, int use_path TSRMLS_DC);
-
 #endif /* LINGER_APPLICATION_H_ */

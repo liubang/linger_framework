@@ -9,13 +9,13 @@ $app = new linger\framework\Application([
 ]);
 
 class TestBootstrapA implements linger\framework\Bootstrap {
-	public function bootstrap(linger\framework\Application $app) {
+	public function bootstrap(linger\framework\Application $app): void {
 		echo __METHOD__, PHP_EOL;	
 	}
 }
 
 class TestBootstrapB implements linger\framework\Bootstrap {
-	public function bootstrap(linger\framework\Application $app) {
+	public function bootstrap(linger\framework\Application $app): void {
 		echo __METHOD__, PHP_EOL;	
 	}
 }

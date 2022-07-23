@@ -40,7 +40,7 @@ int linger_response_set_status(zval *this, zval *status);
 			.line = "HTTP/1.1 404 Not Found", \
 			.line_len = 22, \
 			.response_code = 404}; \
-		sapi_header_op(SAPI_HEADER_REPLACE, &ctr TSRMLS_CC); \
+		sapi_header_op(SAPI_HEADER_REPLACE, &ctr); \
 	} while (0)
 
 #endif /* LINGER_RESPONSE_H_ */

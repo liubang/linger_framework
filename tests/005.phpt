@@ -9,7 +9,7 @@ $app = new linger\framework\Application([
 ]);
 
 class TestController extends linger\framework\Controller {
-	public function _init() {
+	public function _init(): void {
 		echo __METHOD__;
 	}
 }
@@ -55,4 +55,4 @@ object(Linger\Framework\Request)#5 (7) {
   }
 }
 int(1234)
-string(1) "0"
+int(0)

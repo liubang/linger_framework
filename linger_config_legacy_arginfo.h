@@ -1,0 +1,55 @@
+/* This is a generated file, edit the .stub.php file instead.
+ * Stub hash: e85d9918087ad2518a2e554ec9a6926ef740ecc8 */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config___construct, 0, 0, 1)
+	ZEND_ARG_INFO(0, config)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config_get, 0, 0, 0)
+	ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config_set, 0, 0, 2)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, val)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config_has, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
+#define arginfo_class_Linger_Framework_Config_del arginfo_class_Linger_Framework_Config_has
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config_clear, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+#define arginfo_class_Linger_Framework_Config_count arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_rewind arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_current arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_next arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_valid arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_key arginfo_class_Linger_Framework_Config_clear
+
+#define arginfo_class_Linger_Framework_Config_offsetGet arginfo_class_Linger_Framework_Config_has
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Linger_Framework_Config_offsetSet, 0, 0, 2)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+#define arginfo_class_Linger_Framework_Config_offsetUnSet arginfo_class_Linger_Framework_Config_has
+
+#define arginfo_class_Linger_Framework_Config_offsetExists arginfo_class_Linger_Framework_Config_has
+
+#define arginfo_class_Linger_Framework_Config___isset arginfo_class_Linger_Framework_Config_has
+
+#define arginfo_class_Linger_Framework_Config___get arginfo_class_Linger_Framework_Config_has
+
+#define arginfo_class_Linger_Framework_Config___set arginfo_class_Linger_Framework_Config_offsetSet
+
+#define arginfo_class_Linger_Framework_Config___unset arginfo_class_Linger_Framework_Config_has

@@ -26,17 +26,13 @@
 #include "ext/standard/php_string.h"
 #include "linger_router_rule.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_router_rule_arginfo.h"
+#else
+#include "linger_router_rule_legacy_arginfo.h"
+#endif
+
 zend_class_entry *router_rule_ce;
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_rule_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_router_rule_4_arginfo, 0, 0, 4)
-ZEND_ARG_INFO(0, request_method)
-ZEND_ARG_INFO(0, uri)
-ZEND_ARG_INFO(0, class)
-ZEND_ARG_INFO(0, class_method)
-ZEND_END_ARG_INFO()
 
 zend_object_handlers  linger_router_rule_obj_handlers;
 
@@ -76,7 +72,7 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
             || !strncmp(lower_method, "post", 4)
             || !strncmp(lower_method, "put", 3)
             || !strncmp(lower_method, "delete", 6)) {
-        zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), lower_method);
+        zend_update_property_string(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), lower_method);
     } else {
         linger_throw_exception(NULL, 0, "invalid http request.");
         linger_efree(lower_method);
@@ -90,9 +86,9 @@ zval *linger_router_rule_instance(zval *this, zval *request_method, zval *uri, z
         return NULL;
     }
 
-    zend_update_property_string(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), Z_STRVAL_P(uri));
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
+    zend_update_property_string(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), Z_STRVAL_P(uri));
+    zend_update_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), class);
+    zend_update_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), class_method);
     linger_efree(lower_method);
 
     //Z_GET_ZS_URI(this) = zend_string_init(Z_STRVAL_P(uri), Z_STRLEN_P(uri), 0);
@@ -105,7 +101,7 @@ zval *linger_router_rule_get_request_method(zval *this) /* {{{ */
 {
     if (!this)
         return NULL;
-    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), 1, NULL);
+    return zend_read_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), 1, NULL);
 }
 /* }}} */
 
@@ -113,7 +109,7 @@ zval *linger_router_rule_get_uri(zval *this) /* {{{ */
 {
     if (!this)
         return NULL;
-    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), 1, NULL);
+    return zend_read_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), 1, NULL);
 }
 /* }}} */
 
@@ -121,7 +117,7 @@ zval *linger_router_rule_get_class(zval *this) /* {{{ */
 {
     if (!this)
         return NULL;
-    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), 1, NULL);
+    return zend_read_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), 1, NULL);
 }
 /* }}} */
 
@@ -130,7 +126,7 @@ zval *linger_router_rule_get_class_method(zval *this) /* {{{ */
     if (UNEXPECTED(!this))
         return NULL;
 
-    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
+    return zend_read_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
 }
 /* }}} */
 
@@ -165,7 +161,7 @@ int linger_router_rule_set_params_map(zval *this, zval *params_map) /* {{{ */
     if (!this || IS_ARRAY != Z_TYPE_P(params_map))
         return FAILURE;
 
-    zend_update_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), params_map);
+    zend_update_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), params_map);
 
     return SUCCESS;
 }
@@ -176,7 +172,7 @@ zval *linger_router_rule_get_params_map(zval *this) /* {{{ */
     if (!this)
         return NULL;
 
-    return zend_read_property(router_rule_ce, this, ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), 1, NULL);
+    return zend_read_property(router_rule_ce, Z_OBJ_P(this), ZEND_STRL(ROUTER_RULE_PROPERTIES_PARAMS_MAP), 1, NULL);
 }
 /* }}} */
 
@@ -194,7 +190,7 @@ PHP_METHOD(linger_framework_router_rule, __construct) /* {{{ */
 
 PHP_METHOD(linger_framework_router_rule, getRequestMethod) /* {{{ */
 {
-    zval *request_method = zend_read_property(router_rule_ce, getThis(), ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), 1, NULL);
+    zval *request_method = zend_read_property(router_rule_ce, Z_OBJ_P(getThis()), ZEND_STRL(ROUTER_RULE_PROPERTIES_REQUEST_METHOD), 1, NULL);
 
     RETURN_ZVAL(request_method, 1, 0);
 }
@@ -202,7 +198,7 @@ PHP_METHOD(linger_framework_router_rule, getRequestMethod) /* {{{ */
 
 PHP_METHOD(linger_framework_router_rule, getUri) /* {{{ */ 
 {
-    zval *uri = zend_read_property(router_rule_ce, getThis(), ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), 1, NULL);
+    zval *uri = zend_read_property(router_rule_ce, Z_OBJ_P(getThis()), ZEND_STRL(ROUTER_RULE_PROPERTIES_URI), 1, NULL);
 
     RETURN_ZVAL(uri, 1, 0);
 }
@@ -210,7 +206,7 @@ PHP_METHOD(linger_framework_router_rule, getUri) /* {{{ */
 
 PHP_METHOD(linger_framework_router_rule, getClass) /* {{{ */
 {
-    zval *class = zend_read_property(router_rule_ce, getThis(), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), 1, NULL);
+    zval *class = zend_read_property(router_rule_ce, Z_OBJ_P(getThis()), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS), 1, NULL);
 
     RETURN_ZVAL(class, 1, 0);
 }
@@ -218,7 +214,7 @@ PHP_METHOD(linger_framework_router_rule, getClass) /* {{{ */
 
 PHP_METHOD(linger_framework_router_rule, getClassMethod) /* {{{ */
 {
-    zval *class_method = zend_read_property(router_rule_ce, getThis(), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
+    zval *class_method = zend_read_property(router_rule_ce, Z_OBJ_P(getThis()), ZEND_STRL(ROUTER_RULE_PROPERTIES_CLASS_METHOD), 1, NULL);
 
     RETURN_ZVAL(class_method, 1, 0);
 }
@@ -235,12 +231,12 @@ PHP_METHOD(linger_framework_router_rule, dump) /* {{{ */
 } /* }}} */
 
 zend_function_entry router_rule_methods[] = { /* {{{ */ 
-    PHP_ME(linger_framework_router_rule, __construct, linger_framework_router_rule_4_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_router_rule, getRequestMethod, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router_rule, getUri, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router_rule, getClass, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router_rule, getClassMethod, linger_framework_router_rule_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_router_rule, dump, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, __construct, arginfo_class_Linger_Framework_RouterRule___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_router_rule, getRequestMethod, arginfo_class_Linger_Framework_RouterRule_getRequestMethod, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, getUri, arginfo_class_Linger_Framework_RouterRule_getUri, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, getClass, arginfo_class_Linger_Framework_RouterRule_getClass, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, getClassMethod, arginfo_class_Linger_Framework_RouterRule_getClassMethod, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_router_rule, dump, arginfo_class_Linger_Framework_RouterRule_dump, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 /* }}} */

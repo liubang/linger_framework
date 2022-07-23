@@ -1,7 +1,10 @@
 .deps
 *.lo
 *.la
+*.dep
 .libs
+config.h.in~
+configure~
 acinclude.m4
 aclocal.m4
 autom4te.cache
@@ -37,3 +40,4 @@ tests/*.sh
 *.loT
 .ccls-cache
 .ccls
+compile_commands.json

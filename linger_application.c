@@ -29,19 +29,14 @@
 #include "linger_dispatcher.h"
 #include "linger_bootstrap.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_application_arginfo.h"
+#else
+#include "linger_application_legacy_arginfo.h"
+#endif
+
 /* class entry */
 zend_class_entry *application_ce;
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_construct_arginfo, 0, 0, 1)
-ZEND_ARG_ARRAY_INFO(0, aconfig, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_bootstrap_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, bootclasses)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_application_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
 
 PHP_METHOD(linger_framework_application, autoload)
 {
@@ -150,7 +145,7 @@ PHP_METHOD(linger_framework_application, __construct)
 
     // init config
     (void)linger_config_instance(&zconfig, aconfig);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), &zconfig);
+    zend_update_property(application_ce, Z_OBJ_P(self), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), &zconfig);
     zval_ptr_dtor(&zconfig);
 
     // init router
@@ -160,8 +155,8 @@ PHP_METHOD(linger_framework_application, __construct)
     // init dispatcher
     zval zdispatcher = {{0}};
     (void)linger_dispatcher_instance(&zdispatcher, &zrouter);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), &zdispatcher);
-    zend_update_property(application_ce, self, ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), &zrouter);
+    zend_update_property(application_ce, Z_OBJ_P(self), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), &zdispatcher);
+    zend_update_property(application_ce, Z_OBJ_P(self), ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), &zrouter);
     zval_ptr_dtor(&zrouter);
     zval_ptr_dtor(&zdispatcher);
 }
@@ -201,11 +196,11 @@ PHP_METHOD(linger_framework_application, init)
         zval **fptr;
         object_init_ex(&boot_obj, ce);
         if (!instanceof_function(Z_OBJCE(boot_obj), bootstrap_ce)) {
-            linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_P(pzval), bootstrap_ce->name);
+            linger_throw_exception(NULL, 0, "class %s must be subclass of %s.", Z_STRVAL_P(pzval), bootstrap_ce->name->val);
             continue;
         }
         if (zend_hash_find(&(ce->function_table), Z_STR(method)) != NULL) {
-            zend_call_method_with_1_params(&boot_obj, ce, NULL, "bootstrap", NULL, getThis());
+            zend_call_method_with_1_params(Z_OBJ_P(&boot_obj), ce, NULL, "bootstrap", NULL, getThis());
         }
         zval_ptr_dtor(&boot_obj);
     }
@@ -216,7 +211,7 @@ PHP_METHOD(linger_framework_application, init)
 
 PHP_METHOD(linger_framework_application, run)
 {
-    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
+    zval *dispatcher = zend_read_property(application_ce, Z_OBJ_P(getThis()), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
     linger_dispatcher_dispatch(dispatcher);
 }
 
@@ -228,19 +223,19 @@ PHP_METHOD(linger_framework_application, app)
 
 PHP_METHOD(linger_framework_application, getConfig)
 {
-    zval *config = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(application_ce, Z_OBJ_P(getThis()), ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), 1, NULL);
     RETURN_ZVAL(config, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, getRouter)
 {
-    zval *router = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), 1, NULL);
+    zval *router = zend_read_property(application_ce, Z_OBJ_P(getThis()), ZEND_STRL(APPLICATION_PROPERTIES_ROUTER), 1, NULL);
     RETURN_ZVAL(router, 1, 0);
 }
 
 PHP_METHOD(linger_framework_application, getDispatcher)
 {
-    zval *dispatcher = zend_read_property(application_ce, getThis(), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
+    zval *dispatcher = zend_read_property(application_ce, Z_OBJ_P(getThis()), ZEND_STRL(APPLICATION_PROPERTIES_DISPATCHER), 1, NULL);
     RETURN_ZVAL(dispatcher, 1, 0);
 }
 
@@ -250,14 +245,14 @@ PHP_METHOD(linger_framework_application, __destruct)
 }
 
 zend_function_entry application_methods[] = {
-    PHP_ME(linger_framework_application, autoload, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(linger_framework_application, __construct, linger_framework_application_construct_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_application, app, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(linger_framework_application, init, linger_framework_application_bootstrap_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, run, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getConfig, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getRouter, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_application, getDispatcher, linger_framework_application_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, autoload, arginfo_class_Linger_Framework_Application_autoload, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(linger_framework_application, __construct, arginfo_class_Linger_Framework_Application___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_application, app, arginfo_class_Linger_Framework_Application_app, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(linger_framework_application, init, arginfo_class_Linger_Framework_Application_init, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, run, arginfo_class_Linger_Framework_Application_run,ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getConfig, arginfo_class_Linger_Framework_Application_getConfig, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getRouter, arginfo_class_Linger_Framework_Application_getRouter, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_application, getDispatcher, arginfo_class_Linger_Framework_Application_getDispatcher, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -266,7 +261,14 @@ LINGER_MINIT_FUNCTION(application)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Linger\\Framework\\Application", application_methods);
     application_ce = zend_register_internal_class_ex(&ce, NULL);
+
+#if PHP_VERSION_ID < 80100
     application_ce->ce_flags |= ZEND_ACC_FINAL;
+	application_ce->serialize = zend_class_serialize_deny;
+	application_ce->unserialize = zend_class_unserialize_deny;
+#else
+	application_ce->ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NOT_SERIALIZABLE;
+#endif
 
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_APP), ZEND_ACC_PROTECTED | ZEND_ACC_STATIC);
     zend_declare_property_null(application_ce, ZEND_STRL(APPLICATION_PROPERTIES_CONFIG), ZEND_ACC_PROTECTED);

@@ -30,33 +30,13 @@
 #include "zend_smart_str.h"
 #include "ext/json/php_json.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_response_arginfo.h"
+#else
+#include "linger_response_legacy_arginfo.h"
+#endif
+
 zend_class_entry *response_ce;
-
-/* {{{ ZEND_ARG */
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_header_arginfo, 0, 0, 2)
-ZEND_ARG_INFO(0, key)
-ZEND_ARG_INFO(0, val)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_status_arginfo, 0, 0, 0)
-ZEND_ARG_INFO(0, status)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_body_arginfo, 0, 0, 0)
-ZEND_ARG_INFO(0, body)
-ZEND_END_ARG_INFO()
-    
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_json_arginfo, 0, 0, 0)
-ZEND_ARG_INFO(0, obj)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_response_redirect_arginfo, 0, 0, 0)
-ZEND_ARG_INFO(0, url)
-ZEND_END_ARG_INFO()
-/* }}} */
 
 zval *linger_response_instance(zval *this) /* {{{ */
 {
@@ -73,17 +53,17 @@ zval *linger_response_instance(zval *this) /* {{{ */
 
     zval headers = {{0}};
     array_init(&headers);
-    zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_HEADER), &headers);
+    zend_update_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_HEADER), &headers);
     zval_ptr_dtor(&headers);
 
     zval status = {{0}};
     ZVAL_LONG(&status, 200);
-    zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_STATUS), &status);
+    zend_update_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_STATUS), &status);
     zval_ptr_dtor(&status);
 
     zval body = {{0}};
     ZVAL_STRING(&body, "");
-    zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), &body);
+    zend_update_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_BODY), &body);
     zval_ptr_dtor(&body);
 
     zend_update_static_property(response_ce, ZEND_STRL(RESPONSE_PROPERTIES_INSTANCE), this);
@@ -93,9 +73,9 @@ zval *linger_response_instance(zval *this) /* {{{ */
 
 void linger_response_send(zval *this) /* {{{ */
 {
-    zval *headers = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
-    zval *body = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), 1, NULL);
-    zval *status = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_STATUS), 1, NULL);
+    zval *headers = zend_read_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
+    zval *body = zend_read_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_BODY), 1, NULL);
+    zval *status = zend_read_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_STATUS), 1, NULL);
 
     SG(sapi_headers).http_response_code = (int)Z_LVAL_P(status);
 
@@ -141,7 +121,7 @@ int linger_response_set_status(zval *this, zval *status) /* {{{ */
     if (status && IS_LONG == Z_TYPE_P(status)) {
         int l_status = (int)Z_LVAL_P(status);
         if (check_response_status(l_status)) {
-            zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_STATUS), status);
+            zend_update_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_STATUS), status);
             return SUCCESS;
         } else {
             linger_throw_exception(NULL, 0, "invalid status code.");
@@ -156,7 +136,7 @@ int linger_response_set_status(zval *this, zval *status) /* {{{ */
 int linger_response_set_header(zval *this, zend_string *key, zval *val) /* {{{ */ 
 {
     if (val && IS_STRING == Z_TYPE_P(val)) {
-        zval *headers = zend_read_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
+        zval *headers = zend_read_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_HEADER), 1, NULL);
         zend_hash_add(Z_ARRVAL_P(headers), key, val);
         return SUCCESS;
     } else {
@@ -168,7 +148,7 @@ int linger_response_set_header(zval *this, zend_string *key, zval *val) /* {{{ *
 int linger_response_set_body(zval *this, zval *body) /* {{{ */ 
 {
     if (body && IS_STRING == Z_TYPE_P(body)) {
-        zend_update_property(response_ce, this, ZEND_STRL(RESPONSE_PROPERTIES_BODY), body);
+        zend_update_property(response_ce, Z_OBJ_P(this), ZEND_STRL(RESPONSE_PROPERTIES_BODY), body);
         return SUCCESS;
     } else {
         linger_throw_exception(NULL, 0, "the response body must be string.");
@@ -280,13 +260,13 @@ PHP_METHOD(linger_framework_response, redirect) /* {{{ */
 } /* }}} */
 
 zend_function_entry response_methods[] = { /* {{{ */
-    PHP_ME(linger_framework_response, __construct, linger_framework_response_void_arginfo, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_response, status, linger_framework_response_status_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, header, linger_framework_response_header_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, body, linger_framework_response_body_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, send, linger_framework_response_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, json, linger_framework_response_json_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_response, redirect, linger_framework_response_redirect_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, __construct, arginfo_class_Linger_Framework_Response___construct, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_response, status, arginfo_class_Linger_Framework_Response_status, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, header, arginfo_class_Linger_Framework_Response_header, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, body, arginfo_class_Linger_Framework_Response_body, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, send, arginfo_class_Linger_Framework_Response_send, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, json, arginfo_class_Linger_Framework_Response_json, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_response, redirect, arginfo_class_Linger_Framework_Response_redirect, ZEND_ACC_PUBLIC)
     PHP_FE_END
 }; /* }}} */
 

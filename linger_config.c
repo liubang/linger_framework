@@ -25,35 +25,17 @@
 #include "php_linger_framework.h"
 #include "linger_config.h"
 
+#if PHP_MAJOR_VERSION > 7
+#include "linger_config_arginfo.h"
+#else
+#include "linger_config_legacy_arginfo.h"
+#endif
+
 #if defined(HAVE_SPL) && PHP_VERSION_ID < 70200
 extern PHPAPI zend_class_entry *spl_ce_Countable;
 #endif
 
 zend_class_entry *config_ce;
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_construct_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, config)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_get_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, key)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_has_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, key)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_del_arginfo, 0, 0, 1)
-ZEND_ARG_INFO(0, key)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_config_set_arginfo, 0, 0, 2)
-ZEND_ARG_INFO(0, key)
-ZEND_ARG_INFO(0, val)
-ZEND_END_ARG_INFO()
 
 zval *linger_config_instance(zval *this, zval *config)
 {
@@ -75,7 +57,7 @@ zval *linger_config_instance(zval *this, zval *config)
         return this;
     }
 
-    zend_update_property(config_ce, this, ZEND_STRL(CONFIG_PROPERTIES_CONFIG), config);
+    zend_update_property(config_ce, Z_OBJ_P(this), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), config);
     zend_update_static_property(config_ce, ZEND_STRL(CONFIG_PROPERTIES_INSTANCE), this);
 
     return this;
@@ -99,7 +81,7 @@ PHP_METHOD(linger_framework_config, get)
     }
 
     zval *config;
-    config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
 
     if (!key) {
         RETURN_ZVAL(config, 1, 0);
@@ -137,7 +119,7 @@ PHP_METHOD(linger_framework_config, has)
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "S", &key) == FAILURE) {
         return ;
     } else {
-        zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+        zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
         RETURN_BOOL(zend_hash_exists(Z_ARRVAL_P(config), key));
     }
 }
@@ -148,7 +130,7 @@ PHP_METHOD(linger_framework_config, del)
     if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "S", &key) == FAILURE) {
         return;
     } else {
-        zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+        zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
         if (zend_hash_del(Z_ARRVAL_P(config), key) == SUCCESS) {
             RETURN_ZVAL(getThis(), 1, 0);
         }
@@ -159,25 +141,25 @@ PHP_METHOD(linger_framework_config, del)
 
 PHP_METHOD(linger_framework_config, clear)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     zend_hash_clean(Z_ARRVAL_P(config));
 }
 
 PHP_METHOD(linger_framework_config, count)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     RETURN_LONG(zend_hash_num_elements(Z_ARRVAL_P(config)));
 }
 
 PHP_METHOD(linger_framework_config, rewind)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     zend_hash_internal_pointer_reset(Z_ARRVAL_P(config));
 }
 
 PHP_METHOD(linger_framework_config, current)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     zval *pzval;
     if ((pzval = zend_hash_get_current_data(Z_ARRVAL_P(config))) == NULL) {
         RETURN_FALSE;
@@ -188,7 +170,7 @@ PHP_METHOD(linger_framework_config, current)
 
 PHP_METHOD(linger_framework_config, key)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     zend_string *key;
     ulong index;
     if (zend_hash_get_current_key(Z_ARRVAL_P(config), &key, &index) == HASH_KEY_IS_LONG) {
@@ -200,49 +182,37 @@ PHP_METHOD(linger_framework_config, key)
 
 PHP_METHOD(linger_framework_config, next)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     zend_hash_move_forward(Z_ARRVAL_P(config));
 }
 
 PHP_METHOD(linger_framework_config, valid)
 {
-    zval *config = zend_read_property(config_ce, getThis(), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
+    zval *config = zend_read_property(config_ce, Z_OBJ_P(getThis()), ZEND_STRL(CONFIG_PROPERTIES_CONFIG), 1, NULL);
     RETURN_BOOL(zend_hash_has_more_elements(Z_ARRVAL_P(config)) == SUCCESS);
 }
 
-PHP_METHOD(linger_framework_config, __destruct) {}
-
-PHP_METHOD(linger_framework_config, __sleep) {}
-
-PHP_METHOD(linger_framework_config, __wakeup) {}
-
-PHP_METHOD(linger_framework_config, __clone) {}
-
 zend_function_entry config_methods[] = {
-    PHP_ME(linger_framework_config, __construct, linger_framework_config_construct_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_config, __clone, NULL, ZEND_ACC_PRIVATE)
-    PHP_ME(linger_framework_config, __sleep, NULL, ZEND_ACC_PRIVATE)
-    PHP_ME(linger_framework_config, __wakeup, NULL, ZEND_ACC_PRIVATE)
-    PHP_ME(linger_framework_config, get, linger_framework_config_get_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, set, linger_framework_config_set_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, has, linger_framework_config_has_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, del, linger_framework_config_del_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, count, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, rewind, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, next, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, current, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, key, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, valid, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, clear, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, offsetGet, get, linger_framework_config_get_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, offsetSet, set, linger_framework_config_set_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, offsetExists, has, linger_framework_config_has_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, offsetUnset, del, linger_framework_config_del_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, __get, get, linger_framework_config_get_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, __set, set, linger_framework_config_set_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, __isset, has, linger_framework_config_has_arginfo, ZEND_ACC_PUBLIC)
-    PHP_MALIAS(linger_framework_config, __unset, del, linger_framework_config_del_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_config, __destruct, linger_framework_config_void_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
+    PHP_ME(linger_framework_config, __construct,arginfo_class_Linger_Framework_Config___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_config, get, arginfo_class_Linger_Framework_Config_get,ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, set, arginfo_class_Linger_Framework_Config_set, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, has, arginfo_class_Linger_Framework_Config_has, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, del, arginfo_class_Linger_Framework_Config_del, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, count, arginfo_class_Linger_Framework_Config_count, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, rewind, arginfo_class_Linger_Framework_Config_rewind, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, next, arginfo_class_Linger_Framework_Config_next, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, current, arginfo_class_Linger_Framework_Config_current, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, key, arginfo_class_Linger_Framework_Config_key, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, valid, arginfo_class_Linger_Framework_Config_valid, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_config, clear, arginfo_class_Linger_Framework_Config_clear, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, offsetGet, get, arginfo_class_Linger_Framework_Config_offsetGet, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, offsetSet, set, arginfo_class_Linger_Framework_Config_offsetSet, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, offsetExists, has, arginfo_class_Linger_Framework_Config_offsetExists, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, offsetUnset, del, arginfo_class_Linger_Framework_Config_offsetUnSet, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, __get, get, arginfo_class_Linger_Framework_Config___get, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, __set, set, arginfo_class_Linger_Framework_Config___set, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, __isset, has, arginfo_class_Linger_Framework_Config___isset, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(linger_framework_config, __unset, del, arginfo_class_Linger_Framework_Config___unset, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

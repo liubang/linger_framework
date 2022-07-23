@@ -35,8 +35,11 @@
 #include "linger_router_rule.h"
 #include "linger_response.h"
 
-ZEND_BEGIN_ARG_INFO_EX(linger_framework_dispatcher_void_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
+#if PHP_MAJOR_VERSION > 7
+#include "linger_dispatcher_arginfo.h"
+#else
+#include "linger_dispatcher_legacy_arginfo.h"
+#endif
 
 zend_class_entry *dispatcher_ce;
 
@@ -45,7 +48,7 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
     zval *instance = zend_read_static_property(dispatcher_ce, ZEND_STRL(DISPATCHER_PROPERTIES_INSTANCE), 1);
 
     if (Z_TYPE_P(instance) == IS_OBJECT &&
-            instanceof_function(Z_OBJCE_P(instance), dispatcher_ce TSRMLS_CC)) {
+            instanceof_function(Z_OBJCE_P(instance), dispatcher_ce)) {
         return instance;
     }
 
@@ -59,7 +62,7 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
     (void)linger_request_instance(&request);
 
     if (EXPECTED(Z_TYPE(request) == IS_OBJECT)) {
-        zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), &request);
+        zend_update_property(dispatcher_ce, Z_OBJ_P(this), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), &request);
         zval_ptr_dtor(&request);
     } else {
         linger_throw_exception(NULL, 0, "request must be a instance of linger\\framework\\Request.");
@@ -69,7 +72,7 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
 
     if (EXPECTED(router && IS_OBJECT == Z_TYPE_P(router)
                  && instanceof_function(Z_OBJCE_P(router), router_ce))) {
-        zend_update_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), router);
+        zend_update_property(dispatcher_ce, Z_OBJ_P(this), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER), router);
     } else {
         linger_throw_exception(NULL, 0, "router must be a instance of linger\\framework\\Router.");
         zval_ptr_dtor(this);
@@ -81,8 +84,8 @@ zval *linger_dispatcher_instance(zval *this, zval *router)
 
 void linger_dispatcher_dispatch(zval *this)
 {
-    zval *request = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
-    zval *router = zend_read_property(dispatcher_ce, this, ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
+    zval *request = zend_read_property(dispatcher_ce, Z_OBJ_P(this), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
+    zval *router = zend_read_property(dispatcher_ce, Z_OBJ_P(this), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
     zval *router_rule;
 
     if ((router_rule = linger_router_match(router, request)) == NULL) {
@@ -112,7 +115,7 @@ void linger_dispatcher_dispatch(zval *this)
         char *class_method_lower = zend_str_tolower_dup(Z_STRVAL_P(class_method), Z_STRLEN_P(class_method));
         zend_string *zs_class_method = zend_string_init(class_method_lower, Z_STRLEN_P(class_method), 0);
         if (zend_hash_exists(&((ce)->function_table), zs_class_method)) {
-            zend_call_method(&controller_obj, ce, NULL, class_method_lower, Z_STRLEN_P(class_method), NULL, 0, NULL, NULL);
+            zend_call_method(Z_OBJ_P(&controller_obj), ce, NULL, class_method_lower, Z_STRLEN_P(class_method), NULL, 0, NULL, NULL);
         } else {
             linger_throw_exception(NULL, 0, "the method %s of %s is not exists.", Z_STRVAL_P(class_method),
                                    Z_STRVAL_P(class));
@@ -133,8 +136,8 @@ PHP_METHOD(linger_framework_dispatcher, __construct)
 
 PHP_METHOD(linger_framework_dispatcher, findRouter)
 {
-    zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
-    zval *router = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
+    zval *request = zend_read_property(dispatcher_ce, Z_OBJ_P(getThis()), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
+    zval *router = zend_read_property(dispatcher_ce, Z_OBJ_P(getThis()), ZEND_STRL(DISPATCHER_PROPERTIES_ROUTER),1, NULL);
     zval *router_rule = linger_router_match(router, request);
     if (NULL != router_rule) {
         RETURN_ZVAL(router_rule, 1, 0);
@@ -145,15 +148,15 @@ PHP_METHOD(linger_framework_dispatcher, findRouter)
 
 PHP_METHOD(linger_framework_dispatcher, getRequest)
 {
-    zval *request = zend_read_property(dispatcher_ce, getThis(), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
+    zval *request = zend_read_property(dispatcher_ce, Z_OBJ_P(getThis()), ZEND_STRL(DISPATCHER_PROPERTIES_REQUEST), 1, NULL);
 
     RETURN_ZVAL(request, 1, 0);
 }
 
 zend_function_entry dispatcher_methods[] = {
-    PHP_ME(linger_framework_dispatcher, __construct, NULL, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
-    PHP_ME(linger_framework_dispatcher, findRouter, linger_framework_dispatcher_void_arginfo, ZEND_ACC_PUBLIC)
-    PHP_ME(linger_framework_dispatcher, getRequest, linger_framework_dispatcher_void_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_dispatcher, __construct, arginfo_class_Linger_Framework_Dispatcher___construct, ZEND_ACC_PRIVATE | ZEND_ACC_CTOR)
+    PHP_ME(linger_framework_dispatcher, findRouter, arginfo_class_Linger_Framework_Dispatcher_findRouter, ZEND_ACC_PUBLIC)
+    PHP_ME(linger_framework_dispatcher, getRequest, arginfo_class_Linger_Framework_Dispatcher_getRequest, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
